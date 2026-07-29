@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>雙語小說對照閱讀器</title>
+    <title>愛倫坡《黑貓》雙語對照</title>
     <style>
         :root {
             --bg-color: #f8f9fa;
@@ -12,7 +12,7 @@
             --card-bg: #ffffff;
             --accent-color: #3182ce;
             --border-color: #e2e8f0;
-            --font-scale: 1; /* 動態字型倍率 */
+            --font-scale: 1;
         }
 
         body.dark-mode {
@@ -34,15 +34,15 @@
             padding: 0;
             height: 100vh;
             overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
             flex-direction: column;
+            font-family: Georgia, "Times New Roman", "BiauKai", "DFKai-SB", "標楷體", serif;
         }
 
         header {
-            height: 60px;
+            height: 65px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -51,11 +51,19 @@
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
             z-index: 10;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         .title {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: bold;
+            color: var(--text-main);
+            font-family: "BiauKai", "DFKai-SB", "標楷體", Georgia, serif;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60%;
         }
 
         .controls {
@@ -81,7 +89,6 @@
             background-color: var(--border-color);
         }
 
-        /* 主閱讀區域：寬度加大 */
         main {
             flex: 1;
             display: flex;
@@ -101,7 +108,6 @@
         .click-left { left: 0; }
         .click-right { right: 0; width: 80%; }
 
-        /* 擴大畫面容器：從 800px 拓寬至 95% (最大 1200px) */
         .card-container {
             width: 95%;
             max-width: 1200px;
@@ -112,41 +118,40 @@
 
         .paragraph-box {
             background-color: var(--card-bg);
-            padding: 25px 35px;
+            padding: 30px 40px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
         }
 
-        /* 上方（原文）文字樣式 */
         .top-text {
-            font-size: calc(1.2rem * var(--font-scale));
-            line-height: 1.6;
-            margin-bottom: 18px;
+            font-size: calc(1.25rem * var(--font-scale));
+            line-height: 1.7;
+            margin-bottom: 20px;
             color: var(--text-main);
             font-weight: 500;
             user-select: text;
         }
 
-        /* 下方（譯文）文字樣式 */
         .bottom-text {
             font-size: calc(1.15rem * var(--font-scale));
-            line-height: 1.55;
+            line-height: 1.6;
             color: var(--text-sub);
             border-top: 1px dashed var(--border-color);
-            padding-top: 16px;
+            padding-top: 18px;
             user-select: text;
         }
 
-        /* 中文字級略大、行距略寬，閱讀較舒適 */
         .lang-zh {
-            font-size: calc(1.25rem * var(--font-scale));
-            line-height: 1.7;
+            font-size: calc(1.3rem * var(--font-scale));
+            line-height: 1.85;
+            font-family: "BiauKai", "DFKai-SB", "標楷體", "Songti TC", "PMingLiU", serif;
         }
 
         .lang-en {
-            font-size: calc(1.1rem * var(--font-scale));
-            line-height: 1.6;
+            font-size: calc(1.18rem * var(--font-scale));
+            line-height: 1.65;
+            font-family: Georgia, "Times New Roman", Garamond, serif;
         }
 
         footer {
@@ -160,6 +165,7 @@
             gap: 6px;
             flex-shrink: 0;
             z-index: 10;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         .progress-bar-container {
@@ -203,17 +209,17 @@
         }
 
         @media (max-width: 600px) {
-            .paragraph-box { padding: 18px 20px; }
+            .paragraph-box { padding: 20px; }
             .card-container { width: 98%; }
+            .title { font-size: 1.05rem; max-width: 50%; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="title">雙語小說對照閱讀器</div>
+        <div class="title">📖 愛倫坡《黑貓》雙語對照</div>
         <div class="controls">
-            <!-- 字體縮放按鈕 -->
             <button onclick="changeFontSize(-0.1)" title="縮小字體">A-</button>
             <button onclick="changeFontSize(0.1)" title="放大字體">A+</button>
             <button onclick="speakCurrent()">🔊 朗讀</button>
@@ -249,11 +255,10 @@
         let currentIndex = 0;
         let currentFontScale = parseFloat(localStorage.getItem('bilingual_font_scale')) || 1.0;
 
-        // 初始化套用記憶的字體大小
         document.documentElement.style.setProperty('--font-scale', currentFontScale);
 
         function changeFontSize(delta) {
-            currentFontScale = Math.min(Math.max(0.7, currentFontScale + delta), 1.8); // 限制縮放範圍在 0.7x ~ 1.8x
+            currentFontScale = Math.min(Math.max(0.7, currentFontScale + delta), 1.8);
             document.documentElement.style.setProperty('--font-scale', currentFontScale);
             localStorage.setItem('bilingual_font_scale', currentFontScale);
         }
@@ -269,7 +274,6 @@
             topEl.innerText = page.top;
             bottomEl.innerText = page.bottom;
 
-            // 原文（上）與譯文（下）順序固定，只依語言調整字體樣式
             topEl.className = 'top-text ' + (page.top_lang === 'zh' ? 'lang-zh' : 'lang-en');
             bottomEl.className = 'bottom-text ' + (page.bottom_lang === 'zh' ? 'lang-zh' : 'lang-en');
 
@@ -314,7 +318,7 @@
             document.body.classList.toggle('dark-mode');
         }
 
-        // 朗讀：自動挑選這一頁中「英文」的那一段來唸（若原文/譯文皆非英文則不朗讀）
+        // 朗讀：包含逗點/分號拆分，徹底解決長句被瀏覽器超時中斷問題
         function speakCurrent() {
             if (!('speechSynthesis' in window)) {
                 alert('您的瀏覽器不支援語音朗讀');
@@ -336,7 +340,8 @@
                 return;
             }
 
-            const sentences = textToSpeak.match(/[^.!?]+[.!?]+/g) || [textToSpeak];
+            // 💡 關鍵修復：加入逗號 `,`、分號 `;`、破折號 `--` 一併切分，朗讀更加順暢且絕不超時！
+            const sentences = textToSpeak.match(/[^.!?,;—-]+[.!?,;—-]*/g) || [textToSpeak];
             let sentenceIndex = 0;
 
             function speakNextSentence() {
