@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>歐．亨利《賢者的禮物》雙語對照</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-main: #2b2d42;
+            --text-sub: #4a5568;
+            --card-bg: #ffffff;
+            --accent-color: #3182ce;
+            --border-color: #e2e8f0;
+            --font-scale: 1;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a202c;
+            --text-main: #edf2f7;
+            --text-sub: #cbd5e0;
+            --card-bg: #2d3748;
+            --accent-color: #63b3ed;
+            --border-color: #4a5568;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            font-family: Georgia, "Times New Roman", "BiauKai", "DFKai-SB", "標楷體", serif;
+        }
+
+        /* 介面按鈕與 Header 保持防誤選 */
+        header {
+            height: 65px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            z-index: 20;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-main);
+            font-family: "BiauKai", "DFKai-SB", "標楷體", Georgia, serif;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60%;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .controls button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .controls button:hover {
+            background-color: var(--border-color);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow-y: auto;
+            padding: 15px 0;
+        }
+
+        .click-zone {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 8%;
+            z-index: 5;
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .click-left { left: 0; }
+        .click-right { right: 0; }
+
+        .card-container {
+            width: 95%;
+            max-width: 1200px;
+            margin: auto;
+            padding: 0 10px;
+            z-index: 10;
+            cursor: text;
+        }
+
+        .paragraph-box {
+            background-color: var(--card-bg);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        /* 💡 核心修復：明確開啟原生文字反白選取 */
+        .top-text {
+            font-size: calc(1.25rem * var(--font-scale));
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            font-weight: 500;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+
+        .bottom-text {
+            font-size: calc(1.15rem * var(--font-scale));
+            line-height: 1.6;
+            color: var(--text-sub);
+            border-top: 1px dashed var(--border-color);
+            padding-top: 18px;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+
+        .lang-zh {
+            font-size: calc(1.3rem * var(--font-scale));
+            line-height: 1.85;
+            font-family: "BiauKai", "DFKai-SB", "標楷體", "Songti TC", "PMingLiU", serif;
+        }
+
+        .lang-en {
+            font-size: calc(1.18rem * var(--font-scale));
+            line-height: 1.65;
+            font-family: Georgia, "Times New Roman", Garamond, serif;
+        }
+
+        footer {
+            height: 65px;
+            padding: 8px 25px;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
+            flex-shrink: 0;
+            z-index: 20;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--border-color);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.2s;
+        }
+
+        .footer-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-sub);
+        }
+
+        .nav-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 600px) {
+            .paragraph-box { padding: 20px; }
+            .card-container { width: 98%; }
+            .title { font-size: 1.05rem; max-width: 50%; }
+            .click-zone { width: 5%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="title">📖 歐．亨利《賢者的禮物》雙語對照</div>
+        <div class="controls">
+            <button onclick="changeFontSize(-0.1)" title="縮小字體">A-</button>
+            <button onclick="changeFontSize(0.1)" title="放大字體">A+</button>
+            <button onclick="speakCurrent()">🔊 朗讀</button>
+            <button onclick="toggleDarkMode()">🌙 切換模式</button>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <div class="click-zone click-left" onclick="prevPage()"></div>
+        <div class="click-zone click-right" onclick="nextPage()"></div>
+
+        <div class="card-container">
+            <div class="paragraph-box">
+                <div class="top-text" id="top-text">載入中...</div>
+                <div class="bottom-text" id="bottom-text">...</div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="progress-bar-container" onclick="seekProgress(event)">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div class="footer-controls">
+            <button class="nav-btn" id="prev-btn" onclick="prevPage()">上一頁</button>
+            <span id="page-info">0 / 0</span>
+            <button class="nav-btn" id="next-btn" onclick="nextPage()">下一頁</button>
+        </div>
+    </footer>
+
+    <script>
+        const pages = [{"id": 1, "top": "One dollar and eighty-seven cents. That was all. And sixty cents of it was in pennies. Pennies saved one and two at a time by bulldozing the grocer and the vegetable man and the butcher until one’s cheeks burned with the silent imputation of parsimony that such close dealing implied. Three times Della counted it. One dollar and eighty-seven cents. And the next day would be Christmas.", "top_lang": "en", "bottom": "一元八十七分。就只有這麼多。其中有六十分還是單分硬幣。這些硬幣是每次一分兩分，跟雜貨店老闆、菜販和肉販死命討價還價省下來的，省到每次這樣斤斤計較都讓人臉頰發燙，彷彿在無聲地指責自己的小氣。黛拉數了三次。一元八十七分。而隔天就是聖誕節了。", "bottom_lang": "zh"}, {"id": 2, "top": "There was clearly nothing to do but flop down on the shabby little couch and howl. So Della did it. Which instigates the moral reflection that life is made up of sobs, sniffles, and smiles, with sniffles predominating.", "top_lang": "en", "bottom": "此情此景，顯然除了倒在破舊的小沙發上嚎啕大哭之外，別無他法。黛拉也就這麼做了。這不禁讓人興起一番道德沉思：人生是由抽泣、啜泣和微笑交織而成，而其中又以啜泣佔了大多數。", "bottom_lang": "zh"}, {"id": 3, "top": "While the mistress of the home is gradually subsiding from the first stage to the second, take a look at the home. A furnished flat at $8 per week. It did not exactly beggar description, but it certainly had that word on the lookout for the mendicancy squad.", "top_lang": "en", "bottom": "當這間房子的女主人正漸漸從第一階段過渡到第二階段時，且讓我們來看看這個家。這是一間每週租金八美元的帶家具公寓。它的寒酸倒不至於到無法形容，但確實已經到了隨時會被取締乞丐的糾察隊盯上的地步。", "bottom_lang": "zh"}, {"id": 4, "top": "In the vestibule below was a letter-box into which no letter would go, and an electric button from which no mortal finger could coax a ring. Also appertaining thereunto was a card bearing the name “Mr. James Dillingham Young.”", "top_lang": "en", "bottom": "樓下的門廳裡有一個信箱，但任何信件都投不進去；還有一個電鈴按鈕，但凡人的手指再怎麼按也無法讓它發出聲音。此外，那裡還貼著一張名牌，上面寫著「詹姆斯·迪林漢·楊先生」。", "bottom_lang": "zh"}, {"id": 5, "top": "The “Dillingham” had been flung to the breeze during a former period of prosperity when its possessor was being paid $30 per week. Now, when the income was shrunk to $20, though, they were thinking seriously of contracting to a modest and unassuming D. But whenever Mr. James Dillingham Young came home and reached his flat above he was called “Jim” and greatly hugged by Mrs. James Dillingham Young, already introduced to you as Della. Which is all very good.", "top_lang": "en", "bottom": "「迪林漢」這個名號是在以前繁榮時期迎風朝展的，當時他的週薪是三十美元。然而，如今收入縮減到了二十美元，他們正認真考慮要把名字縮寫成謙遜而不張揚的「D.」。不過，每當詹姆斯·迪林漢·楊先生回到家，走到樓上的公寓時，詹姆斯·迪林漢·楊夫人（也就是已經向您介紹過的黛拉）就會叫他「吉姆」，並給他一個大大的擁抱。這一切都非常美好。", "bottom_lang": "en"}, {"id": 6, "top": "Della finished her cry and attended to her cheeks with the powder rag. She stood by the window and looked out dully at a gray cat walking a gray fence in a gray backyard. Tomorrow would be Christmas Day, and she had only $1.87 with which to buy Jim a present. She had been saving every penny she could for months, with this result. Twenty dollars a week doesn’t go far. Expenses had been greater than she had calculated. They always are. Only $1.87 to buy a present for Jim. Her Jim. Many a happy hour she had spent planning for something nice for him. Something fine and rare and sterling—something just a little bit near to being worthy of the honor of being owned by Jim.", "top_lang": "en", "bottom": "黛拉哭完了，用粉撲擦了擦臉頰。她站在窗前，無精打采地看著灰濛濛的後院裡，一隻灰色的貓正走在灰色的圍牆上。明天就是聖誕節了，而她只有一元八十七分來給吉姆買禮物。幾個月來，她能省一分是一分，結果卻只有這樣。一週二十美元的收入維持不了多久，開銷比她預算的還要大，向來都是如此。只有一元八十七分來給吉姆買禮物。她的吉姆。她曾度過許多快樂的時光，為他籌劃著送件好東西。那必須是精緻、稀有且名副其實的珍品——必須勉強能配得上讓吉姆擁有的這份榮耀。", "bottom_lang": "zh"}, {"id": 7, "top": "There was a pier glass between the windows of the room. Perhaps you have seen a pier glass in an $8 flat. A very thin and very agile person may, by observing his reflection in a rapid sequence of longitudinal strips, obtain a fairly accurate conception of his looks. Della, being slender, had mastered the art.", "top_lang": "en", "bottom": "房間的窗戶之間有一面穿衣鏡。也許你在每週租金八美元的公寓裡見過這種穿衣鏡。一個非常瘦且非常敏捷的人，可以透過在一連串快速旋轉的縱向長條鏡影中觀察自己，從而對自己的外貌得到一個相當準確的印象。黛拉身形苗條，已經掌握了這項絕技。", "bottom_lang": "zh"}, {"id": 8, "top": "Suddenly she whirled from the window and stood before the glass. Her eyes were shining brilliantly, but her face had lost its color within twenty seconds. Rapidly she pulled down her hair and let it fall to its full length.", "top_lang": "en", "bottom": "突然，她從窗前轉過身，站在鏡子前。她的雙眼閃爍著晶瑩的光芒，但她的臉色卻在二十秒之內失去了血色。她迅速地解開頭髮，讓它完全垂落下來。", "bottom_lang": "zh"}, {"id": 9, "top": "Now, there were two possessions of the James Dillingham Youngs in which they both took a mighty pride. One was Jim’s gold watch that had been his father’s and his grandfather’s. The other was Della’s hair. Had the queen of Sheba lived in the flat across the airshaft, Della would have let her hair hang out the window some day to dry just to depreciate Her Majesty’s jewels and gifts. Had King Solomon been the janitor, with all his treasures piled up in the basement, Jim would have pulled out his watch every time he passed, just to see him pluck at his beard from envy.", "top_lang": "en", "bottom": "現在，詹姆斯·迪林漢·楊夫婦有兩件令他們無比自豪的財產。一件是吉姆的金錶，那是他父親和祖父傳下來的。另一件是黛拉的秀髮。如果示巴女王住在天井對面的公寓裡，黛拉總有一天會把頭髮掛在窗外晾乾，好讓女王陛下的珠寶和禮物相形失色。如果所羅門王是這棟樓的管理員，把所有的寶藏都堆在地下室，吉姆每次經過時都會掏出金錶，只為了看著所羅門王嫉妒得吹鬍子瞪眼。", "bottom_lang": "zh"}, {"id": 10, "top": "So now Della’s beautiful hair fell about her rippling and shining like a cascade of brown waters. It reached below her knee and made itself almost a garment for her. And then she did it up again nervously and quickly. Once she faltered for a minute and stood still while a tear or two splashed on the worn red carpet.", "top_lang": "en", "bottom": "此時，黛拉美麗的秀髮披散在身上，如同一道棕色的瀑布，波光粼粼，閃閃發亮。頭髮垂到膝蓋以下，簡直成了她的一件外衣。接著，她又緊張而迅速地將頭髮盤了起來。其間她曾猶豫了一分鐘，靜靜地站著，一兩滴眼淚啪嗒啪嗒地落在了磨損的紅地毯上。", "bottom_lang": "zh"}, {"id": 11, "top": "On went her old brown jacket; on went her old brown hat. With a whirl of skirts and with the brilliant sparkle still in her eyes, she fluttered out the door and down the stairs to the street.", "top_lang": "en", "bottom": "她穿上那件舊的棕色外套，戴上那頂舊的棕色帽子。伴隨著裙擺的旋轉，眼中仍閃爍著晶瑩的光芒，她像一隻小鳥般飛出了家門，走下樓梯，來到了街上。", "bottom_lang": "zh"}, {"id": 12, "top": "Where she stopped the sign read: “Mme. Sofronie. Hair Goods of All Kinds.” One flight up Della ran, and collected herself, panting. Madame, large, too white, chilly, hardly looked the “Sofronie.”", "top_lang": "en", "bottom": "她停下來的地方有一塊招牌，寫著：「索芙羅妮夫人，各色毛髮製品」。黛拉跑上一層樓梯，氣喘吁吁地讓自己平靜下來。那位夫人身材高大，白得不自然，態度冷冰冰的，實在不太像「索芙羅妮」這個優雅的名字。", "bottom_lang": "zh"}, {"id": 13, "top": "“Will you buy my hair?” asked Della.", "top_lang": "en", "bottom": "「你買頭髮嗎？」黛拉問。", "bottom_lang": "zh"}, {"id": 14, "top": "“I buy hair,” said Madame. “Take yer hat off and let’s have a sight at the looks of it.”", "top_lang": "en", "bottom": "「我買頭髮，」夫人說。「把帽子摘下來，讓我瞧瞧貨色。」", "bottom_lang": "zh"}, {"id": 15, "top": "Down rippled the brown cascade.", "top_lang": "en", "bottom": "棕色的瀑布傾瀉而下。", "bottom_lang": "zh"}, {"id": 16, "top": "“Twenty dollars,” said Madame, lifting the mass with a practised hand.", "top_lang": "en", "bottom": "「二十美元，」夫人用熟練的手托起沉甸甸的頭髮說。", "bottom_lang": "zh"}, {"id": 17, "top": "“Give it to me quick,” said Della.", "top_lang": "en", "bottom": "「快點給我錢，」黛拉說。", "bottom_lang": "zh"}, {"id": 18, "top": "Oh, and the next two hours tripped by on rosy wings. Forget the hashed metaphor. She was ransacking the stores for Jim’s present.", "top_lang": "en", "bottom": "噢，接下來的兩個小時就像長了玫瑰色的翅膀般飛逝而去。別去管這拙劣的比喻了，此時她正把各家商店翻了個底朝天，尋找給吉姆的禮物。", "bottom_lang": "zh"}, {"id": 19, "top": "She found it at last. It surely had been made for Jim and no one else. There was no other like it in any of the stores, and she had turned all of them inside out. It was a platinum fob chain simple and chaste in design, properly proclaiming its value by substance alone and not by meretricious ornamentation—as all good things should do. It was even worthy of The Watch. As soon as she saw it she knew that it must be Jim’s. It was like him. Quietness and value—the description applied to both. Twenty-one dollars they took from her for it, and she hurried home with the 87 cents. With that chain on his watch Jim might be properly anxious about the time in any company. Grand as the watch was, he sometimes looked at it on the sly on account of the old leather strap that he used in place of a chain.", "top_lang": "en", "bottom": "她終於找到了。這東西無疑是為吉姆量身打造的，絕無他人。在所有的店裡，沒有第二個像這樣的東西，而她已經把所有的商店都逛遍了。那是一條白金錶鏈，設計簡單而純樸，恰如其分地僅憑材質本身來展現其價值，而沒有任何庸俗的裝飾——正如所有好東西都該如此。它甚至配得上那塊金錶。她一看到它，就知道它非吉姆莫屬。它太像他了。沉穩而有價值——這四個字對他們兩者都適用。他們收了她二十一美元，她揣著剩下的八十七美分匆匆趕回家。有了這條錶鏈，吉姆在任何場合都可以理直氣壯地掏出金錶來看時間了。那塊金錶雖然華貴，但因為用的是一條舊皮帶代替錶鏈，他有時只能偷偷摸摸地看上一眼。", "bottom_lang": "zh"}, {"id": 20, "top": "When Della reached home her intoxication gave way a little to prudence and reason. She got out her curling irons and lighted the gas and went to work repairing the ravages made by generosity added to love. Which is always a tremendous task, dear friends—a mammoth task.", "top_lang": "en", "bottom": "黛拉回到家時，她的狂喜稍微被謹慎和理智所取代。她拿出捲髮鐵鉗，點燃了瓦斯，開始著手修補由慷慨與愛所造成的破壞。親愛的朋友們，這向來是一項艱鉅的任務——一項浩大的工程。", "bottom_lang": "zh"}, {"id": 21, "top": "Within forty minutes her head was covered with tiny, close-lying curls that made her look wonderfully like a truant schoolboy. She looked at her reflection in the mirror long, carefully, and critically.", "top_lang": "en", "bottom": "不到四十分鐘，她的頭上就佈滿了緊貼著的小捲髮，使她看起來像極了一個逃學的男生。她對著鏡子，長久、仔細且挑剔地端詳著自己的倒影。", "bottom_lang": "zh"}, {"id": 22, "top": "“If Jim doesn’t kill me,” she said to herself, “before he takes a second look at me, he’ll say I look like a Coney Island chorus girl. But what could I do—oh! what could I do with a dollar and eighty-seven cents?”", "top_lang": "en", "bottom": "「如果吉姆在仔細看我第二眼之前不把我殺了，」她對自己說，「他一定會說我看起來像康尼島的歌舞女郎。但我能怎麼辦呢——噢！拿著一元八十七分，我還能怎麼辦呢？」", "bottom_lang": "zh"}, {"id": 23, "top": "At 7 o’clock the coffee was made and the frying-pan was on the back of the stove hot and ready to cook the chops.", "top_lang": "en", "bottom": "七點整，咖啡煮好了，煎鍋在爐子後方燒得熱騰騰的，準備煎肉排。", "bottom_lang": "zh"}, {"id": 24, "top": "Jim was never late. Della doubled the fob chain in her hand and sat on the corner of the table near the door that he always entered. Then she heard his step on the stair away down on the first flight, and she turned white for just a moment. She had a habit of saying a little silent prayer about the simplest everyday things, and now she whispered: “Please God, make him think I am still pretty.”", "top_lang": "en", "bottom": "吉姆從不遲到。黛拉把錶鏈折成雙折握在手裡，坐在靠近他每次進門的桌角旁。接著，她聽到樓下第一層樓梯傳來了他的腳步聲，她的臉色瞬間白了一下。她習慣為最簡單的日常瑣事在心中默默祈禱，而現在她低聲呢喃著：「老天爺，求求你，讓他覺得我依然美麗。」", "bottom_lang": "zh"}, {"id": 25, "top": "The door opened and Jim stepped in and closed it. He looked thin and very serious. Poor fellow, he was only twenty-two—and to be burdened with a family! He needed a new overcoat and he was without gloves.", "top_lang": "en", "bottom": "門開了，吉姆走了進來並把門關上。他顯得清瘦而嚴肅。可憐的小夥子，他才二十二歲，卻要挑起家庭的重擔！他需要一件新大衣，而且他也沒有手套。", "bottom_lang": "zh"}, {"id": 26, "top": "Jim stopped inside the door, as immovable as a setter at the scent of quail. His eyes were fixed upon Della, and there was an expression in them that she could not read, and it terrified her. It was not anger, nor surprise, nor disapproval, nor horror, nor any of the sentiments that she had been prepared for. He simply stared at her fixedly with that peculiar expression on his face.", "top_lang": "en", "bottom": "吉姆在門內停下腳步，像一隻聞到鵪鶉氣味的獵犬般一動也不動。他的目光緊盯著黛拉，眼神裡帶著一種她讀不懂的神情，這讓她感到恐懼。那不是憤怒，不是驚訝，不是不滿，也不是恐懼，更不是她所準備面對的任何一種情緒。他只是用那種奇特的眼神，死死地盯著她。", "bottom_lang": "zh"}, {"id": 27, "top": "Della wriggled off the table and went for him.", "top_lang": "en", "bottom": "黛拉從桌子上滑了下來，朝他走去。", "bottom_lang": "zh"}, {"id": 28, "top": "“Jim, darling,” she cried, “don’t look at me that way. I had my hair cut off and sold because I couldn’t have lived through Christmas without giving you a present. It’ll grow out again—you won’t mind, will you? I just had to do it. My hair grows awfully fast. Say ‘Merry Christmas!’ Jim, and let’s be happy. You don’t know what a nice—what a beautiful, nice gift I’ve got for you.”", "top_lang": "en", "bottom": "「吉姆，親愛的，」她喊道，「不要用那種眼神看我。我把頭髮剪掉賣了，因為如果不送你一件聖誕禮物，我真的熬不過這個聖誕節。頭髮還會再長出來的——你不會介意的，對吧？我非得這麼做不可。我的頭髮長得可快了。對我說『聖誕快樂！』吧，吉姆，讓我們快快樂樂的。你不知道我為你準備了多麼棒、多麼美麗精緻的禮物！」", "bottom_lang": "zh"}, {"id": 29, "top": "“You’ve cut off your hair?” asked Jim, laboriously, as if he had not arrived at that patent fact yet even after the hardest mental labor.", "top_lang": "en", "bottom": "「妳剪掉了妳的頭髮？」吉姆費力地問道，彷彿經過了最艱苦的思考，也依然無法理解這個顯而易見的事實。", "bottom_lang": "zh"}, {"id": 30, "top": "“Cut it off and sold it,” said Della. “Don’t you like me just as well, anyhow? I’m me without my hair, ain’t I?”", "top_lang": "en", "bottom": "「剪掉賣了，」黛拉說。「不管怎樣，你還是和以前一樣喜歡我，對吧？沒有了頭髮，我還是我，不是嗎？」", "bottom_lang": "zh"}, {"id": 31, "top": "Jim looked about the room curiously.", "top_lang": "en", "bottom": "吉姆好奇地環顧著房間。", "bottom_lang": "zh"}, {"id": 32, "top": "“You say your hair is gone?” he said, with an air almost of idiocy.", "top_lang": "en", "bottom": "「妳說妳的頭髮不見了？」他帶著一種近乎茫然的神情問道。", "bottom_lang": "zh"}, {"id": 33, "top": "“You needn’t look for it,” said Della. “It’s sold, I tell you—sold and gone, too. It’s Christmas Eve, boy. Be good to me, for it went for you. Maybe the hairs of my head were numbered,” she went on with sudden serious sweetness, “but nobody could ever count my love for you. Shall I put the chops on, Jim?”", "top_lang": "en", "bottom": "「你不用去找它了，」黛拉說。「我告訴你，它已經賣掉了——賣掉了，沒有了。今天是聖誕夜，親愛的。對我好一點，因為這一切都是為了你。也許我頭上的每一根頭髮都是數得清的，」她突然帶著無比認真而甜蜜的神情繼續說道，「但任何人也數不清我對你的愛。我可以把肉排放下去煎了嗎，吉姆？」", "bottom_lang": "zh"}, {"id": 34, "top": "Out of his trance Jim seemed quickly to wake. He enfolded his Della. For ten seconds let us regard with discreet scrutiny some inconsequential object in the other direction. Eight dollars a week or a million a year—what is the difference? A mathematician or a wit would give you the wrong answer. The magi brought valuable gifts, but that was not among them. This dark assertion will be illuminated later on.", "top_lang": "en", "bottom": "吉姆似乎猛然從恍惚中清醒過來。他緊緊抱住他的黛拉。且讓我們用慎重的目光，轉去端詳另一個方向不相干的物件十秒鐘吧。每週八美元還是每年一百萬美元——這有何區別？數學家或智者都會給你錯誤的答案。賢士帶來了珍貴的禮物，但這份愛並不在其中。這個晦澀的說法，稍後便會水落石出。", "bottom_lang": "zh"}, {"id": 35, "top": "Jim drew a package from his overcoat pocket and threw it upon the table.", "top_lang": "en", "bottom": "吉姆從大衣口袋裡掏出一個包裹，扔在桌上。", "bottom_lang": "zh"}, {"id": 36, "top": "“Don’t make any mistake, Dell,” he said, “about me. I don’t think there’s anything in the way of a haircut or a shave or a shampoo that could make me like my girl any less. But if you’ll unwrap that package you may see why you had me going a while at first.”", "top_lang": "en", "bottom": "「戴爾，」他說，「別對我產生任何誤會。我想，無論是剪髮、剃鬍子還是洗頭，都無法讓我對我的女孩減少一分愛意。但是，只要妳打開那個包裹，妳就會明白為什麼剛才妳一開始會讓我愣成那樣了。」", "bottom_lang": "zh"}, {"id": 37, "top": "White fingers and nimble tore at the string and paper. And then an ecstatic scream of joy; and then, alas! a quick feminine change to hysterical tears and wails, necessitating the immediate employment of all the comforting powers of the lord of the flat.", "top_lang": "en", "bottom": "白皙靈巧的手指扯開了繩子和包裝紙。緊接著傳來一聲狂喜的尖叫；然而，唉！緊接著又是女性特有的快速轉變，變成了歇斯底里的眼淚和哭嚎，逼得這位公寓的男主人必須立刻施展所有溫柔安慰的本領。", "bottom_lang": "zh"}, {"id": 38, "top": "For there lay The Combs—the set of combs, side and back, that Della had worshipped long in a Broadway window. Beautiful combs, pure tortoise shell, with jewelled rims—just the shade to wear in the beautiful vanished hair. They were expensive combs, she knew, and her heart had simply craved and yearned over them without the least hope of possession. And now, they were hers, but the tresses that should have adorned the coveted adornments were gone.", "top_lang": "en", "bottom": "因為呈現在眼前的，正是那一套髮梳——那套黛拉在百老匯櫥窗裡仰慕已久、插在兩側和腦後用的髮梳。那是多麼美麗的髮梳啊，純玳瑁製成，邊緣鑲著珠寶——色澤恰好能配上她那已然逝去的美麗秀髮。她知道這套髮梳十分昂貴，她心中一直無比渴望、無比憧憬，卻不敢抱有絲毫擁有的奢望。而現在，它們終於屬於她了，但那本該配上這份令人艷羨的裝飾品的秀髮，卻已經不在了。", "bottom_lang": "zh"}, {"id": 39, "top": "But she hugged them to her bosom, and at length she was able to look up with dim eyes and a smile and say: “My hair grows so fast, Jim!”", "top_lang": "en", "bottom": "但她還是把髮梳緊緊摟在懷裡，過了許久，她終於能抬起含淚的雙眼，微笑著說：「我的頭髮長得很快的，吉姆！」", "bottom_lang": "zh"}, {"id": 40, "top": "And then Della leaped up like a little singed cat and cried, “Oh, oh!”", "top_lang": "en", "bottom": "接著，黛拉像一隻被燙傷的小貓般跳了起來，驚呼道：「噢，噢！」", "bottom_lang": "zh"}, {"id": 41, "top": "Jim had not yet seen his beautiful present. She held it out to him eagerly upon her open palm. The dull precious metal seemed to flash with a reflection of her bright and ardent spirit.", "top_lang": "en", "bottom": "吉姆還沒看過他那份美麗的禮物呢。她急切地把手掌攤開，將禮物遞到他面前。那暗淡的貴重金屬，彷彿也因反射了她那燦爛而熱烈的心靈而熠熠生輝。", "bottom_lang": "zh"}, {"id": 42, "top": "“Isn’t it a dandy, Jim? I hunted all over town to find it. You’ll have to look at the time a hundred times a day now. Give me your watch. I want to see how it looks on it.”", "top_lang": "en", "bottom": "「這不是很棒嗎，吉姆？我跑遍了全城才找到它。現在你每天得看一百次時間了。把你的金錶給我，我想看看配上去是什麼樣子。」", "bottom_lang": "zh"}, {"id": 43, "top": "Instead of obeying, Jim tumbled down on the couch and put his hands under the back of his head and smiled.", "top_lang": "en", "bottom": "吉姆沒有聽話，反而往沙發上一倒，雙手枕在腦後，微笑起來。", "bottom_lang": "zh"}, {"id": 44, "top": "“Dell,” said he, “let’s put our Christmas presents away and keep ’em a while. They’re too nice to use just at present. I sold the watch to get the money to buy your combs. And now suppose you put the chops on.”", "top_lang": "en", "bottom": "「戴爾，」他說，「我們把聖誕禮物先收起來，放一陣子吧。它們太美了，現在用實在有點可惜。我賣掉了金錶，才換來買妳這套髮梳的錢。現在，妳可以把肉排下鍋了吧。」", "bottom_lang": "zh"}, {"id": 45, "top": "The magi, as you know, were wise men—wonderfully wise men—who brought gifts to the Babe in the manger. They invented the art of giving Christmas presents. Being wise, their gifts were no doubt wise ones, possibly bearing the privilege of exchange in case of duplication. And here I have lamely related to you the uneventful chronicle of two foolish children in a flat who most unwisely sacrificed for each other the greatest treasures of their house. But in a last word to the wise of these days let it be said that of all who give gifts these two were the wisest. Of all who give and receive gifts, such as they are wisest. Everywhere they are wisest. They are the magi.", "top_lang": "en", "bottom": "正如你們所知，東方三賢士是極其聰慧的人——無比聰慧的人——他們為馬槽裡的嬰兒耶穌帶來了禮物。他們創立了贈送聖誕禮物的傳統。既然他們是明智之人，他們的禮物無疑也是明智的，甚至可能在送重複時享有換貨的權利。而在這裡，我略顯笨拙地向您講述了這對住在公寓裡的愚蠢孩子的平淡故事，他們極不理智地為彼此犧牲了家中最珍貴的寶藏。但是，對於當今的聰明人，最後我們要說：在所有贈送禮物的人之中，這兩個人才是最聰明的。在所有贈送與接受禮物的人之中，像他們這樣的人才是最聰明的。在任何地方，他們都是最聰明的。他們就是賢士。", "bottom_lang": "zh"}];
+        let currentIndex = 0;
+        let currentFontScale = parseFloat(localStorage.getItem('bilingual_font_scale')) || 1.0;
+
+        document.documentElement.style.setProperty('--font-scale', currentFontScale);
+
+        function changeFontSize(delta) {
+            currentFontScale = Math.min(Math.max(0.7, currentFontScale + delta), 1.8);
+            document.documentElement.style.setProperty('--font-scale', currentFontScale);
+            localStorage.setItem('bilingual_font_scale', currentFontScale);
+        }
+
+        function updatePage() {
+            if (!pages || pages.length === 0) return;
+
+            const page = pages[currentIndex];
+
+            const topEl = document.getElementById('top-text');
+            const bottomEl = document.getElementById('bottom-text');
+
+            topEl.innerText = page.top;
+            bottomEl.innerText = page.bottom;
+
+            topEl.className = 'top-text ' + (page.top_lang === 'zh' ? 'lang-zh' : 'lang-en');
+            bottomEl.className = 'bottom-text ' + (page.bottom_lang === 'zh' ? 'lang-zh' : 'lang-en');
+
+            document.getElementById('page-info').innerText = `${currentIndex + 1} / ${pages.length}`;
+
+            const progressPercent = ((currentIndex + 1) / pages.length) * 100;
+            document.getElementById('progress').style.width = `${progressPercent}%`;
+
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === pages.length - 1;
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function nextPage() {
+            if (currentIndex < pages.length - 1) {
+                currentIndex++;
+                updatePage();
+            }
+        }
+
+        function prevPage() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updatePage();
+            }
+        }
+
+        function seekProgress(e) {
+            const container = e.currentTarget;
+            const rect = container.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const percentage = clickX / width;
+            currentIndex = Math.floor(percentage * pages.length);
+            updatePage();
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function speakCurrent() {
+            if (!('speechSynthesis' in window)) {
+                alert('您的瀏覽器不支援語音朗讀');
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+
+            const page = pages[currentIndex];
+            let textToSpeak = null;
+            if (page.top_lang === 'en') {
+                textToSpeak = page.top;
+            } else if (page.bottom_lang === 'en') {
+                textToSpeak = page.bottom;
+            }
+
+            if (!textToSpeak) {
+                alert('這一段沒有偵測到英文內容可供朗讀');
+                return;
+            }
+
+            const sentences = textToSpeak.match(/[^.!?,;—]+(?:--|[^.!?,;—])*/g) || [textToSpeak];
+            let sentenceIndex = 0;
+
+            function speakNextSentence() {
+                if (sentenceIndex >= sentences.length) return;
+
+                const sentenceText = sentences[sentenceIndex].trim();
+                if (!sentenceText) {
+                    sentenceIndex++;
+                    speakNextSentence();
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(sentenceText);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+
+                const voices = window.speechSynthesis.getVoices();
+                const preferredVoice = voices.find(v =>
+                    v.lang.includes('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha'))
+                ) || voices.find(v => v.lang.startsWith('en'));
+
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+
+                utterance.onend = () => {
+                    sentenceIndex++;
+                    speakNextSentence();
+                };
+
+                utterance.onerror = () => {
+                    sentenceIndex++;
+                    speakNextSentence();
+                };
+
+                window.speechSynthesis.speak(utterance);
+            }
+
+            speakNextSentence();
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextPage();
+            } else if (e.key === 'ArrowLeft') {
+                prevPage();
+            }
+        });
+
+        updatePage();
+    </script>
+</body>
+</html>

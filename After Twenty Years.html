@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>歐．亨利《二十年後》雙語對照</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-main: #2b2d42;
+            --text-sub: #4a5568;
+            --card-bg: #ffffff;
+            --accent-color: #3182ce;
+            --border-color: #e2e8f0;
+            --font-scale: 1;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a202c;
+            --text-main: #edf2f7;
+            --text-sub: #cbd5e0;
+            --card-bg: #2d3748;
+            --accent-color: #63b3ed;
+            --border-color: #4a5568;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            font-family: Georgia, "Times New Roman", "BiauKai", "DFKai-SB", "標楷體", serif;
+        }
+
+        /* 介面按鈕與 Header 保持防誤選 */
+        header {
+            height: 65px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            z-index: 20;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-main);
+            font-family: "BiauKai", "DFKai-SB", "標楷體", Georgia, serif;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60%;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .controls button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .controls button:hover {
+            background-color: var(--border-color);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow-y: auto;
+            padding: 15px 0;
+        }
+
+        .click-zone {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 8%;
+            z-index: 5;
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .click-left { left: 0; }
+        .click-right { right: 0; }
+
+        .card-container {
+            width: 95%;
+            max-width: 1200px;
+            margin: auto;
+            padding: 0 10px;
+            z-index: 10;
+            cursor: text;
+        }
+
+        .paragraph-box {
+            background-color: var(--card-bg);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        /* 💡 核心修復：明確開啟原生文字反白選取 */
+        .top-text {
+            font-size: calc(1.25rem * var(--font-scale));
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            font-weight: 500;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+
+        .bottom-text {
+            font-size: calc(1.15rem * var(--font-scale));
+            line-height: 1.6;
+            color: var(--text-sub);
+            border-top: 1px dashed var(--border-color);
+            padding-top: 18px;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+
+        .lang-zh {
+            font-size: calc(1.3rem * var(--font-scale));
+            line-height: 1.85;
+            font-family: "BiauKai", "DFKai-SB", "標楷體", "Songti TC", "PMingLiU", serif;
+        }
+
+        .lang-en {
+            font-size: calc(1.18rem * var(--font-scale));
+            line-height: 1.65;
+            font-family: Georgia, "Times New Roman", Garamond, serif;
+        }
+
+        footer {
+            height: 65px;
+            padding: 8px 25px;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
+            flex-shrink: 0;
+            z-index: 20;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--border-color);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.2s;
+        }
+
+        .footer-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-sub);
+        }
+
+        .nav-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 600px) {
+            .paragraph-box { padding: 20px; }
+            .card-container { width: 98%; }
+            .title { font-size: 1.05rem; max-width: 50%; }
+            .click-zone { width: 5%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="title">📖 歐．亨利《二十年後》雙語對照</div>
+        <div class="controls">
+            <button onclick="changeFontSize(-0.1)" title="縮小字體">A-</button>
+            <button onclick="changeFontSize(0.1)" title="放大字體">A+</button>
+            <button onclick="speakCurrent()">🔊 朗讀</button>
+            <button onclick="toggleDarkMode()">🌙 切換模式</button>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <div class="click-zone click-left" onclick="prevPage()"></div>
+        <div class="click-zone click-right" onclick="nextPage()"></div>
+
+        <div class="card-container">
+            <div class="paragraph-box">
+                <div class="top-text" id="top-text">載入中...</div>
+                <div class="bottom-text" id="bottom-text">...</div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="progress-bar-container" onclick="seekProgress(event)">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div class="footer-controls">
+            <button class="nav-btn" id="prev-btn" onclick="prevPage()">上一頁</button>
+            <span id="page-info">0 / 0</span>
+            <button class="nav-btn" id="next-btn" onclick="nextPage()">下一頁</button>
+        </div>
+    </footer>
+
+    <script>
+        const pages = [{"id": 1, "top": "THE POLICEMAN ON the beat moved up the avenue impressively. The impressiveness was habitual and not for show, for spectators were few. The time was barely 10 o'clock at night, but chilly gusts of wind with a taste of rain in them had well nigh depeopled the streets.", "top_lang": "en", "bottom": "巡邏的警官威風凜凜地沿著大道走著。這份威嚴是習慣使然，並非為了作秀，因為路上根本沒幾個路人。此時不過晚上十點，但夾雜著雨意的冷冽陣風，已讓街上幾乎空無一人。", "bottom_lang": "zh"}, {"id": 2, "top": "Trying doors as he went, twirling his club with many intricate and artful movements, turning now and then to cast his watchful eye adown the pacific thoroughfare, the officer, with his stalwart form and slight swagger, made a fine picture of a guardian of the peace. The vicinity was one that kept early hours. Now and then you might see the lights of a cigar store or of an all-night lunch counter; but the majority of the doors belonged to business places that had long since been closed.", "top_lang": "en", "bottom": "他邊走邊試著拉拉兩旁的店門，手裡以繁複而巧妙的手勢轉動著警棍，時不時轉過身，用警惕的目光掃視這條寧靜的街道。這位警官身材魁梧，步履帶著一絲神氣，活脫脫就是一個完美的和平守護者形象。這一帶的居民作息很早。此時偶爾還能看見雪茄店或通宵營業的小吃店亮著燈，但多數店鋪早已打烊，大門緊鎖。", "bottom_lang": "zh"}, {"id": 3, "top": "When about midway of a certain block the policeman suddenly slowed his walk. In the doorway of a darkened hardware store a man leaned, with an unlighted cigar in his mouth. As the policeman walked up to him the man spoke up quickly.", "top_lang": "en", "bottom": "走到某個路段中央時，警官突然放慢了腳步。在一家漆黑的五金行門口，靠著一個男人，嘴裡叼著一根沒點燃的雪茄。當警官朝他走去時，那人趕緊開口說話。", "bottom_lang": "zh"}, {"id": 4, "top": "“It's all right, officer,” he said, reassuringly. “I'm just waiting for a friend. It's an appointment made twenty years ago. Sounds a little funny to you, doesn't it? Well, I'll explain if you'd like to make certain it's all straight. About that long ago there used to be a restaurant where this store stands— ‘Big Joe’ Brady's restaurant.”", "top_lang": "en", "bottom": "「沒事的，警官，」他安撫似地說，「我只是在等一個朋友。這是個二十年前定下的約定。聽起來有點滑稽，對吧？如果您想確認一切正常，我可以解釋一下。大約二十年前，這家店的位置以前是一家餐廳——『大喬』布雷迪餐廳。」", "bottom_lang": "zh"}, {"id": 5, "top": "“Until five years ago,” said the policeman. “It was torn down then.”", "top_lang": "en", "bottom": "「開到五年前為止，」警官說，「那時候被拆掉了。」", "bottom_lang": "zh"}, {"id": 6, "top": "The man in the doorway struck a match and lit his cigar. The light showed a pale, square-jawed face with keen eyes, and a little white scar near his right eyebrow. His scarf pin was a large diamond, oddly set.", "top_lang": "en", "bottom": "門口的那人劃著一根火柴，點燃了雪茄。火光照亮了他那張蒼白、下顎寬闊的臉，他眼神銳利，右眉梢附近有一道小小的白色疤痕。他的領帶針上鑲著一顆大鑽石，樣式十分奇特。", "bottom_lang": "zh"}, {"id": 7, "top": "“Twenty years ago tonight,” said the man, “I dined here at ‘Big Joe’ Brady's with Jimmy Wells, my best chum, and the finest chap in the world. He and I were raised here in New York, just like two brothers, together. I was eighteen and Jimmy was twenty. The next morning I was to start for the West to make my fortune. You couldn't have dragged Jimmy out of New York; he thought it was the only place on earth. Well, we agreed that night that we would meet here again exactly twenty years from that date and time, no matter what our conditions might be or from what distance we might have to come. We figured that in twenty years each of us ought to have our destiny worked out and our fortunes made, whatever they were going to be.”", "top_lang": "en", "bottom": "「二十年前的今天晚上，」那人說，「我在這家『大喬』布雷迪餐廳，和吉米·威爾斯一起吃晚餐。他是我最好的死黨，也是世界上最棒的傢伙。我們倆在紐約一起長大，就像親兄弟一樣。那時我十八歲，吉米二十歲。隔天早上，我就要動身去西部闖蕩發財了。但你是怎麼也沒辦法把吉米拉出紐約的，他覺得這裡才是世界上唯一值得待的地方。總之，我們那天晚上約定好，正好在二十年後的此時此刻，不論我們境遇如何，也不管相隔多遠，我們都要在這裡重聚。我們心想，二十年的時間，足夠讓我們各自決定自己的命運，並闖出一番事業了，不管結果好壞。」", "bottom_lang": "zh"}, {"id": 8, "top": "“It sounds pretty interesting,” said the policeman. “Rather a long time between meets, though, it seems to me. Haven't you heard from your friend since you left?”", "top_lang": "en", "bottom": "「聽起來真有意思，」警官說，「不過在我看來，兩次見面的間隔未免太久了些。自從你離開後，就沒收到過你朋友的消息嗎？」", "bottom_lang": "zh"}, {"id": 9, "top": "“Well, yes, for a time we corresponded,” said the other. “But after a year or two we lost track of each other. You see, the West is a pretty big proposition, and I kept hustling around over it pretty lively. But I know Jimmy will meet me here if he's alive, for he always was the truest, staunchest old chap in the world. He'll never forget. I came a thousand miles to stand in this door tonight, and it's worth it if my old partner turns up.”", "top_lang": "en", "bottom": "「喔，有的，起初一兩年我們還通信，」那人說，「但一兩年後，我們就斷了聯絡。你知道，西部是個廣闊得讓人大有可為的地方，而我又在那兒不停地到處奔波。但我 know 吉米只要還活著，他就一定會來這裡和我碰面，因為他一直是世界上最忠實、最可靠的老夥伴。他絕對不會忘記的。我走了上千英里，今晚守在這個門口，只要我那老搭檔能出現，這一切就都值了。」", "bottom_lang": "en"}, {"id": 10, "top": "The waiting man pulled out a handsome watch, the lids of it set with small diamonds.", "top_lang": "en", "bottom": "守候的男人掏出了一只精美的手錶，錶蓋上鑲著碎鑽。", "bottom_lang": "zh"}, {"id": 11, "top": "“Three minutes to ten,” he announced. “It was exactly ten o'clock when we parted here at the restaurant door.”", "top_lang": "en", "bottom": "「差三分十點，」他宣布，「當年我們在這家餐廳門口分手時，正好是十點整。」", "bottom_lang": "zh"}, {"id": 12, "top": "“Did pretty well out West, didn't you?” asked the policeman.", "top_lang": "en", "bottom": "「在西部混得挺不錯的吧？」警官問。", "bottom_lang": "zh"}, {"id": 13, "top": "“You bet! I hope Jimmy has done half as well. He was a kind of plodder, though, good fellow as he was. I've had to compete with some of the sharpest wits going to get my pile. A man gets in a groove in New York. It takes the West to put a razor-edge on him.”", "top_lang": "en", "bottom": "「那當然！我希望吉米能有我一半成功。不過他這人雖然好，卻是個墨守成規的人。為了賺到我這筆財富，我不得不和一些最精明的人明爭暗鬥。在紐約，人容易變得因循守舊。唯有西部，才能把一個人磨礪得像剃刀般鋒利。」", "bottom_lang": "zh"}, {"id": 14, "top": "The policeman twirled his club and took a step or two.", "top_lang": "en", "bottom": "警官轉了轉警棍，往前邁了兩步。", "bottom_lang": "zh"}, {"id": 15, "top": "“I'll be on my way. Hope your friend comes around all right. Going to call time on him sharp?”", "top_lang": "en", "bottom": "「我要繼續巡邏了。希望你的朋友能順利趕來。如果時間一到他沒來，你就要走嗎？」", "bottom_lang": "zh"}, {"id": 16, "top": "“I should say not!” said the other. “I'll give him half an hour at least. If Jimmy is alive on earth he'll be here by that time. So long, officer.”", "top_lang": "en", "bottom": "「當然不！」那人說，「我至少會多等他半個小時。如果吉米還活在這個世界上，那時候他一定已經到了。再見了，警官。」", "bottom_lang": "zh"}, {"id": 17, "top": "“Good-night, sir,” said the policeman, passing on along his beat, trying doors as he went.", "top_lang": "en", "bottom": "「晚安，先生，」警官說道，接著繼續他的巡邏，一路上依舊拉拉每扇門。", "bottom_lang": "zh"}, {"id": 18, "top": "There was now a fine, cold drizzle falling, and the wind had risen from its uncertain puffs into a steady blow. The few foot passengers astir in that quarter hurried dismally and silently along with coat collars turned high and pocketed hands. And in the door of the hardware store the man who had come a thousand miles to fill an appointment, uncertain almost to absurdity, with the friend of his youth, smoked his cigar and waited.", "top_lang": "en", "bottom": "此時，天空落下了冰冷綿密的細雨，風勢也從起初一陣陣的微風轉為持續的冷冽狂風。這一帶極少數還在街上活動的行人，此時都立起大衣領子，雙手插在口袋裡，一言不發、行色匆匆地走著，神情顯得有些淒涼。而在五金行門口，那個遠涉千里、只為與少年時代的好友履行一個荒唐到近乎不切實際之約定的男人，正抽著雪茄，靜靜等待。", "bottom_lang": "zh"}, {"id": 19, "top": "About twenty minutes he waited, and then a tall man in a long overcoat, with collar turned up to his ears, hurried across from the opposite side of the street. He went directly to the waiting man.", "top_lang": "en", "bottom": "他等了大約二十分鐘，這時，一個身穿長大衣、領子高高豎起遮住耳朵的高個子男人，急匆匆地從街道對面走了過來。他直奔等候的那人而去。", "bottom_lang": "zh"}, {"id": 20, "top": "“Is that you, Bob?” he asked, doubtfully.", "top_lang": "en", "bottom": "「是你嗎，鮑伯？」他有些遲疑地問。", "bottom_lang": "zh"}, {"id": 21, "top": "“Is that you, Jimmy Wells?” cried the man in the door.", "top_lang": "en", "bottom": "「是你嗎，吉米·威爾斯？」門口那人驚呼道。", "bottom_lang": "zh"}, {"id": 22, "top": "“Bless my heart!” exclaimed the new arrival, grasping both the other's hands with his own. “It's Bob, sure as fate. I was certain I'd find you here if you were still in existence. Well, well, well!—twenty years is a long time. The old restaurant's gone, Bob; I wish it had lasted, so we could have had another dinner there. How has the West treated you, old man?”", "top_lang": "en", "bottom": "「天哪！」剛到的那人驚呼道，雙手緊緊握住對方的雙手。「果然是鮑伯。我就知道，只要你還活著，就一定能在這裡找到你。哎呀，哎呀，哎呀！二十年可真長啊。老餐廳已經不在了，鮑伯。真希望它還開著，這樣我們就能在那裡再吃一頓晚餐了。你在西部混得怎麼樣，老兄？」", "bottom_lang": "zh"}, {"id": 23, "top": "“Bully; it has given me everything I asked it for. You've changed lots, Jimmy. I never thought you were so tall by two or three inches.”", "top_lang": "en", "bottom": "「棒極了，它給了我想要的一切。你變了好多，吉米。我以前可不記得你有這麼高，好像高了兩三英吋。」", "bottom_lang": "zh"}, {"id": 24, "top": "“Oh, I grew a bit after I was twenty.”", "top_lang": "en", "bottom": "「喔，我二十歲之後又長了一點。」", "bottom_lang": "zh"}, {"id": 25, "top": "“Doing well in New York, Jimmy?”", "top_lang": "en", "bottom": "「在紐約過得好嗎，吉米？」", "bottom_lang": "zh"}, {"id": 26, "top": "“Moderately. I have a position in one of the city departments. Come on, Bob; we'll go around to a place I know of, and have a good long talk about old times.”", "top_lang": "en", "bottom": "「還可以。我在市府的一個部門工作。走吧，鮑伯，我們去一個我知道的地方，好好聊聊過去的日子。」", "bottom_lang": "zh"}, {"id": 27, "top": "The two men started up the street, arm in arm. The man from the West, his egotism enlarged by success, was beginning to outline the history of his career. The other, submerged in his overcoat, listened with interest.", "top_lang": "en", "bottom": "兩人挽著手臂，沿著街道走去。那個來自西部的男人因成功而顯得有些自我膨脹，開始滔滔不絕地講述起自己的奮鬥史。而另一個裹在厚厚大衣裡的人，則饒有興致地傾聽著。", "bottom_lang": "zh"}, {"id": 28, "top": "At the corner stood a drug store, brilliant with electric lights. When they came into this glare each of them turned simultaneously to gaze upon the other's face.", "top_lang": "en", "bottom": "在轉角處有一家燈火通明的藥局。當他們走到這片明亮的燈光下時，兩人同時轉過身，凝視著對方的臉。", "bottom_lang": "zh"}, {"id": 29, "top": "The man from the West stopped suddenly and released his arm.", "top_lang": "en", "bottom": "來自西部的男人突然停下腳步，抽回了自己的手臂。", "bottom_lang": "zh"}, {"id": 30, "top": "“You're not Jimmy Wells,” he snapped. “Twenty years is a long time, but not long enough to change a man's nose from a Roman to a pug.”", "top_lang": "en", "bottom": "「你不是吉米·威爾斯，」他厲聲說道。「二十年確實很長，但也長不到能把一個人的高挺羅馬鼻變成塌鼻子。」", "bottom_lang": "zh"}, {"id": 31, "top": "“It sometimes changes a good man into a bad one,” said the tall man. “You've been under arrest for ten minutes, ‘Silky’ Bob. Chicago thinks you may have dropped over our way and wires us she wants to have a chat with you. Going quietly, are you? That's sensible. Now, before we go on to the station here's a note I was asked to hand you. You may read it here at the window. It's from Patrolman Wells.”", "top_lang": "en", "bottom": "「但二十年的時間，有時確實能把一個好人變成壞人，」高個子男人說。「你已經被捕十分鐘了，『絲滑』鮑伯。芝加哥那邊懷疑你溜到了我們這裡，並發來電報說想找你『聊聊』。你打算乖乖跟我走，對吧？這才明智。在我們去警局之前，這兒有一張別人託我轉交給你的便條。你可以在這扇窗戶底下看。這是巡警威爾斯寫給你的。」", "bottom_lang": "zh"}, {"id": 32, "top": "The man from the West unfolded the little piece of paper handed him. His hand was steady when he began to read, but it trembled a little by the time he had finished. The note was rather short.", "top_lang": "en", "bottom": "來自西部的男人展開遞給他的那張小紙條。剛開始讀時他的手還很穩，但讀完時，他的手已有些微微顫抖。便條相當簡短：", "bottom_lang": "zh"}, {"id": 33, "top": "Bob: I was at the appointed place on time. When you struck the match to light your cigar I saw it was the face of the man wanted in Chicago. Somehow I couldn't do it myself, so I went around and got a plainclothesman to do the job.", "top_lang": "en", "bottom": "鮑伯：", "bottom_lang": "zh"}, {"id": 34, "top": "JIMMY.", "top_lang": "en", "bottom": "我準時到了約定地點。當你劃火柴點雪茄時，我認出你就是芝加哥警方通緝的那張臉。不知怎的，我自己下不了手，所以我只好走開，找了一名便衣警察來執行任務。", "bottom_lang": "zh"}, {"id": 35, "top": "吉米", "top_lang": "zh", "bottom": "", "bottom_lang": "zh"}];
+        let currentIndex = 0;
+        let currentFontScale = parseFloat(localStorage.getItem('bilingual_font_scale')) || 1.0;
+
+        document.documentElement.style.setProperty('--font-scale', currentFontScale);
+
+        function changeFontSize(delta) {
+            currentFontScale = Math.min(Math.max(0.7, currentFontScale + delta), 1.8);
+            document.documentElement.style.setProperty('--font-scale', currentFontScale);
+            localStorage.setItem('bilingual_font_scale', currentFontScale);
+        }
+
+        function updatePage() {
+            if (!pages || pages.length === 0) return;
+
+            const page = pages[currentIndex];
+
+            const topEl = document.getElementById('top-text');
+            const bottomEl = document.getElementById('bottom-text');
+
+            topEl.innerText = page.top;
+            bottomEl.innerText = page.bottom;
+
+            topEl.className = 'top-text ' + (page.top_lang === 'zh' ? 'lang-zh' : 'lang-en');
+            bottomEl.className = 'bottom-text ' + (page.bottom_lang === 'zh' ? 'lang-zh' : 'lang-en');
+
+            document.getElementById('page-info').innerText = `${currentIndex + 1} / ${pages.length}`;
+
+            const progressPercent = ((currentIndex + 1) / pages.length) * 100;
+            document.getElementById('progress').style.width = `${progressPercent}%`;
+
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === pages.length - 1;
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function nextPage() {
+            if (currentIndex < pages.length - 1) {
+                currentIndex++;
+                updatePage();
+            }
+        }
+
+        function prevPage() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updatePage();
+            }
+        }
+
+        function seekProgress(e) {
+            const container = e.currentTarget;
+            const rect = container.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const percentage = clickX / width;
+            currentIndex = Math.floor(percentage * pages.length);
+            updatePage();
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function speakCurrent() {
+            if (!('speechSynthesis' in window)) {
+                alert('您的瀏覽器不支援語音朗讀');
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+
+            const page = pages[currentIndex];
+            let textToSpeak = null;
+            if (page.top_lang === 'en') {
+                textToSpeak = page.top;
+            } else if (page.bottom_lang === 'en') {
+                textToSpeak = page.bottom;
+            }
+
+            if (!textToSpeak) {
+                alert('這一段沒有偵測到英文內容可供朗讀');
+                return;
+            }
+
+            const sentences = textToSpeak.match(/[^.!?,;—]+(?:--|[^.!?,;—])*/g) || [textToSpeak];
+            let sentenceIndex = 0;
+
+            function speakNextSentence() {
+                if (sentenceIndex >= sentences.length) return;
+
+                const sentenceText = sentences[sentenceIndex].trim();
+                if (!sentenceText) {
+                    sentenceIndex++;
+                    speakNextSentence();
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(sentenceText);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+
+                const voices = window.speechSynthesis.getVoices();
+                const preferredVoice = voices.find(v =>
+                    v.lang.includes('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha'))
+                ) || voices.find(v => v.lang.startsWith('en'));
+
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+
+                utterance.onend = () => {
+                    sentenceIndex++;
+                    speakNextSentence();
+                };
+
+                utterance.onerror = () => {
+                    sentenceIndex++;
+                    speakNextSentence();
+                };
+
+                window.speechSynthesis.speak(utterance);
+            }
+
+            speakNextSentence();
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextPage();
+            } else if (e.key === 'ArrowLeft') {
+                prevPage();
+            }
+        });
+
+        updatePage();
+    </script>
+</body>
+</html>
