@@ -85,7 +85,6 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            white-space: nowrap;
         }
 
         .controls button:hover {
@@ -225,18 +224,6 @@
             .title { font-size: 1.05rem; max-width: 50%; }
             .click-zone { width: 5%; }
         }
-
-        /* 手機窄螢幕：隱藏按鈕文字說明，只留圖示，避免五個按鈕擠不下 */
-        @media (max-width: 480px) {
-            header { padding: 0 12px; }
-            .title { font-size: 0.9rem; max-width: 34%; }
-            .controls { gap: 3px; }
-            .controls button {
-                padding: 6px 8px;
-                font-size: 0.85rem;
-            }
-            .btn-label { display: none; }
-        }
     </style>
 </head>
 <body>
@@ -246,9 +233,8 @@
         <div class="controls">
             <button onclick="changeFontSize(-0.1)" title="縮小字體">A-</button>
             <button onclick="changeFontSize(0.1)" title="放大字體">A+</button>
-            <button onclick="speakCurrent()" title="朗讀">🔊<span class="btn-label"> 朗讀</span></button>
-            <button onclick="toggleDarkMode()" title="切換模式">🌙<span class="btn-label"> 切換模式</span></button>
-            <button id="fullscreenBtn" onclick="toggleFullscreen()" title="全螢幕">⛶<span class="btn-label"> 全螢幕</span></button>
+            <button onclick="speakCurrent()">🔊 朗讀</button>
+            <button onclick="toggleDarkMode()">🌙 切換模式</button>
         </div>
     </header>
 
@@ -342,24 +328,6 @@
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
         }
-
-        // 全螢幕切換：手動觸發才能生效，離開時（含系統手勢離開）按鈕文字會自動還原
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log('無法進入全螢幕:', err);
-                });
-            } else {
-                document.exitFullscreen();
-            }
-        }
-
-        document.addEventListener('fullscreenchange', () => {
-            const label = document.querySelector('#fullscreenBtn .btn-label');
-            if (label) {
-                label.textContent = document.fullscreenElement ? ' 離開全螢幕' : ' 全螢幕';
-            }
-        });
 
         function speakCurrent() {
             if (!('speechSynthesis' in window)) {
