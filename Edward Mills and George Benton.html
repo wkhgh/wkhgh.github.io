@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>馬克．吐溫《愛德華·米爾斯和喬治·本頓》</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-main: #2b2d42;
+            --text-sub: #4a5568;
+            --card-bg: #ffffff;
+            --accent-color: #3182ce;
+            --border-color: #e2e8f0;
+            --font-scale: 1;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a202c;
+            --text-main: #edf2f7;
+            --text-sub: #cbd5e0;
+            --card-bg: #2d3748;
+            --accent-color: #63b3ed;
+            --border-color: #4a5568;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            font-family: Georgia, "Times New Roman", "BiauKai", "DFKai-SB", "標楷體", serif;
+        }
+
+        header {
+            height: 65px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            z-index: 20;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-main);
+            font-family: "BiauKai", "DFKai-SB", "標楷體", Georgia, serif;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 45%;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .controls button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .controls button:hover {
+            background-color: var(--border-color);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow-y: auto;
+            padding: 15px 0;
+        }
+
+        .click-zone {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 8%;
+            z-index: 5;
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .click-left { left: 0; }
+        .click-right { right: 0; }
+
+        .card-container {
+            width: 95%;
+            max-width: 1200px;
+            margin: auto;
+            padding: 0 10px;
+            z-index: 10;
+            cursor: text;
+        }
+
+        .paragraph-box {
+            background-color: var(--card-bg);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        /* 每組「英文/中文」段落之間，用比較明顯的分隔區隔開 */
+        .pair-block {
+            margin-bottom: 28px;
+        }
+
+        .pair-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .pair-block + .pair-block {
+            padding-top: 28px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .top-text {
+            font-size: calc(1.25rem * var(--font-scale));
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            font-weight: 500;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+
+        .bottom-text {
+            font-size: calc(1.15rem * var(--font-scale));
+            line-height: 1.6;
+            color: var(--text-sub);
+            border-top: 1px dashed var(--border-color);
+            padding-top: 18px;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+
+        .lang-zh {
+            font-size: calc(1.3rem * var(--font-scale));
+            line-height: 1.85;
+            font-family: "BiauKai", "DFKai-SB", "標楷體", "Songti TC", "PMingLiU", serif;
+        }
+
+        .lang-en {
+            font-size: calc(1.18rem * var(--font-scale));
+            line-height: 1.65;
+            font-family: Georgia, "Times New Roman", Garamond, serif;
+        }
+
+        footer {
+            height: 65px;
+            padding: 8px 25px;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
+            flex-shrink: 0;
+            z-index: 20;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--border-color);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.2s;
+        }
+
+        .footer-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-sub);
+        }
+
+        .nav-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 600px) {
+            .paragraph-box { padding: 20px; }
+            .card-container { width: 98%; }
+            .title { font-size: 1.05rem; max-width: 40%; }
+            .click-zone { width: 5%; }
+        }
+
+        @media (max-width: 480px) {
+            header { padding: 0 10px; }
+            .title { font-size: 0.85rem; max-width: 28%; }
+            .controls { gap: 2px; }
+            .controls button {
+                padding: 5px 6px;
+                font-size: 0.82rem;
+            }
+            .btn-label { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MP3 聲音播放元件（預設完全不自動播放） -->
+    <audio id="audioPlayer" src="Edward Mills and George Benton.mp3" preload="none"></audio>
+
+    <header>
+        <div class="title">📖 馬克．吐溫《愛德華·米爾斯和喬治·本頓》</div>
+        <div class="controls">
+            <button onclick="changeFontSize(-0.1)" title="縮小字體">A-</button>
+            <button onclick="changeFontSize(0.1)" title="放大字體">A+</button>
+            <button onclick="speakCurrentPage()" title="朗讀">🔊<span class="btn-label"> 朗讀</span></button>
+            <button id="mp3Btn" onclick="toggleMp3Play()" title="全文 播放/暫停">🎧<span class="btn-label" id="mp3BtnLabel"> 全文</span></button>
+            <button onclick="toggleDarkMode()" title="切換">🌙<span class="btn-label"> 切換</span></button>
+            <button id="fullscreenBtn" onclick="toggleFullscreen()" title="全螢幕">⛶<span class="btn-label"> 全螢幕</span></button>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <div class="click-zone click-left" onclick="prevPage()"></div>
+        <div class="click-zone click-right" onclick="nextPage()"></div>
+
+        <div class="card-container">
+            <div class="paragraph-box" id="paragraph-box">
+                <!-- 每頁的多組段落會由 JS 動態插入 -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="progress-bar-container" onclick="seekProgress(event)">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div class="footer-controls">
+            <button class="nav-btn" id="prev-btn" onclick="prevPage()">上一頁</button>
+            <span id="page-info">0 / 0</span>
+            <button class="nav-btn" id="next-btn" onclick="nextPage()">下一頁</button>
+        </div>
+    </footer>
+
+    <script>
+        const pages = [{"id": 1, "paragraphs": [{"top": "These two were distantly related to each other -- seventh cousins, or something of that sort. While still babies they became orphans, and were adopted by the Brants, a childless couple, who quickly grew very fond of them. The Brants were always saying: \"Be pure, honest, sober, industrious, and considerate of others, and success in life is assured.\" The children heard this repeated some thousands of times before they understood it; they could repeat it themselves long before they could say the Lord's Prayer; it was painted over the nursery door, and was about the first thing they learned to read. It was destined to be the unswerving rule of Edward Mills's life. Sometimes the Brants changed the wording a little, and said: \"Be pure, honest, sober, industrious, considerate, and you will never lack friends.\"", "top_lang": "en", "bottom": "這兩個人有著遠房親戚關係——大約是表了七代的遠房表親之類。他們在襁褓中就成了孤兒，被一對無子女的布蘭特夫婦收養，夫婦倆很快就對他們疼愛有加。布蘭特夫婦總是說：「只要保持純潔、誠實、清醒、勤奮並體貼他人，一生便註定成功。」孩子們在理解這句話的意思之前，已經聽過成千上萬遍了；他們在會背誦《主禱文》很久以前，就已經能自己複述這句話；這句話被漆在育兒室的門楣上，也是他們最早學會閱讀的幾個字。這註定成為愛德華·米爾斯一生中矢志不渝的準則。有時，布蘭特夫婦會稍微改變一下措辭，說：「只要保持純潔、誠實、清醒、勤奮、體貼，你便永遠不缺朋友。」", "bottom_lang": "zh"}, {"top": "Baby Mills was a comfort to everybody about him. When he wanted candy and could not have it, he listened to reason, and contented himself without it. When Baby Benton wanted candy, he cried for it until he got it. Baby Mills took care of his toys; Baby Benton always destroyed his in a very brief time, and then made himself to insistently disagreeable that, in order to have peace in the house, little Edward was persuaded to yield up his play-things to him.", "top_lang": "en", "bottom": "嬰兒時期的米爾斯是身邊每個人的慰藉。當他想要糖果卻得不到時，他聽得進道理，沒有糖也能知足。而當嬰兒時期的班頓想要糖果時，他會大哭大鬧直到得逞為止。小米爾斯會愛惜自己的玩具；小班頓則總是在極短的時間內把玩具砸爛，然後吵鬧得令人難以忍受，以至於為了家中的清靜，大家不得不勸說小愛德華把自己的玩具讓給他。", "bottom_lang": "zh"}, {"top": "When the children were a little older, Georgie became a heavy expense in one respect: he took no care of his clothes; consequently, he shone frequently in new ones, with was not the case with Eddie. The boys grew apace. Eddie was an increasing comfort, Georgie an increasing solicitude. It was always sufficient to say, in answer to Eddie's petitions, \"I would rather you would not do it\"-meaning swimming, skating, picnicking, berrying, circusing, and all sorts of things which boys delight in. But NO answer was sufficient for Georgie; he had to be humored in his desires, or he would carry them with a high hand. Naturally, no boy got more swimming skating, berrying, and so forth than he; no body ever had a better time. The good Brants did not allow the boys to play out after nine in summer evenings; they were sent to bed at that hour; Eddie honorably remained, but Georgie usually slipped out of the window toward ten, and enjoyed himself until midnight. It seemed impossible to break Georgie of this bad habit, but the Brants managed it at last by hiring him, with apples and marbles, to stay in. The good Brants gave all their time and attention to vain endeavors to regulate Georgie; they said, with grateful tears in their eyes, that Eddie needed no efforts of theirs, he was so good, so considerate, and in all ways so perfect.", "top_lang": "en", "bottom": "孩子們稍大一些後，喬治在某一方面成了一筆沉重的開銷：他一點也不愛惜衣服，因此他經常穿著光鮮亮麗的新衣服，而艾迪卻非如此。兩個男孩漸漸長大。艾迪越來越讓人省心，喬治則越來越讓人憂慮。每當艾迪提出請求時，大人只需回答一句「我希望你別去」就足夠了——這指的是游泳、溜冰、野餐、採漿果、看馬戲等所有男孩子熱衷的活動。但對喬治來說，任何拒絕的回答都不管用；他必須在欲望上得到滿足，否則就會強行胡鬧。自然而然地，沒有哪個男孩比他更能盡情享受游泳、溜冰、採漿果之類的樂趣；也沒有人比他玩得更痛快。善良的布蘭特夫婦不允許孩子們在夏日夜晚九點後還在外面玩耍，到了那個時間，他們就被送去睡覺；艾迪總是規規矩矩地待在房裡，但喬治通常會在十點左右從窗口溜出去，一直痛快地玩到半夜。要改掉喬治這個壞習慣似乎是不可能的，但布蘭特夫婦最後總算想出了辦法：用蘋果和彈珠收買他，讓他乖乖待在家裡。善良的布蘭特夫婦把所有的時間和精力都花在徒勞地管教喬治上；他們眼含感激的淚水說，艾迪根本不需要他們操心，他是如此善良、如此體貼，在各方面都堪稱完美。", "bottom_lang": "zh"}, {"top": "By and by the boys were big enough to work, so they were apprenticed to a trade: Edward went voluntarily; George was coaxed and bribed. Edward worked hard and faithfully, and ceased to be an expense to the good Brants; they praised him, so did his master; but George ran away, and it cost Mr. Brant both money and trouble to hunt him up and get him back. By and by he ran away again -- more money and more trouble. He ran away a third time -- and stole a few things to carry with him. Trouble and expense for Mr. Brant once more; and, besides, it was with the greatest difficulty that he succeeded in persuading the master to let the youth go unprosecuted for the theft.", "top_lang": "en", "bottom": "漸漸地，男孩子們到了可以工作的年紀，於是被送去當學徒學手藝：愛德華是自願去的；喬治則是連哄帶騙、用好處誘惑才去的。愛德華工作勤奮忠實，不再是善良的布蘭特夫婦的負擔；夫婦倆稱讚他，他的師傅也稱讚他。但喬治卻逃跑了，布蘭特先生花了不少錢和精力才把他找回來。不久，他又逃跑了——這花去了更多的錢，帶來了更多的麻煩。他第三次逃跑時，還偷走了幾樣東西。這再次給布蘭特先生帶來了麻煩和開銷；而且，布蘭特先生費了九牛二虎之力，才說服師傅不對這個年輕人的偷竊行為提起起訴。", "bottom_lang": "zh"}]}, {"id": 2, "paragraphs": [{"top": "Edward worked steadily along, and in time became a full partner in his master's business. George did not improve; he kept the loving hearts of his aged benefactors full of trouble, and their hands full of inventive activities to protect him from ruin. Edward, as a boy, had interested himself in Sunday-schools, debating societies, penny missionary affairs, anti-tobacco organizations, anti-profanity associations, and all such things; as a man, he was a quiet but steady and reliable helper in the church, the temperance societies, and in all movements looking to the aiding and uplifting of men. This excited no remark, attracted no attention -- for it was his \"natural bent.\"", "top_lang": "en", "bottom": "愛德華腳踏實地地工作，久而久之成為了師傅店裡的合夥人。喬治則毫無長進；他讓年邁恩人那顆慈愛的心始終充滿憂慮，讓他們不得不絞盡腦汁採取各種手段來保護他不至於毀滅。愛德華在孩提時代就對主日學校、辯論社、募分錢傳教事務、禁菸組織、反粗口協會等各類事物感興趣；成年後，他是教會、禁酒協會以及所有旨在幫助和提升大眾的運動中，一位沉穩、堅定且可靠的助手。這並沒有引起任何輿論，也沒有吸引任何注意——因為這被視為他的「天性使然」。", "bottom_lang": "zh"}, {"top": "Finally, the old people died. The will testified their loving pride in Edward, and left their little property to George-because he \"needed it\"; whereas, \"owing to a bountiful Providence,\" such was not the case with Edward. The property was left to George conditionally: he must buy out Edward's partner with it; else it must go to a benevolent organization called the Prisoner's Friend Society. The old people left a letter, in which they begged their dear son Edward to take their place and watch over George, and help and shield him as they had done.", "top_lang": "en", "bottom": "最後，兩位老人去世了。遺囑證實了他們對愛德華充滿關愛的自豪，但他們卻把微薄的財產留給了喬治——因為他「需要它」；而「由於慷慨的天意」，愛德華並不需要。這筆財產是有條件地留給喬治的：他必須用這筆錢買下愛德華合夥人的股份；否則，這筆錢就得捐給一個名為「囚犯之友協會」的慈善組織。老人們留下一封信，在信中懇求他們親愛的兒子愛德華代替他們的位置，照看喬治，像他們以前那樣幫助和庇護他。", "bottom_lang": "zh"}, {"top": "Edward dutifully acquiesced, and George became his partner in the business. He was not a valuable partner: he had been meddling with drink before; he soon developed into a constant tippler now, and his flesh and eyes showed the fact unpleasantly. Edward had been courting a sweet and kindly spirited girl for some time. They loved each other dearly, and -- But about this period George began to haunt her tearfully and imploringly, and at last she went crying to Edward, and said her high and holy duty was plain before her-she must not let her own selfish desires interfere with it: she must marry \"poor George\" and \"reform him.\" It would break her heart, she knew it would, and so on; but duty was duty. So she married George, and Edward's heart came very near breaking, as well as her own. However, Edward recovered, and married another girl-a very excellent one she was, too.", "top_lang": "en", "bottom": "愛德華盡責地順從了，喬治於是成為了他在生意上的合夥人。他並不是一個有價值的合夥人：他以前就沾染了杯中物；此時很快就演變成一個整天醉醺醺的酒鬼，他的容貌和眼神都令人不快地顯露出這個事實。愛德華當時已經追求一位溫柔善良的姑娘好一段時間了。他們深深相愛，並且——但在這個時期，喬治開始含淚哀求地纏著她，最後她哭著去找愛德華，說她那崇高而神聖的職責已明擺在眼前——她絕不能讓自己自私的欲望阻礙了職責：她必須嫁給「可憐的喬治」來「感化他」。她知道這會令她心碎，諸如此類；但職責就是職責。於是她嫁給了喬治，而愛德華的心也差點碎了，她的心也是。不過，愛德華後來振作了起來，娶了另一個姑娘——一個同樣非常優秀的姑娘。", "bottom_lang": "zh"}, {"top": "Children came to both families. Mary did her honest best to reform her husband, but the contract was too large. George went on drinking, and by and by he fell to misusing her and the little ones sadly. A great many good people strove with George -- they were always at it, in fact -- but he calmly took such efforts as his due and their duty, and did not mend his ways. He added a vice, presently -- that of secret gambling. He got deeply in debt; he borrowed money on the firm's credit, as quietly as he could, and carried this system so far and so successfully that one morning the sheriff took possession of the establishment, and the two cousins found themselves penniless.", "top_lang": "en", "bottom": "兩個家庭都迎來了孩子。瑪麗盡了最大的努力去感化丈夫，但這項任務實在太艱巨了。喬治繼續酗酒，不久便開始殘酷地虐待她和孩子們。許多好心人試圖勸導喬治——事實上，他們一直在這麼做——但他卻泰然自若地將這些努力視為自己應得的待遇和他們的義務，絲毫不改邪歸正。不久，他又染上了一項惡習——暗中賭博。他債台高築，盡可能悄悄地利用公司的信用借錢，並且把這一套手段運用得非常成功且徹底，以至於一天早上，警長查封了店鋪，這兩位表兄弟發現自己變得一貧如洗。", "bottom_lang": "zh"}]}, {"id": 3, "paragraphs": [{"top": "Times were hard, now, and they grew worse. Edward moved his family into a garret, and walked the streets day and night, seeking work. He begged for it, but in was really not to be had. He was astonished to see how soon his face became unwelcome; he was astonished and hurt to see how quickly the ancient interest which people had had in him faded out and disappeared. Still, he MUST get work; so he swallowed his chagrin, and toiled on in search of it. At last he got a job of carrying bricks up a ladder in a hod, and was a grateful man in consequence; but after that NOBODY knew him or cared anything about him. He was not able to keep up his dues in the various moral organizations to which he belonged, and had to endure the sharp pain of seeing himself brought under the disgrace of suspension.", "top_lang": "en", "bottom": "日子此時變得很艱難，而且越來越糟。愛德華把家搬進了閣樓，日夜在街上奔波尋找工作。他懇求能有一份差事，但實在是無工可做。他驚訝地發現自己的面孔竟然這麼快就不受歡迎；他既震驚又受傷地看到，人們昔日對他的關切竟消逝得如此迅速。然而，他必須找到工作；於是他吞下委屈，繼續辛苦地尋覓。最後，他找到了一份用灰泥桶扛磚爬梯子的差事，並因此心存感激；但自那以後，再也沒有人認得他，也沒人在意他了。他無法按時繳納自己所屬的各個道德組織的會費，不得不默默承受被暫停會員資格的巨大恥辱與痛苦。", "bottom_lang": "zh"}, {"top": "But the faster Edward died out of public knowledge and interest, the faster George rose in them. He was found lying, ragged and drunk, in the gutter one morning. A member of the Ladies' Temperance Refuge fished him out, took him in hand, got up a subscription for him, kept him sober a whole week, then got a situation for him. An account of it was published.", "top_lang": "en", "bottom": "然而，愛德華在公眾視野和關切中消失得越快，喬治在其中的地位就提升得越迅速。一天早晨，他被發現衣衫襤褸、爛醉如泥地躺在水溝裡。「婦女禁酒收容所」的一名成員把他拉了出來，親自照料他，為他發起募捐，讓他保持了整整一星期的清醒，然後為他找到了一份工作。關於這件事的報導隨即發表了。", "bottom_lang": "zh"}, {"top": "General attention was thus drawn to the poor fellow, and a great many people came forward and helped him toward reform with their countenance and encouragement. He did not drink a drop for two months, and meantime was the pet of the good. Then he fell -- in the gutter; and there was general sorrow and lamentation. But the noble sisterhood rescued him again. They cleaned him up, they fed him, they listened to the mournful music of his repentances, they got him his situation again. An account of this, also, was published, and the town was drowned in happy tears over the re-restoration of the poor beast and struggling victim of the fatal bowl. A grand temperance revival was got up, and after some rousing speeches had been made the chairman said, impressively: \"We are not about to call for signers; and I think there is a spectacle in store for you which not many in this house will be able to view with dry eyes.\" There was an eloquent pause, and then George Benton, escorted by a red-sashed detachment of the Ladies of the Refuge, stepped forward upon the platform and signed the pledge. The air was rent with applause, and everybody cried for joy. Everybody wrung the hand of the new convert when the meeting was over; his salary was enlarged next day; he was the talk of the town, and its hero. An account of it was published.", "top_lang": "en", "bottom": "這個可憐的傢伙因此引起了廣泛的注意，許多人挺身而出，用他們的贊許和鼓勵來幫助他改過自新。他在兩個月內滴酒不沾，在此期間成了好人們的寵兒。接著他又墮落了——倒在水溝裡；這引起了公眾的悲傷與哀嘆。但高尚的姐妹會再次拯救了他。她們幫他洗乾淨，給他食物，聆聽他悲痛欲絕的懺悔，又幫他重新找到了工作。關於這件事的報導也發表了，整個小鎮都為這個可憐的畜生、這個在致命酒盞中掙扎的受害者的再次獲獲救而流下欣喜的淚水。一場盛大的禁酒復興運動隨之發起，在幾番激昂的演講之後，主席神色莊重地說：「我們現在不打算徵求簽名者；但我認為，接下來為大家呈獻的奇景，在這屋子裡恐怕沒有多少人能不流淚看下去。」在一段雄辯的停頓後，喬治·班頓在佩戴紅色飾帶的收容所婦女代表團的護送下，步上講台，在禁酒誓言上簽了字。現場掌聲雷動，每個人都流下了喜悅的淚水。集會結束後，每個人都緊握這位新皈依者（戒酒者）的手；第二天，他的薪水就增加了；他成了全鎮茶餘飯後的談資和英雄。關於這件事的報導也發表了。", "bottom_lang": "zh"}, {"top": "George Benton fell, regularly, every three months, but was faithfully rescued and wrought with, every time, and good situations were found for him. Finally, he was taken around the country lecturing, as a reformed drunkard, and he had great houses and did an immense amount of good.", "top_lang": "en", "bottom": "喬治·班頓每隔三個月就雷打不動地墮落一次，但每次都得到悉心營救和感化，並且每次都能找到好工作。最後，他以「戒酒成功者」的身分在全國巡迴演講，聽眾極多，成效斐然。", "bottom_lang": "zh"}]}, {"id": 4, "paragraphs": [{"top": "He was so popular at home, and so trusted -- during his sober intervals-that he was enabled to use the name of a principal citizen, and get a large sum of money at the bank. A mighty pressure was brought to bear to save him from the consequences of his forgery, and it was partially successful -- he was \"sent up\" for only two years. When, at the end of a year, the tireless efforts of the benevolent were crowned with success, and he emerged from the penitentiary with a pardon in his pocket, the Prisoner's Friend Society met him at the door with a situation and a comfortable salary, and all the other benevolent people came forward and gave him advice, encouragement and help. Edward Mills had once applied to the Prisoner's Friend Society for a situation, when in dire need, but the question, \"Have you been a prisoner?\" made brief work of his case.", "top_lang": "en", "bottom": "他在家鄉極受歡迎，並且——在他清醒的期間——深受信任，以至於他得以冒用一位當地顯要市民的名字，在銀行領取了一大筆錢。為了使他免受偽造文書罪的懲罰，各方施加了巨大的壓力，且獲得了部分成功——他僅僅被「判刑」兩年。一年後，在慈善人士不懈的努力下，他們終於取得成功，他帶著特赦令走出了監獄，而「囚犯之友協會」已在門口迎候，為他提供了一份工作和優渥的薪水，其他慈善人士也紛紛上前，給予他建議、鼓勵和幫助。愛德華·米爾斯曾因生活陷入絕境而向「囚犯之友協會」申請過一份工作，但一句「你坐過牢嗎？」便讓他的申請立刻泡湯。", "bottom_lang": "zh"}, {"top": "While all these things were going on, Edward Mills had been quietly making head against adversity. He was still poor, but was in receipt of a steady and sufficient salary, as the respected and trusted cashier of a bank. George Benton never came near him, and was never heard to inquire about him. George got to indulging in long absences from the town; there were ill reports about him, but nothing definite.", "top_lang": "en", "bottom": "在這些事情發生的同時，愛德華·米爾斯一直在默默地與逆境抗爭。他依然貧窮，但作為一家受人尊敬與信任的銀行出納員，他能拿到一份穩定且足以糊口的薪水。喬治·班頓從未靠近過他，也從未聽說他打聽過愛德華的消息。喬治開始頻繁且長期地離開小鎮；有一些關於他的不好傳聞，但都沒有確鑿的證據。", "bottom_lang": "zh"}, {"top": "One winter's night some masked burglars forced their way into the bank, and found Edward Mills there alone. They commanded him to reveal the \"combination,\" so that they could get into the safe. He refused. They threatened his life. He said his employers trusted him, and he could not be traitor to that trust. He could die, if he must, but while he lived he would be faithful; he would not yield up the \"combination.\" The burglars killed him.", "top_lang": "en", "bottom": "在一個冬夜，幾名戴著面具的強盜闖入銀行，發現只有愛德華·米爾斯一個人在那裡。他們命令他交出密碼，以便打開保險箱。他拒絕了。他們威脅要他的命。他說雇主信任他，他不能背叛這份信任。如果必須死，他可以接受，但只要他活著，他就必須忠誠；他絕不交出密碼。強盜們殺了他。", "bottom_lang": "zh"}, {"top": "The detectives hunted down the criminals; the chief one proved to be George Benton. A wide sympathy was felt for the widow and orphans of the dead man, and all the newspapers in the land begged that all the banks in the land would testify their appreciation of the fidelity and heroism of the murdered cashier by coming forward with a generous contribution of money in aid of his family, now bereft of support. The result was a mass of solid cash amounting to upward of five hundred dollars -- an average of nearly three-eights of a cent for each bank in the Union. The cashier's own bank testified its gratitude by endeavoring to show (but humiliatingly failed in it) that the peerless servant's accounts were not square, and that he himself had knocked his brains out with a bludgeon to escape detection and punishment.", "top_lang": "en", "bottom": "偵探們追捕到了罪犯；主謀證實就是喬治·班頓。全國對死者的遺孀和孤兒表示了廣泛的同情，全國所有的報紙都呼籲全國所有的銀行共同出資，慷慨解囊，以資助這個失去了經濟支柱的家庭，以此證明他們對被殺出納員的忠誠與英勇的讚賞。結果募得了一大筆現金，總額高達五百多美元——相當於聯邦內每家銀行平均捐款近八分之三個美分。出納員自己所在的銀行則試圖透過證明（但丟臉地失敗了）這位無可匹敵的員工帳目不合，且他是自己用短棍砸碎腦袋自殺以逃避察覺和懲罰，來表達他們的感激之情。", "bottom_lang": "zh"}]}, {"id": 5, "paragraphs": [{"top": "George Benton was arraigned for trial. Then everybody seemed to forget the widow and orphans in their solicitude for poor George. Everything that money and influence could do was done to save him, but it all failed; he was sentenced to death. Straightway the Governor was besieged with petitions for commutation or pardon; they were brought by tearful young girls; by sorrowful old maids; by deputations of pathetic widows; by shoals of impressive orphans. But no, the Governor -- for once -- would not yield.", "top_lang": "en", "bottom": "喬治·班頓被提審受審。這時，大家似乎都忘記了那對遺孀和孤兒，反而對「可憐的喬治」充滿了憂慮。凡是金錢和勢力所能及的一切都被用來挽救他，但都失敗了；他被判處死刑。州長隨即被請求減刑或特赦的請願書包圍；遞交請願書的有淚流滿面的年輕姑娘、有悲傷的單身老女人、有令人同情的寡婦代表團、還有成群結隊、令人動容的孤兒。但是，州長——僅此一次——沒有屈服。", "bottom_lang": "zh"}, {"top": "Now George Benton experienced religion. The glad news flew all around. From that time forth his cell was always full of girls and women and fresh flowers; all the day long there was prayer, and hymn-singing, and thanksgiving, and homilies, and tears, with never an interruption, except an occasional five-minute intermission for refreshments.", "top_lang": "en", "bottom": "這時，喬治·班頓「蒙恩信教」了。這一喜訊傳遍了四方。從那時起，他的牢房裡總是擠滿了姑娘和婦女，擺滿了鮮花；整天都在祈禱、唱聖歌、感恩、說教和流淚，從未間斷，除了偶爾有五分鐘的茶點休息時間。", "bottom_lang": "zh"}, {"top": "This sort of thing continued up to the very gallows, and George Benton went proudly home, in the black cap, before a wailing audience of the sweetest and best that the region could produce. His grave had fresh flowers on it every day, for a while, and the head-stone bore these words, under a hand pointing aloft: \"He has fought the good fight.\"", "top_lang": "en", "bottom": "這種情況一直持續到他走上絞刑架。喬治·班頓戴著黑色的面罩，在該地區最甜美、最優秀的一群痛哭流涕的聽眾面前，自豪地走上了不歸路。有一段時間，他的墓前每天都有鮮花，墓碑在一個指向天空的手勢下刻著這句話：「那美好的仗他已經打過了。」", "bottom_lang": "zh"}, {"top": "The brave cashier's head-stone has this inscription: \"Be pure, honest, sober, industrious, considerate, and you will never --\"", "top_lang": "en", "bottom": "那位勇敢的出納員的墓碑上則刻著這樣的話：「只要保持純潔、誠實、清醒、勤奮、體貼，你便永遠不——」", "bottom_lang": "zh"}]}, {"id": 6, "paragraphs": [{"top": "Nobody knows who gave the order to leave it that way, but it was so given.", "top_lang": "en", "bottom": "沒有人知道是誰下令讓碑文停在那裡的，但命令確實是這麼下的。", "bottom_lang": "zh"}]}];
+        let currentIndex = 0;
+        let currentFontScale = parseFloat(localStorage.getItem('bilingual_font_scale')) || 1.0;
+        const audioPlayer = document.getElementById('audioPlayer');
+
+        document.documentElement.style.setProperty('--font-scale', currentFontScale);
+
+        function changeFontSize(delta) {
+            currentFontScale = Math.min(Math.max(0.7, currentFontScale + delta), 1.8);
+            document.documentElement.style.setProperty('--font-scale', currentFontScale);
+            localStorage.setItem('bilingual_font_scale', currentFontScale);
+        }
+
+        function updatePage() {
+            if (!pages || pages.length === 0) return;
+
+            const page = pages[currentIndex];
+            const container = document.getElementById('paragraph-box');
+            container.innerHTML = '';
+
+            page.paragraphs.forEach(pair => {
+                const block = document.createElement('div');
+                block.className = 'pair-block';
+
+                const topEl = document.createElement('div');
+                topEl.className = 'top-text ' + (pair.top_lang === 'zh' ? 'lang-zh' : 'lang-en');
+                topEl.innerText = pair.top;
+
+                const bottomEl = document.createElement('div');
+                bottomEl.className = 'bottom-text ' + (pair.bottom_lang === 'zh' ? 'lang-zh' : 'lang-en');
+                bottomEl.innerText = pair.bottom;
+
+                block.appendChild(topEl);
+                block.appendChild(bottomEl);
+                container.appendChild(block);
+            });
+
+            document.getElementById('page-info').innerText = `${currentIndex + 1} / ${pages.length}`;
+
+            const progressPercent = ((currentIndex + 1) / pages.length) * 100;
+            document.getElementById('progress').style.width = `${progressPercent}%`;
+
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === pages.length - 1;
+
+            document.getElementById('main-content').scrollTop = 0;
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function nextPage() {
+            if (currentIndex < pages.length - 1) {
+                currentIndex++;
+                updatePage();
+            }
+        }
+
+        function prevPage() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updatePage();
+            }
+        }
+
+        function seekProgress(e) {
+            const container = e.currentTarget;
+            const rect = container.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const percentage = clickX / width;
+            currentIndex = Math.floor(percentage * pages.length);
+            updatePage();
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('無法進入全螢幕:', err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const label = document.querySelector('#fullscreenBtn .btn-label');
+            if (label) {
+                label.textContent = document.fullscreenElement ? ' 離開全螢幕' : ' 全螢幕';
+            }
+        });
+
+        // 🎧 全文 MP3 手動播放 / 暫停控制
+        function toggleMp3Play() {
+            const label = document.getElementById('mp3BtnLabel');
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // 停止單頁 TTS 朗讀
+            }
+
+            if (audioPlayer.paused) {
+                audioPlayer.play().then(() => {
+                    label.textContent = " 暫停";
+                }).catch(err => {
+                    alert('未找到全文 MP3 檔案，請確認音訊檔已放入資料夾。');
+                });
+            } else {
+                audioPlayer.pause();
+                label.textContent = " 全文";
+            }
+        }
+
+        audioPlayer.onended = function() {
+            document.getElementById('mp3BtnLabel').textContent = " 全文MP3";
+        };
+
+        // 🔊 朗讀目前這一頁（會把頁面內所有偵測到的英文段落依序唸出）
+        function speakCurrentPage() {
+            if (audioPlayer && !audioPlayer.paused) {
+                audioPlayer.pause();
+                document.getElementById('mp3BtnLabel').textContent = " 全文MP3";
+            }
+
+            if (!('speechSynthesis' in window)) {
+                alert('您的瀏覽器不支援語音朗讀');
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+
+            const page = pages[currentIndex];
+            const textToSpeak = page.paragraphs
+                .map(pair => {
+                    if (pair.top_lang === 'en') return pair.top;
+                    if (pair.bottom_lang === 'en') return pair.bottom;
+                    return null;
+                })
+                .filter(t => t)
+                .join(' ');
+
+            if (!textToSpeak) {
+                alert('這一頁沒有偵測到英文內容可供朗讀');
+                return;
+            }
+
+            const sentences = textToSpeak.match(/[^.!?,;—]+(?:--|[^.!?,;—])*/g) || [textToSpeak];
+            let sentenceIndex = 0;
+
+            function speakNextSentence() {
+                if (sentenceIndex >= sentences.length) return;
+
+                const sentenceText = sentences[sentenceIndex].trim();
+                if (!sentenceText) {
+                    sentenceIndex++;
+                    speakNextSentence();
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(sentenceText);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+
+                const voices = window.speechSynthesis.getVoices();
+                const preferredVoice = voices.find(v =>
+                    v.lang.includes('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha'))
+                ) || voices.find(v => v.lang.startsWith('en'));
+
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+
+                utterance.onend = () => {
+                    sentenceIndex++;
+                    speakNextSentence();
+                };
+
+                utterance.onerror = () => {
+                    sentenceIndex++;
+                    speakNextSentence();
+                };
+
+                window.speechSynthesis.speak(utterance);
+            }
+
+            speakNextSentence();
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextPage();
+            } else if (e.key === 'ArrowLeft') {
+                prevPage();
+            }
+        });
+
+        updatePage();
+    </script>
+</body>
+</html>

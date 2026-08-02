@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>馬克．吐溫《競選州長》</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-main: #2b2d42;
+            --text-sub: #4a5568;
+            --card-bg: #ffffff;
+            --accent-color: #3182ce;
+            --border-color: #e2e8f0;
+            --font-scale: 1;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a202c;
+            --text-main: #edf2f7;
+            --text-sub: #cbd5e0;
+            --card-bg: #2d3748;
+            --accent-color: #63b3ed;
+            --border-color: #4a5568;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            font-family: Georgia, "Times New Roman", "BiauKai", "DFKai-SB", "標楷體", serif;
+        }
+
+        header {
+            height: 65px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            z-index: 20;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-main);
+            font-family: "BiauKai", "DFKai-SB", "標楷體", Georgia, serif;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 45%;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .controls button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .controls button:hover {
+            background-color: var(--border-color);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow-y: auto;
+            padding: 15px 0;
+        }
+
+        .click-zone {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 8%;
+            z-index: 5;
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .click-left { left: 0; }
+        .click-right { right: 0; }
+
+        .card-container {
+            width: 95%;
+            max-width: 1200px;
+            margin: auto;
+            padding: 0 10px;
+            z-index: 10;
+            cursor: text;
+        }
+
+        .paragraph-box {
+            background-color: var(--card-bg);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        /* 每組「英文/中文」段落之間，用比較明顯的分隔區隔開 */
+        .pair-block {
+            margin-bottom: 28px;
+        }
+
+        .pair-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .pair-block + .pair-block {
+            padding-top: 28px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .top-text {
+            font-size: calc(1.25rem * var(--font-scale));
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            font-weight: 500;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+
+        .bottom-text {
+            font-size: calc(1.15rem * var(--font-scale));
+            line-height: 1.6;
+            color: var(--text-sub);
+            border-top: 1px dashed var(--border-color);
+            padding-top: 18px;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+
+        .lang-zh {
+            font-size: calc(1.3rem * var(--font-scale));
+            line-height: 1.85;
+            font-family: "BiauKai", "DFKai-SB", "標楷體", "Songti TC", "PMingLiU", serif;
+        }
+
+        .lang-en {
+            font-size: calc(1.18rem * var(--font-scale));
+            line-height: 1.65;
+            font-family: Georgia, "Times New Roman", Garamond, serif;
+        }
+
+        footer {
+            height: 65px;
+            padding: 8px 25px;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
+            flex-shrink: 0;
+            z-index: 20;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--border-color);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.2s;
+        }
+
+        .footer-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-sub);
+        }
+
+        .nav-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 600px) {
+            .paragraph-box { padding: 20px; }
+            .card-container { width: 98%; }
+            .title { font-size: 1.05rem; max-width: 40%; }
+            .click-zone { width: 5%; }
+        }
+
+        @media (max-width: 480px) {
+            header { padding: 0 10px; }
+            .title { font-size: 0.85rem; max-width: 28%; }
+            .controls { gap: 2px; }
+            .controls button {
+                padding: 5px 6px;
+                font-size: 0.82rem;
+            }
+            .btn-label { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MP3 聲音播放元件（預設完全不自動播放） -->
+    <audio id="audioPlayer" src="Running for Governor.mp3" preload="none"></audio>
+
+    <header>
+        <div class="title">📖 馬克．吐溫《競選州長》</div>
+        <div class="controls">
+            <button onclick="changeFontSize(-0.1)" title="縮小字體">A-</button>
+            <button onclick="changeFontSize(0.1)" title="放大字體">A+</button>
+            <button onclick="speakCurrentPage()" title="朗讀">🔊<span class="btn-label"> 朗讀</span></button>
+            <button id="mp3Btn" onclick="toggleMp3Play()" title="全文 播放/暫停">🎧<span class="btn-label" id="mp3BtnLabel"> 全文</span></button>
+            <button onclick="toggleDarkMode()" title="切換">🌙<span class="btn-label"> 切換</span></button>
+            <button id="fullscreenBtn" onclick="toggleFullscreen()" title="全螢幕">⛶<span class="btn-label"> 全螢幕</span></button>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <div class="click-zone click-left" onclick="prevPage()"></div>
+        <div class="click-zone click-right" onclick="nextPage()"></div>
+
+        <div class="card-container">
+            <div class="paragraph-box" id="paragraph-box">
+                <!-- 每頁的多組段落會由 JS 動態插入 -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="progress-bar-container" onclick="seekProgress(event)">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div class="footer-controls">
+            <button class="nav-btn" id="prev-btn" onclick="prevPage()">上一頁</button>
+            <span id="page-info">0 / 0</span>
+            <button class="nav-btn" id="next-btn" onclick="nextPage()">下一頁</button>
+        </div>
+    </footer>
+
+    <script>
+        const pages = [{"id": 1, "paragraphs": [{"top": "A few months ago I was nominated for Governor of the great state of New York, to run against Mr. John T. Smith and Mr. Blank J. Blank on an independent ticket. I somehow felt that I had one prominent advantage over these gentlemen, and that was—good character. It was easy to see by the newspapers that if ever they had known what it was to bear a good name, that time had gone by. It was plain that in these latter years they had become familiar with all manner of shameful crimes. But at the very moment that I was exalting my advantage and joying in it in secret, there was a muddy undercurrent of discomfort “riling” the deeps of my happiness, and that was—the having to hear my name bandied about in familiar connection with those of such people. I grew more and more disturbed. Finally I wrote my grandmother about it. Her answer came quick and sharp. She said:", "top_lang": "en", "bottom": "幾個月前，我被提名為偉大的紐約州州長候選人，以無黨籍身份與約翰·T·史密斯先生（Mr. John T. Smith）及空白·J·空白先生（Mr. Blank J. Blank）同台競爭。我總覺得自己比這兩位紳士有一個顯著的優勢，那就是——良好的品格。從報紙上很容易看出，如果他們曾經知道什麼叫名聲清白，那日子也早已一去不復返了。很明顯，近年來他們對各種可恥的罪行已經是家常便飯。然而，正當我為自己的優勢沾沾自喜、暗自高興時，一股令人不安的渾濁暗流卻在攪擾著我深沉的幸福，那就是——我不得不聽到自己的名字與這類人的名字糾纏在一起，被大家指指點點。我變得越來越不安。最後，我給祖母寫了一封信。她的回信既迅速又犀利。她寫道：", "bottom_lang": "zh"}, {"top": "You have never done one single thing in all your life to be ashamed of—not one. Look at the newspapers—look at them and comprehend what sort of characters Messrs. Smith and Blank are, and then see if you are willing to lower yourself to their level and enter a public canvass with them.", "top_lang": "en", "bottom": "「你這輩子從未做過一件見不得人的事——半件也沒有。瞧瞧那些報紙——好好瞧瞧，看清史密斯和空白這兩位先生究竟是什麼貨色，然後看看你是否願意自貶身價，降到與他們同等的水平，去和他們一起參與公開競選。」", "bottom_lang": "zh"}, {"top": "It was my very thought! I did not sleep a single moment that night. But, after all, I could not recede.", "top_lang": "en", "bottom": "這正合我意！那天晚上我徹夜未眠。但無論如何，我已經無法退縮了。", "bottom_lang": "zh"}, {"top": "I was fully committed, and must go on with the fight. As I was looking listlessly over the papers at breakfast I came across this paragraph, and I may truly say I never was so confounded before.", "top_lang": "en", "bottom": "我已全身心投入，必須繼續戰鬥。早餐時，當我百無聊賴地翻看報紙時，看到了下面這段文字。老實說，我一生中從未如此驚愕過。", "bottom_lang": "zh"}]}, {"id": 2, "paragraphs": [{"top": "PERJURY.—Perhaps, now that Mr. Mark Twain is before the people as a candidate for Governor, he will condescend to explain how he came to be convicted of perjury by thirty-four witnesses in Wakawak, Cochin China, in 1863, the intent of which perjury being to rob a poor native widow and her helpless family of a meager plantain-patch, their only stay and support in their bereavement and desolation. Mr. Twain owes it to himself, as well as to the great people whose suffrages he asks, to clear this matter up. Will he do it?", "top_lang": "en", "bottom": "> **偽證罪。**——既然馬克·吐溫先生現在以州長候選人的身份站在大眾面前，也許他能屈尊解釋一下，他在1863年於交趾支那（Cochin China）的瓦卡瓦卡（Wakawak），是如何被三十四名證人指控並判定犯下偽證罪的？該偽證意在強奪一位貧苦的當地寡婦及其無助家庭的一小片香蕉園，那是她們在喪親與孤苦之中的唯一依靠與生計。吐溫先生無論是對他自己，還是對他所爭取其選票的偉大人民，都理應把這件事交代清楚。他會這麼做嗎？", "bottom_lang": "zh"}, {"top": "I thought I should burst with amazement! Such a cruel, heartless charge! I never had seen Cochin China! I never had heard of Wakawak! I didn’t know a plantain-patch from a kangaroo! I did not know what to do. I was crazed and helpless. I let the day slip away without doing anything at all. The next morning the same paper had this—nothing more:", "top_lang": "en", "bottom": "我差點氣得原地爆炸！如此殘酷、無情的指控！我根本沒去過交趾支那！我也從未聽說過瓦卡瓦卡！我甚至連香蕉園和袋鼠都分不清楚！我不知道該怎麼辦。我快瘋了，束手無策。那一天就這樣在毫無作為中溜走了。第二天早上，同一家報紙登出了這條消息——僅此而已：", "bottom_lang": "zh"}, {"top": "SIGNIFICANT.—Mr. Twain, it will be observed, is suggestively silent about the Cochin China perjury.", "top_lang": "en", "bottom": "> **意味深長。**——大家會注意到，吐溫先生對交趾支那的偽證案保持了耐人尋味的沉默。", "bottom_lang": "zh"}, {"top": "[Mem.—During the rest of the campaign this paper never referred to me in any other way than as “the infamous perjurer Twain.”]", "top_lang": "en", "bottom": "［備忘：在接下來的整個競選活動中，這家報紙在提到我時，一律稱我為「聲名狼藉的偽證犯吐溫」。］", "bottom_lang": "zh"}]}, {"id": 3, "paragraphs": [{"top": "Next came the Gazette, with this:", "top_lang": "en", "bottom": "接著是《公報》，刊登了以下內容：", "bottom_lang": "zh"}, {"top": "WANTED TO KNOW.—Will the new candidate for Governor deign to explain to certain of his fellow-citizens (who are suffering to vote for him!) the little circumstance of his cabin-mates in Montana losing small valuables from time to time, until at last, these things having been invariably found on Mr. Twain’s person or in his “trunk” (newspaper he rolled his traps in), they felt compelled to give him a friendly admonition for his own good, and so tarred and feathered him, and rode him on a rail; and then advised him to leave a permanent vacuum in the place he usually occupied in the camp. Will he do this?", "top_lang": "en", "bottom": "> **敬祈釋疑。**——這位新任州長候選人是否願意紆尊降貴，向某些急著想投票給他的同胞市民，解釋一下他在蒙大拿州時的一樁小插曲？當時與他同住一間木屋的室友們時常遺失一些小貴重物品，直到最後，這些東西無一例外地在吐溫先生身上或他的「行李箱」（其實是他用來裹行李的報紙）裡被搜出。室友們為了他好，不得不給他一次友好的警告，於是對他處以塗焦油和貼羽毛的私刑，並讓他騎在圓木上游街；隨後建議他從營地中永久消失。他願意解釋這件事嗎？", "bottom_lang": "zh"}, {"top": "Could anything be more deliberately malicious than that? For I never was in Montana in my life.", "top_lang": "en", "bottom": "還有比這更蓄意的惡毒中傷嗎？因為我這輩子根本就沒去過蒙大拿。", "bottom_lang": "zh"}, {"top": "[After this, this journal customarily spoke of me as, “Twain, the Montana Thief.”]", "top_lang": "en", "bottom": "［此後，這家報章慣常稱我為「蒙大拿小偷吐溫」。］", "bottom_lang": "zh"}]}, {"id": 4, "paragraphs": [{"top": "I got to picking up papers apprehensively—much as one would lift a desired blanket which he had some idea might have a rattlesnake under it. One day this met my eye:", "top_lang": "en", "bottom": "我開始心驚肉跳地拿起報紙——那感覺就像去掀一張急需的毯子，卻又懷疑底下可能藏著一條響尾蛇。一天，以下這段文字映入眼簾：", "bottom_lang": "zh"}, {"top": "THE LIE NAILED.—By the sworn affidavits of Michael O’Flanagan, Esq., of the Five Points, and Mr. Snub Rafferty and Mr. Catty Mulligan, of Water Street, it is established that Mr. Mark Twain’s vile statement that the lamented grandfather of our noble standard-bearer, Blank J. Blank, was hanged for highway robbery, is a brutal and gratuitous LIE, without a shadow of foundation in fact. It is disheartening to virtuous men to see such shameful means resorted to to achieve political success as the attacking of the dead in their graves, and defiling their honored names with slander. When we think of the anguish this miserable falsehood must cause the innocent relatives and friends of the deceased, we are almost driven to incite an outraged and insulted public to summary and unlawful vengeance upon the traducer. But no! let us leave him to the agony of a lacerated conscience (though if passion should get the better of the public, and in its blind fury they should do the traducer bodily injury, it is but too obvious that no jury could convict and no court punish the perpetrators of the deed).", "top_lang": "en", "bottom": "> **謊言被揭穿。**——根據五點區（Five Points）的麥可·奧弗拉納根先生（Michael O’Flanagan, Esq.），以及沃特街（Water Street）的斯納布·拉弗蒂先生（Mr. Snub Rafferty）與凱蒂·馬利根先生（Mr. Catty Mulligan）的宣誓書，現已證實：馬克·吐溫先生所聲稱的我方高尚領袖空白·J·空白（Blank J. Blank）那令人哀悼的祖父因攔路搶劫而被處以絞刑的卑劣說法，純屬粗暴、無端且毫無事實根據的謊言。對於有德之士而言，看到有人為了政治利益而採取如此可恥的手段，甚至攻擊九泉之下的死者、用誹謗玷污他們受人尊敬的名字，著實令人寒心。當我們想到這個可悲的謊言會給死者無辜的親友帶來多大的痛苦時，我們幾乎忍不住要煽動憤怒和受辱的公眾對這個誹謗者進行即時且法外的報復。然而，不！讓我們將他留給良心備受折磨的痛苦吧（不過，如果公眾一時衝動，在盲目的憤怒中對這名誹謗者造成身體上的傷害，顯而易見，沒有任何陪審團會宣判有罪，也沒有任何法庭會懲罰這些施暴者）。", "bottom_lang": "zh"}, {"top": "The ingenious closing sentence had the effect of moving me out of bed with despatch that night, and out at the back door also, while the “outraged and insulted public” surged in the front way, breaking furniture and windows in their righteous indignation as they came, and taking off such property as they could carry when they went. And yet I can lay my hand upon the Book and say that I never slandered Mr. Blank’s grandfather. More: I had never even heard of him or mentioned him up to that day and date.", "top_lang": "en", "bottom": "這段精妙的結尾產生了奇效，當晚我便麻利地滾下床，迅速從後門開溜。與此同時，「憤怒而受辱的公眾」從前門湧入，在義憤填膺中砸碎了家具和窗戶，並在離開時順手牽羊，帶走了所有拿得動的財物。然而，我敢按著《聖經》發誓，我從未誹謗過空白先生的祖父。更有甚者：在那天之前，我甚至連聽都沒聽說過他，更別提提起他了。", "bottom_lang": "zh"}, {"top": "[I will state, in passing, that the journal above quoted from always referred to me afterward as “Twain, the Body-Snatcher.”]", "top_lang": "en", "bottom": "［順便提一句，上述引用的那家報章此後便一直稱我為「盜墓賊吐溫」。］", "bottom_lang": "zh"}]}, {"id": 5, "paragraphs": [{"top": "The next newspaper article that attracted my attention was the following:", "top_lang": "en", "bottom": "接下來引起我注意的報紙文章如下：", "bottom_lang": "zh"}, {"top": "A SWEET CANDIDATE.—Mr. Mark Twain, who was to make such a blighting speech at the mass-meeting of the Independents last night, didn’t come to time! A telegram from his physician stated that he had been knocked down by a runaway team, and his leg broken in two places—sufferer lying in great agony, and so forth, and so forth, and a lot more bosh of the same sort. And the Independents tried hard to swallow the wretched subterfuge, and pretend that they did not know what was the real reason of the absence of the abandoned creature whom they denominate their standard-bearer. A certain man was seen to reel into Mr. Twain’s hotel last night in a state of beastly intoxication. It is the imperative duty of the Independents to prove that this besotted brute was not Mark Twain himself. We have them at last! This is a case that admits of no shirking. The voice of the people demands in thunder tones, “WHO WAS THAT MAN?”", "top_lang": "en", "bottom": "> **真是一位體面的候選人。**——馬克·吐溫先生昨晚本應在獨立黨的大會上發表一場極具殺傷力的演說，但他卻未能準時出席！他的醫生發來電報聲稱，他被一輛失控的馬車撞倒，腿部兩處骨折——患者此時正處於極度痛苦之中，諸如此類，一派胡言。而獨立黨人還拼命想吞下這漏洞百出的藉口，假裝不知道這位被他們尊為領袖的墮落傢伙缺席的真正原因。昨晚有人看見一個男子喝得爛醉如泥，搖搖晃晃地走進吐溫先生所住的酒店。獨立黨人有義務證明，那個喝得酩酊大醉的畜生不是馬克·吐溫本人。我們終於抓住他們的把柄了！這件事絕不容許迴避。人民的聲音如雷貫耳地質問道：「那個男人到底是誰？」", "bottom_lang": "zh"}, {"top": "It was incredible, absolutely incredible, for a moment, that it was really my name that was coupled with this disgraceful suspicion. Three long years had passed over my head since I had tasted ale, beer, wine or liquor of any kind.", "top_lang": "en", "bottom": "有那麼一瞬間，我簡真無法相信、絕對無法相信，我的名字竟然會與這種不名譽的猜疑聯繫在一起。自從我上一次嚐到麥芽酒、啤酒、葡萄酒或任何種類的烈酒以來，已經過去了整整三年。", "bottom_lang": "zh"}, {"top": "[It shows what effect the times were having on me when I say that I saw myself, confidently dubbed “Mr. Delirium Tremens Twain” in the next issue of that journal without a pang—notwithstanding I knew that with monotonous fidelity the paper would go on calling me so to the very end.]", "top_lang": "en", "bottom": "［當我說到，在該報的下一期中看到自己被言之鑿鑿地冠以「震顫譫妄症吐溫先生」的稱號而毫無痛苦時，這正說明了時局對我產生的影響——儘管我知道，這家報紙會以其一以貫之的忠實態度，一直這樣稱呼我到最後。］", "bottom_lang": "zh"}]}, {"id": 6, "paragraphs": [{"top": "By this time anonymous letters were getting to be an important part of my mail matter. This form was common:", "top_lang": "en", "bottom": "到這時，匿名信已經成為我信件中的重要組成部分。以下格式非常普遍：", "bottom_lang": "zh"}, {"top": "How about that old woman you kiked of your premises which was beging.", "top_lang": "en", "bottom": "> 那個在你家院子乞討卻被你踢走的老太婆，你怎麼解釋？", "bottom_lang": "zh"}, {"top": "POL. PRY.", "top_lang": "en", "bottom": "> ——愛管閒事者", "bottom_lang": "zh"}, {"top": "And this:", "top_lang": "en", "bottom": "還有這封：", "bottom_lang": "zh"}]}, {"id": 7, "paragraphs": [{"top": "There is things which you have done which is unbeknowens to anybody but me. You better trot out a few dots, to yours truly, or you’ll hear through the papers from", "top_lang": "en", "bottom": "> 你幹過的有些事，除了我之外沒人知道。你最好乖乖拿點封口費給本人，否則你就等著在報紙上看到消息吧。", "bottom_lang": "zh"}, {"top": "HANDY ANDY.", "top_lang": "en", "bottom": "> ——萬能安迪", "bottom_lang": "zh"}, {"top": "This is about the idea. I could continue them till the reader was surfeited, if desirable.", "top_lang": "en", "bottom": "大意就是如此。如果有需要，我可以一直列舉下去，直到讀者厭煩為止。", "bottom_lang": "zh"}, {"top": "Shortly the principal Republican journal “convicted” me of wholesale bribery, and the leading Democratic paper “nailed” an aggravated case of blackmailing to me.", "top_lang": "en", "bottom": "不久，共和黨的主要報紙「判定」我犯有大規模賄賂罪，而民主黨的核心報紙則將一樁情節嚴重的敲詐勒索案「扣」在我頭上。", "bottom_lang": "zh"}]}, {"id": 8, "paragraphs": [{"top": "[In this way I acquired two additional names: “Twain the Filthy Corruptionist” and “Twain the Loathsome Embracer.”]", "top_lang": "en", "bottom": "［就這樣，我又多了兩個頭銜：「骯髒的貪腐分子吐溫」和「令人作嘔的行賄犯吐溫」。］", "bottom_lang": "zh"}, {"top": "By this time there had grown to be such a clamor for an “answer” to all the dreadful charges that were laid to me that the editors and leaders of my party said it would be political ruin for me to remain silent any longer. As if to make their appeal the more imperative, the following appeared in one of the papers the very next day:", "top_lang": "en", "bottom": "此時，要求我對所有加諸於我的可怕指控做出「答覆」的呼聲已是鋪天蓋地，我所在政黨的編輯和領袖們紛紛表示，如果我繼續保持沉默，我的政治生涯將徹底毀滅。彷彿是為了讓他們的呼籲顯得更加迫在眉睫，第二天其中一家報紙便刊登了以下內容：", "bottom_lang": "zh"}, {"top": "BEHOLD THE MAN!—The independent candidate still maintains silence. Because he dare not speak. Every accusation against him has been amply proved, and they have been indorsed and reindorsed by his own eloquent silence, till at this day he stands forever convicted. Look upon your candidate, Independents! Look upon the Infamous Perjurer! the Montana Thief! the Body-Snatcher! Contemplate your incarnate Delirium Tremens! your Filthy Corruptionist! your Loathsome Embracer! Gaze upon him—ponder him well—and then say if you can give your honest votes to a creature who has earned this dismal array of titles by his hideous crimes, and dares not open his mouth in denial of any one of them!", "top_lang": "en", "bottom": "> **且看此人！**——這位無黨籍候選人依然保持著沉默。那是因為他不敢開口。對他的每項指控都已得到了充分的證實，而他自己那富有說服力的沉默更是對這些指控進行了一次又一次的默認，以至於今時今日，他已被永遠定罪。獨立黨人，看看你們的候選人吧！看看這個聲名狼藉的偽證犯！這個蒙大拿小偷！這個盜墓賊！端詳一下你們那活生生的震顫譫妄症患者！你們那骯髒的貪腐分子！那令人作嘔的行賄犯！凝視他吧——好好掂量他——然後告訴我，你們是否還能將神聖的選票投給這樣一個憑藉滔天罪行贏得這一大串可悲頭銜、卻連張口否認其中任何一項都不敢的傢伙！", "bottom_lang": "zh"}, {"top": "There was no possible way of getting out of it, and so, in deep humiliation, I set about preparing to “answer” a mass of baseless charges and mean and wicked falsehoods. But I never finished the task, for the very next morning a paper came out with a new horror, a fresh malignity, and seriously charged me with burning a lunatic asylum with all its inmates, because it obstructed the view from my house. This threw me into a sort of panic. Then came the charge of poisoning my uncle to get his property, with an imperative demand that the grave should be opened. This drove me to the verge of distraction. On top of this I was accused of employing toothless and incompetent old relatives to prepare the food for the foundling hospital when I warden. I was wavering—wavering. And at last, as a due and fitting climax to the shameless persecution that party rancor had inflicted upon me, nine little toddling children, of all shades of color and degrees of raggedness, were taught to rush onto the platform at a public meeting, and clasp me around the legs and call me PA!", "top_lang": "en", "bottom": "我已經無路可逃，因此，在極大的屈辱中，我開始著手準備「答覆」那一堆毫無根據的控訴和卑劣惡毒的謊言。然而，我還沒來得及完成這項工作，隔天早上，一家報紙又拋出了一個新的恐怖陰謀和更深沉的惡意，煞有介事地指控我縱火燒毀了一家瘋人院，連同裡面的所有患者一同燒死，僅僅是因為那棟建築擋住了我家窗外的景致。這讓我陷入了恐慌。接著，又來了指控我為了侵占遺產而毒死叔叔的罪名，並強烈要求開棺驗屍。這簡直要把我逼瘋了。雪上加霜的是，我還被指控在擔任棄嬰醫院院長期間，雇用牙齒掉光、能力不足的年邁親戚來為孩子們準備食物。我動搖了——徹底動搖了。", "bottom_lang": "zh"}]}, {"id": 9, "paragraphs": [{"top": "最後，作為黨派仇恨對我進行無恥迫害的極致高潮，在一次公開集會上，九個蹣跚學步、有著各種膚色、穿著破爛不堪的孩子，被教唆著衝上講台，抱著我的大腿，大喊我「爸爸」！", "top_lang": "zh", "bottom": "I gave it up. I hauled down my colors and surrendered. I was not equal to the requirements of a Gubernatorial campaign in the state of New York, and so I sent in my withdrawal from the candidacy, and in bitterness of spirit signed it, “Truly yours, once a decent man, but now", "bottom_lang": "en"}, {"top": "\"MARK TWAIN, LLP., M.T., B.S., D.T., F.C., and L.E.”", "top_lang": "en", "bottom": "我放棄了。我降下旗幟，宣告投降。我無法達到紐約州州長競選的要求，於是我遞交了退選聲明，並在無盡的痛苦與憤恨中簽下了名字：", "bottom_lang": "zh"}, {"top": "「您忠實的，曾經是個正人君子，如今卻是——", "top_lang": "zh", "bottom": "馬克·吐溫，L.P.（偽證犯）、M.T.（蒙大拿小偷）、B.S.（盜墓賊）、D.T.（震顫譫妄症患者）、F.C.（骯髒貪腐分子）及 L.E.（令人作嘔的行賄犯）。」", "bottom_lang": "zh"}]}];
+        let currentIndex = 0;
+        let currentFontScale = parseFloat(localStorage.getItem('bilingual_font_scale')) || 1.0;
+        const audioPlayer = document.getElementById('audioPlayer');
+
+        document.documentElement.style.setProperty('--font-scale', currentFontScale);
+
+        function changeFontSize(delta) {
+            currentFontScale = Math.min(Math.max(0.7, currentFontScale + delta), 1.8);
+            document.documentElement.style.setProperty('--font-scale', currentFontScale);
+            localStorage.setItem('bilingual_font_scale', currentFontScale);
+        }
+
+        function updatePage() {
+            if (!pages || pages.length === 0) return;
+
+            const page = pages[currentIndex];
+            const container = document.getElementById('paragraph-box');
+            container.innerHTML = '';
+
+            page.paragraphs.forEach(pair => {
+                const block = document.createElement('div');
+                block.className = 'pair-block';
+
+                const topEl = document.createElement('div');
+                topEl.className = 'top-text ' + (pair.top_lang === 'zh' ? 'lang-zh' : 'lang-en');
+                topEl.innerText = pair.top;
+
+                const bottomEl = document.createElement('div');
+                bottomEl.className = 'bottom-text ' + (pair.bottom_lang === 'zh' ? 'lang-zh' : 'lang-en');
+                bottomEl.innerText = pair.bottom;
+
+                block.appendChild(topEl);
+                block.appendChild(bottomEl);
+                container.appendChild(block);
+            });
+
+            document.getElementById('page-info').innerText = `${currentIndex + 1} / ${pages.length}`;
+
+            const progressPercent = ((currentIndex + 1) / pages.length) * 100;
+            document.getElementById('progress').style.width = `${progressPercent}%`;
+
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === pages.length - 1;
+
+            document.getElementById('main-content').scrollTop = 0;
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function nextPage() {
+            if (currentIndex < pages.length - 1) {
+                currentIndex++;
+                updatePage();
+            }
+        }
+
+        function prevPage() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updatePage();
+            }
+        }
+
+        function seekProgress(e) {
+            const container = e.currentTarget;
+            const rect = container.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const percentage = clickX / width;
+            currentIndex = Math.floor(percentage * pages.length);
+            updatePage();
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('無法進入全螢幕:', err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const label = document.querySelector('#fullscreenBtn .btn-label');
+            if (label) {
+                label.textContent = document.fullscreenElement ? ' 離開全螢幕' : ' 全螢幕';
+            }
+        });
+
+        // 🎧 全文 MP3 手動播放 / 暫停控制
+        function toggleMp3Play() {
+            const label = document.getElementById('mp3BtnLabel');
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // 停止單頁 TTS 朗讀
+            }
+
+            if (audioPlayer.paused) {
+                audioPlayer.play().then(() => {
+                    label.textContent = " 暫停";
+                }).catch(err => {
+                    alert('未找到全文 MP3 檔案，請確認音訊檔已放入資料夾。');
+                });
+            } else {
+                audioPlayer.pause();
+                label.textContent = " 全文";
+            }
+        }
+
+        audioPlayer.onended = function() {
+            document.getElementById('mp3BtnLabel').textContent = " 全文MP3";
+        };
+
+        // 🔊 朗讀目前這一頁（會把頁面內所有偵測到的英文段落依序唸出）
+        function speakCurrentPage() {
+            if (audioPlayer && !audioPlayer.paused) {
+                audioPlayer.pause();
+                document.getElementById('mp3BtnLabel').textContent = " 全文MP3";
+            }
+
+            if (!('speechSynthesis' in window)) {
+                alert('您的瀏覽器不支援語音朗讀');
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+
+            const page = pages[currentIndex];
+            const textToSpeak = page.paragraphs
+                .map(pair => {
+                    if (pair.top_lang === 'en') return pair.top;
+                    if (pair.bottom_lang === 'en') return pair.bottom;
+                    return null;
+                })
+                .filter(t => t)
+                .join(' ');
+
+            if (!textToSpeak) {
+                alert('這一頁沒有偵測到英文內容可供朗讀');
+                return;
+            }
+
+            const sentences = textToSpeak.match(/[^.!?,;—]+(?:--|[^.!?,;—])*/g) || [textToSpeak];
+            let sentenceIndex = 0;
+
+            function speakNextSentence() {
+                if (sentenceIndex >= sentences.length) return;
+
+                const sentenceText = sentences[sentenceIndex].trim();
+                if (!sentenceText) {
+                    sentenceIndex++;
+                    speakNextSentence();
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(sentenceText);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+
+                const voices = window.speechSynthesis.getVoices();
+                const preferredVoice = voices.find(v =>
+                    v.lang.includes('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha'))
+                ) || voices.find(v => v.lang.startsWith('en'));
+
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+
+                utterance.onend = () => {
+                    sentenceIndex++;
+                    speakNextSentence();
+                };
+
+                utterance.onerror = () => {
+                    sentenceIndex++;
+                    speakNextSentence();
+                };
+
+                window.speechSynthesis.speak(utterance);
+            }
+
+            speakNextSentence();
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextPage();
+            } else if (e.key === 'ArrowLeft') {
+                prevPage();
+            }
+        });
+
+        updatePage();
+    </script>
+</body>
+</html>
