@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>契訶夫《賭注》</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-main: #2b2d42;
+            --text-sub: #4a5568;
+            --card-bg: #ffffff;
+            --accent-color: #3182ce;
+            --border-color: #e2e8f0;
+            --font-scale: 1;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a202c;
+            --text-main: #edf2f7;
+            --text-sub: #cbd5e0;
+            --card-bg: #2d3748;
+            --accent-color: #63b3ed;
+            --border-color: #4a5568;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0; padding: 0; height: 100vh; overflow: hidden;
+            background-color: var(--bg-color); color: var(--text-main);
+            display: flex; flex-direction: column;
+            font-family: Georgia, "Times New Roman", "標楷體", serif;
+        }
+
+        header {
+            height: 65px; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 25px; background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color); flex-shrink: 0; z-index: 20;
+            user-select: none;
+        }
+
+        .title {
+            font-size: 1.2rem; font-weight: bold; color: var(--text-main);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45%;
+        }
+
+        .controls { display: flex; align-items: center; gap: 5px; }
+
+        .controls button {
+            background: none; border: 1px solid var(--border-color); color: var(--text-main);
+            padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.88rem;
+        }
+
+        main { flex: 1; display: flex; position: relative; overflow-y: auto; padding: 15px 0; }
+
+        .click-zone { position: absolute; top: 0; bottom: 0; width: 8%; z-index: 5; cursor: pointer; user-select: none; }
+        .click-left { left: 0; } .click-right { right: 0; }
+
+        .card-container { width: 95%; max-width: 1200px; margin: auto; padding: 0 10px; z-index: 10; }
+
+        .paragraph-box {
+            background-color: var(--card-bg); padding: 30px 40px; border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color);
+        }
+
+        .en-p {
+            font-size: calc(1.18rem * var(--font-scale)); line-height: 1.65;
+            font-family: Georgia, serif; color: var(--text-main); margin-bottom: 16px;
+            user-select: text !important;
+        }
+
+        .zh-section { border-top: 1px dashed var(--border-color); padding-top: 20px; }
+
+        .zh-p {
+            font-size: calc(1.25rem * var(--font-scale)); line-height: 1.85;
+            font-family: "標楷體", serif; color: var(--text-sub); margin-bottom: 16px;
+            user-select: text !important;
+        }
+
+        /* 字根分析彈窗 */
+        #root-dict-popup {
+            display: none; position: fixed; bottom: 80px; left: 30px; width: 340px; max-height: 420px;
+            background-color: var(--card-bg); border: 2px solid var(--accent-color);
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 999;
+            padding: 16px; overflow-y: auto; font-family: -apple-system, sans-serif;
+        }
+
+        .popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 12px; }
+        .popup-title { font-size: 1.1rem; font-weight: bold; color: var(--accent-color); }
+        .close-btn { cursor: pointer; font-weight: bold; font-size: 1.2rem; color: var(--text-sub); }
+        .tag-group { margin-bottom: 10px; }
+        .tag-title { font-size: 0.85rem; font-weight: bold; color: var(--text-sub); margin-bottom: 4px; }
+        .tag-item { background-color: var(--bg-color); border-left: 3px solid var(--accent-color); padding: 6px 10px; border-radius: 4px; margin-bottom: 6px; font-size: 0.9rem; }
+        .suffix-badge { display: inline-block; background-color: var(--accent-color); color: white; padding: 1px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 6px; }
+
+        footer {
+            height: 65px; padding: 8px 25px; background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; gap: 6px; flex-shrink: 0; z-index: 20; user-select: none;
+        }
+        .progress-bar-container { width: 100%; background-color: var(--border-color); height: 6px; border-radius: 3px; overflow: hidden; cursor: pointer; }
+        .progress-bar { height: 100%; background-color: var(--accent-color); width: 0%; transition: width 0.2s; }
+        .footer-controls { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: var(--text-sub); }
+        .nav-btn { background-color: var(--accent-color); color: white; border: none; padding: 8px 22px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: bold; }
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        @media (max-width: 600px) {
+            #root-dict-popup { left: 5%; right: 5%; width: 90%; bottom: 75px; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="audioPlayer" src="THE BET.mp3" preload="none"></audio>
+
+    <header>
+        <div class="title">📖 契訶夫《賭注》</div>
+        <div class="controls">
+            <button onclick="changeFontSize(-0.1)">A-</button>
+            <button onclick="changeFontSize(0.1)">A+</button>
+            <button onclick="speakCurrentPage()">🔊<span class="btn-label"> 朗讀</span></button>
+            <button id="mp3Btn" onclick="toggleMp3Play()">🎧<span class="btn-label" id="mp3BtnLabel"> 全文</span></button>
+            <button onclick="toggleDarkMode()">🌙<span class="btn-label"> 切換</span></button>
+            <button id="fullscreenBtn" onclick="toggleFullscreen()">⛶<span class="btn-label"> 全螢幕</span></button>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <div class="click-zone click-left" onclick="prevPage()"></div>
+        <div class="click-zone click-right" onclick="nextPage()"></div>
+
+        <div class="card-container">
+            <div class="paragraph-box" id="paragraph-box"></div>
+        </div>
+    </main>
+
+    <div id="root-dict-popup">
+        <div class="popup-header">
+            <span class="popup-title" id="popup-word-title">🌱 單字結構分析</span>
+            <span class="close-btn" onclick="closePopup()">✕</span>
+        </div>
+        <div id="popup-content"></div>
+    </div>
+
+    <footer>
+        <div class="progress-bar-container" onclick="seekProgress(event)">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div class="footer-controls">
+            <button class="nav-btn" id="prev-btn" onclick="prevPage()">上一頁</button>
+            <span id="page-info">0 / 0</span>
+            <button class="nav-btn" id="next-btn" onclick="nextPage()">下一頁</button>
+        </div>
+    </footer>
+
+    <script>
+        const pages = [{"id": 1, "en": ["It was a dark autumn night. The old banker was pacing from corner to corner of his study, recalling to his mind the party he gave in the autumn fifteen years ago. There were many clever people at the party and much interesting conversation. They talked among other things of capital punishment. The guests, among them not a few scholars and journalists, for the most part disapproved of capital punishment. They found it obsolete as a means of punishment, unfitted to a Christian State and immoral. Some of them thought that capital punishment should be replaced universally by life-imprisonment.", "\"I don't agree with you,\" said the host. \"I myself have experienced neither capital punishment nor life-imprisonment, but if one may judge a priori, then in my opinion capital punishment is more moral and more humane than imprisonment. Execution kills instantly, life-imprisonment kills by degrees. Who is the more humane executioner, one who kills you in a few seconds or one who draws the life out of you incessantly, for years?\""], "zh": ["那是一個黑暗的秋夜。老銀行家在書房裡來回踱步，回想起十五年前秋天舉辦的派對。派對上有許多聰明的人，進行了許多有趣的對話。他們談論了包括死刑在內的各種話題。客人們中不乏學者和記者，大多數人對死刑表示不贊同。他們認為死刑作為懲罰手段已經過時，不適合基督教國家，且不道德。其中一些人認為死刑應該普遍被終身監禁取代。", "“我不同意你的看法，”主辦人說。“我自己既沒有經歷過死刑，也沒有經歷過終身監禁，但如果可以先驗地判斷，那麼在我看來，死刑比監禁更道德、更人道。執行死刑是瞬間致死，而終身監禁則是逐漸致死。誰才是更人道的執行者，是在幾秒鐘內殺了你的人，還是那個不斷抽走你生命的人，持續多年？”"]}, {"id": 2, "en": ["\"They're both equally immoral,\" remarked one of the guests, \"because their purpose is the same, to take away life. The State is not God. It has no right to take away that which it cannot give back, if it should so desire.\"", "Among the company was a lawyer, a young man of about twenty-five. On being asked his opinion, he said:", "\"Capital punishment and life-imprisonment are equally immoral; but if I were offered the choice between them, I would certainly choose the second. It's better to live somehow than not to live at all.\"", "There ensued a lively discussion. The banker who was then younger and more nervous suddenly lost his temper, banged his fist on the table, and turning to the young lawyer, cried out:"], "zh": ["“他們都是一樣的不道德，”一位客人評論道，“因為他們的目的都是一樣的，都是奪去生命。國家不是上帝。它沒有權利奪走它無法再給回的東西，即使它想要。”", "在這群人中有一位律師，一位大約二十五歲的年輕人。在被問及他的看法時，他說：", "“死刑和終身監禁都是一樣的不道德；但如果我被給予選擇，我肯定會選擇後者。活著總比不活著好。”", "隨之而來的是一場熱烈的討論。當時年輕而緊張的銀行家突然失去了耐性，重重地拍了一下桌子，轉向年輕律師，喊道："]}, {"id": 3, "en": ["\"It's a lie. I bet you two millions you wouldn't stick in a cell even for five years.\"", "\"If that's serious,\" replied the lawyer, \"then I bet I'll stay not five but fifteen.\"", "\"Fifteen! Done!\" cried the banker. \"Gentlemen, I stake two millions.\"", "\"Agreed. You stake two millions, I my freedom,\" said the lawyer.", "So this wild, ridiculous bet came to pass. The banker, who at that time had too many millions to count, spoiled and capricious, was beside himself with rapture. During supper he said to the lawyer jokingly:", "\"Come to your senses, young man, before it's too late. Two millions are nothing to me, but you stand to lose three or four of the best years of your life. I say three or four, because you'll never stick it out any longer. Don't forget either, you unhappy man, that voluntary is much heavier than enforced imprisonment. The idea that you have the right to free yourself at any moment will poison the whole of your life in the cell. I pity you.\""], "zh": ["“這是謊言。我打賭你兩百萬，你連五年都不會待在牢房裡。”", "“如果這是認真的，”律師回答說，“那我打賭我會待不止五年，而是十五年。”", "“十五年！成交！”銀行家喊道。“各位，我押兩百萬。”", "“同意。你押兩百萬，我押我的自由，”律師說。", "於是這個瘋狂而荒謬的賭注就這樣成立了。當時擁有數不清的百萬的銀行家，因為寵壞和任性而興奮不已。在晚餐時，他戲謔地對律師說：", "“年輕人，趕快清醒過來，在為時已晚之前。兩百萬對我來說不算什麼，但你將失去你生命中三四年最美好的時光。我說三四年，是因為你永遠無法堅持更久。也別忘了，你這可憐的人，自願的監禁比強制的監禁要沉重得多。你隨時有權利解放自己的想法，將會毒害你在牢房中的整個生活。我為你感到可憐。”"]}, {"id": 4, "en": ["And now the banker pacing from corner to corner, recalled all this and asked himself:", "\"Why did I make this bet? What's the good? The lawyer loses fifteen years of his life and I throw away two millions. Will it convince people that capital punishment is worse or better than imprisonment for life. No, No! all stuff and rubbish. On my part, it was the caprice of a well-fed man; on the lawyer's, pure greed of gold.\"", "He recollected further what happened after the evening party. It was decided that the lawyer must undergo his imprisonment under the strictest observation, in a garden-wing of the banker's house. It was agreed that during the period he would be deprived of the right to cross the threshold, to see living people, to hear human voices, and to receive letters and newspapers. He was permitted to have a musical instrument, to read books, to write letters, to drink wine and smoke tobacco. By the agreement he could communicate, but only in silence, with the outside world through a little window specially constructed for this purpose. Everything necessary, books, music, wine, he could receive in any quantity by sending a note through the window. The agreement provided for all the minutest details, which made the confinement strictly solitary, and it obliged the lawyer to remain exactly fifteen years from twelve o'clock of November 14th 1870 to twelve o'clock of November 14th 1885. The least attempt on his part to violate the conditions, to escape if only for two minutes before the time freed the banker from the obligation to pay him the two millions."], "zh": ["而現在，銀行家來回踱步，回想起這一切，心中不禁自問：", "“我為什麼要下這個賭注？這有什麼好處？律師失去了十五年的生命，而我卻白白浪費了兩百萬。這能讓人相信死刑比終身監禁更糟或更好嗎？不，不！這都是胡說八道。對我來說，這只是個吃飽了撐著的人的任性；對律師來說，則是對金錢的純粹貪婪。”", "他進一步回憶起晚會後發生的事情。決定讓律師在銀行家家的一個花園翼樓中接受最嚴格的監禁。約定在此期間，他將被剝奪跨越門檻、見到活人、聽到人聲以及接收信件和報紙的權利。他被允許擁有一件樂器、閱讀書籍、寫信、喝酒和抽煙。根據協議，他可以通過一個專門為此目的設計的小窗戶與外界進行無聲的交流。所有必要的東西，包括書籍、音樂、酒，他都可以通過窗戶發送便條以任何數量接收。協議規定了所有的細節，使得監禁完全孤獨，並要求律師在1870年11月14日中午12點到1885年11月14日中午12點正好待滿十五年。他若有任何違反條件的企圖，甚至在時間到來前兩分鐘逃跑，銀行家將不再有義務支付他兩百萬。"]}, {"id": 5, "en": ["During the first year of imprisonment, the lawyer, as far as it was possible to judge from his short notes, suffered terribly from loneliness and boredom. From his wing day and night came the sound of the piano. He rejected wine and tobacco. \"Wine,\" he wrote, \"excites desires, and desires are the chief foes of a prisoner; besides, nothing is more boring than to drink good wine alone,\" and tobacco spoils the air in his room. During the first year the lawyer was sent books of a light character; novels with a complicated love interest, stories of crime and fantasy, comedies, and so on."], "zh": ["在監禁的第一年，根據律師的短小便條來判斷，他因孤獨和無聊而遭受了可怕的折磨。從他的翼樓裡，白天和黑夜都能聽到鋼琴聲。他拒絕了酒和煙。“酒，”他寫道，“激發欲望，而欲望是囚犯的主要敵人；此外，獨自喝好酒是最無聊的事。”而煙草則會污染他的房間空氣。在第一年，律師收到了輕鬆的書籍；情感複雜的小說、犯罪和幻想故事、喜劇等等。"]}, {"id": 6, "en": ["In the second year the piano was heard no longer and the lawyer asked only for classics. In the fifth year, music was heard again, and the prisoner asked for wine. Those who watched him said that during the whole of that year he was only eating, drinking, and lying on his bed. He yawned often and talked angrily to himself. Books he did not read. Sometimes at nights he would sit down to write. He would write for a long time and tear it all up in the morning. More than once he was heard to weep.", "In the second half of the sixth year, the prisoner began zealously to study languages, philosophy, and history. He fell on these subjects so hungrily that the banker hardly had time to get books enough for him. In the space of four years about six hundred volumes were bought at his request. It was while that passion lasted that the banker received the following letter from the prisoner: \"My dear gaoler, I am writing these lines in six languages. Show them to experts. Let them read them. If they do not find one single mistake, I beg you to give orders to have a gun fired off in the garden. By the noise I shall know that my efforts have not been in vain. The geniuses of all ages and countries speak in different languages; but in them all burns the same flame. Oh, if you knew my heavenly happiness now that I can understand them!\" The prisoner's desire was fulfilled. Two shots were fired in the garden by the banker's order."], "zh": ["在第二年，鋼琴聲不再響起，律師只要求經典作品。在第五年，音樂再次響起，囚犯要求酒。看守他的人說，在整整一年中，他只是吃、喝，躺在床上。他經常打哈欠，對自己生氣地說話。書他不讀。有時晚上他會坐下來寫字。他寫了很長時間，早上卻把所有的紙都撕了。多次有人聽到他在哭泣。", "在第六年的下半段，囚犯開始熱切地學習語言、哲學和歷史。他對這些主題的渴望如此強烈，以至於銀行家幾乎沒有時間為他準備足夠的書籍。在四年的時間裡，根據他的要求，購買了大約六百本書。正是在這段熱情持續的時候，銀行家收到了囚犯的以下信件：“親愛的看守，我用六種語言寫下這些文字。請讓專家們看看。讓他們閱讀。如果他們沒有發現一個錯誤，我請你下令在花園裡開一槍。根據聲音我就知道我的努力沒有白費。所有時代和國家的天才都用不同的語言說話；但在他們之中燃燒著同樣的火焰。哦，如果你知道我現在的天上幸福，因為我能理解他們！”囚犯的願望得到了滿足。銀行家的命令下，花園裡開了兩槍。"]}, {"id": 7, "en": ["Later on, after the tenth year, the lawyer sat immovable before his table and read only the New Testament. The banker found it strange that a man who in four years had mastered six hundred erudite volumes, should have spent nearly a year in reading one book, easy to understand and by no means thick. The New Testament was then replaced by the history of religions and theology.", "During the last two years of his confinement the prisoner read an extraordinary amount, quite haphazard. Now he would apply himself to the natural sciences, then would read Byron or Shakespeare. Notes used to come from him in which he asked to be sent at the same time a book on chemistry, a text-book of medicine, a novel, and some treatise on philosophy or theology. He read as though he were swimming in the sea among the broken pieces of wreckage, and in his desire to save his life was eagerly grasping one piece after another."], "zh": ["後來，在第十年之後，律師坐在桌子前一動不動，只讀《新約》。銀行家覺得奇怪，這個在四年內掌握了六百本博學書籍的人，怎麼會花將近一年時間來閱讀一本容易理解且並不厚的書。《新約》隨後被宗教史和神學所取代。", "在他監禁的最後兩年，囚犯閱讀了大量的書籍，完全隨意。現在他會專注於自然科學，然後閱讀拜倫或莎士比亞。他經常發來便條，要求同時寄給他一本化學書、一部醫學教科書、一部小說和一些哲學或神學的論文。他的閱讀就像在海洋中游泳，四周都是破碎的殘骸，為了拯救自己的生命，他急切地抓住一片又一片。"]}, {"id": 8, "en": ["The banker recalled all this, and thought:", "\"To-morrow at twelve o'clock he receives his freedom. Under the agreement, I shall have to pay him two millions. If I pay, it's all over with me. I am ruined for ever....\"", "Fifteen years before he had too many millions to count, but now he was afraid to ask himself which he had more of, money or debts. Gambling on the Stock-Exchange, risky speculation, and the recklessness of which he could not rid himself even in old age, had gradually brought his business to decay; and the fearless, self-confident, proud man of business had become an ordinary banker, trembling at every rise and fall in the market."], "zh": ["銀行家回想起這一切，心中思考：", "“明天中午十二點，他就能獲得自由。根據協議，我必須支付他兩百萬。如果我支付，那我就完了。我將永遠破產……”", "十五年前，他擁有數不清的百萬，但現在他害怕問自己，自己到底是擁有更多的錢還是債務。股票市場的賭博、冒險的投機，以及他即使在老年也無法擺脫的魯莽，逐漸使他的生意走向衰敗；而那個無畏、自信、驕傲的商人，如今卻變成了一個普通的銀行家，對市場的每一次漲跌都感到戰戰兢兢。"]}, {"id": 9, "en": ["\"That cursed bet,\" murmured the old man clutching his head in despair.... \"Why didn't the man die? He's only forty years old. He will take away my last farthing, marry, enjoy life, gamble on the Exchange, and I will look on like an envious beggar and hear the same words from him every day: 'I'm obliged to you for the happiness of my life. Let me help you.' No, it's too much! The only escape from bankruptcy and disgrace—is that the man should die.\"", "The clock had just struck three. The banker was listening. In the house everyone was asleep, and one could hear only the frozen trees whining outside the windows. Trying to make no sound, he took out of his safe the key of the door which had not been opened for fifteen years, put on his overcoat, and went out of the house. The garden was dark and cold. It was raining. A keen damp wind hovered howling over all the garden and gave the trees no rest. Though he strained his eyes, the banker could see neither the ground, nor the white statues, nor the garden-wing, nor the trees. Approaching the place where the garden-wing stood, he called the watchman twice. There was no answer. Evidently the watchman had taken shelter from the bad weather and was now asleep somewhere in the kitchen or the greenhouse."], "zh": ["“那該死的賭注，”老人絕望地喃喃自語，緊緊捂住自己的頭……“為什麼那個人不死？他才四十歲。他會奪走我最後的一分錢，結婚，享受生活，繼續在交易所賭博，而我只能像一個嫉妒的乞丐一樣看著，聽到他每天對我說的話：‘我感謝你給了我生命中的幸福。讓我來幫助你。’不，這太過分了！逃避破產和恥辱的唯一辦法，就是那個人死去。”", "時鐘剛剛敲響三點。銀行家在傾聽。屋裡每個人都在睡覺，窗外只能聽到冰冷的樹木在哀鳴。他試著不發出聲音，從保險箱中取出那把十五年未曾打開的門的鑰匙，穿上外套，走出了房子。花園裡黑暗而寒冷，正下著雨。一陣尖銳潮濕的風在花園上空呼嘯，讓樹木無法安寧。儘管他使勁瞪大眼睛，銀行家卻看不見地面、白色的雕像、花園翼樓或樹木。走近花園翼樓所在的地方，他叫了看守兩次，卻沒有回應。顯然看守因為惡劣的天氣而躲避，現在在廚房或溫室裡睡著了。"]}, {"id": 10, "en": ["\"If I have the courage to fulfil my intention,\" thought the old man, \"the suspicion will fall on the watchman first of all.\"", "In the darkness he groped for the stairs and the door and entered the hall of the garden-wing, then poked his way into a narrow passage and struck a match. Not a soul was there. Someone's bed, with no bedclothes on it, stood there, and an iron stove was dark in the corner. The seals on the door that led into the prisoner's room were unbroken.", "When the match went out, the old man, trembling from agitation, peeped into the little window."], "zh": ["“如果我有勇氣實現我的意圖，”老人想，“那麼懷疑將首先落在看守身上。”", "在黑暗中，他摸索著找到了樓梯和門，進入了花園翼樓的廳，然後摸索著進入一條狹窄的走廊，點燃了一根火柴。裡面沒有一個人。有人床上沒有床單，角落裡有一個黑暗的鐵爐。通往囚犯房間的門上的封條完好無損。", "當火柴熄滅時，老人因激動而顫抖，朝小窗戶裡偷看。"]}, {"id": 11, "en": ["In the prisoner's room a candle was burning dim. The prisoner himself sat by the table. Only his back, the hair on his head and his hands were visible. On the table, the two chairs, the carpet by the table open books were strewn.", "Five minutes passed and the prisoner never once stirred. Fifteen years confinement had taught him to sit motionless. The banker tapped on the window with his finger, but the prisoner gave no movement in reply. Then the banker cautiously tore the seals from the door and put the key into the lock. The rusty lock gave a hoarse groan and the door creaked. The banker expected instantly to hear a cry of surprise and the sound of steps. Three minutes passed and it was as quiet behind the door as it had been before. He made up his mind to enter. Before the table sat a man, unlike an ordinary human being. It was a skeleton, with tight-drawn skin, with a woman's long curly hair, and a shaggy beard. The colour of his face was yellow, of an earthy shade; the cheeks were sunken, the back long and narrow, and the hand upon which he leaned his hairy head was so lean and skinny that it was painful to look upon. His hair was already silvering with grey, and no one who glanced at the senile emaciation of the face would have believed that he was only forty years old. On the table, before his bended head, lay a sheet of paper on which something was written in a tiny hand."], "zh": ["在囚犯的房間裡，一根蠟燭微弱地燃燒著。囚犯自己坐在桌子旁。只有他的背影、頭髮和手可見。桌子上，兩把椅子、桌邊的地毯和打開的書籍散落一地。", "五分鐘過去了，囚犯卻沒有一次動彈。十五年的監禁教會了他靜坐不動。銀行家用手指敲了敲窗戶，但囚犯沒有任何反應。然後銀行家小心翼翼地撕下了門上的封條，將鑰匙插入鎖中。生鏽的鎖發出沙啞的呻吟，門也吱吱作響。銀行家期待著立刻聽到驚訝的尖叫聲和腳步聲。三分鐘過去了，門後依然靜悄悄的，和之前一樣。他下定決心進去。桌子前坐著一個人，與普通人截然不同。那是一具骷髏，皮膚緊緊貼著骨頭，長長的女性捲髮，還有一把蓬鬆的鬍鬚。他的臉色發黃，呈土色；面頰凹陷，背部修長而狹窄，支撐著他毛茸茸的頭的手瘦得讓人看了心痛。他的頭髮已經開始變白，任何一個瞥見他那衰老憔悴面容的人都不會相信他才四十歲。桌子上，他彎著頭的前面，放著一張紙，上面用小字寫著一些東西。"]}, {"id": 12, "en": ["\"Poor devil,\" thought the banker, \"he's asleep and probably seeing millions in his dreams. I have only to take and throw this half-dead thing on the bed, smother him a moment with the pillow, and the most careful examination will find no trace of unnatural death. But, first, let us read what he has written here.\"", "The banker took the sheet from the table and read:", "\"To-morrow at twelve o'clock midnight, I shall obtain my freedom and the right to mix with people. But before I leave this room and see the sun I think it necessary to say a few words to you. On my own clear conscience and before God who sees me I declare to you that I despise freedom, life, health, and all that your books call the blessings of the world."], "zh": ["“可憐的傢伙，”銀行家想，“他在睡覺，可能在夢中看見數百萬。我只需把這個半死不活的東西扔到床上，用枕頭悶死他片刻，最仔細的檢查也不會發現非自然死亡的痕跡。但首先，讓我們看看他在這裡寫了什麼。”", "銀行家從桌子上拿起那張紙，讀道：", "“明天午夜十二點，我將獲得自由和與人交往的權利。但在我離開這個房間，看到陽光之前，我認為有必要對你說幾句話。在我清晰的良心和看見我的上帝面前，我向你宣告，我鄙視自由、生命、健康，以及你們書中所稱的世界的所有祝福。"]}, {"id": 13, "en": ["\"For fifteen years I have diligently studied earthly life. True, I saw neither the earth nor the people, but in your books I drank fragrant wine, sang songs, hunted deer and wild boar in the forests, loved women.... And beautiful women, like clouds ethereal, created by the magic of your poets' genius, visited me by night and whispered me wonderful tales, which made my head drunken. In your books I climbed the summits of Elbruz and Mont Blanc and saw from thence how the sun rose in the morning, and in the evening overflowed the sky, the ocean and the mountain ridges with a purple gold. I saw from thence how above me lightnings glimmered cleaving the clouds; I saw green forests, fields, rivers, lakes, cities; I heard syrens singing, and the playing of the pipes of Pan; I touched the wings of beautiful devils who came flying to me to speak of God.... In your books I cast myself into bottomless abysses, worked miracles, burned cities to the ground, preached new religions, conquered whole countries...."], "zh": ["“在十五年裡，我勤奮地研究了世俗生活。的確，我既沒有看到大地，也沒有看到人，但在你的書中，我品嚐了芬芳的美酒，唱過歌，在森林裡狩獵鹿和野豬，愛過女人……而美麗的女人，如同以你們詩人的天才所創造的雲朵，夜晚來訪，向我低語著美妙的故事，讓我沉醉。在你的書中，我攀登了埃爾布魯士山和蒙布朗，從那裡看到早晨的陽光如何升起，傍晚又如何用紫金淹沒天空、海洋和山脊。我從那裡看到，閃電在雲層中閃爍；我看到了綠色的森林、田野、河流、湖泊、城市；我聽到了海妖的歌唱，和潘的笛聲；我觸摸到了來飛向我講述上帝的美麗惡魔的翅膀……在你的書中，我跳入無底的深淵，創造奇蹟，燒毀城市，傳播新宗教，征服整個國家……"]}, {"id": 14, "en": ["\"Your books gave me wisdom. All that unwearying human thought created in the centuries is compressed to a little lump in my skull. I know that I am more clever than you all.", "\"And I despise your books, despise all wordly blessings and wisdom. Everything is void, frail, visionary and delusive like a mirage. Though you be proud and wise and beautiful, yet will death wipe you from the face of the earth like the mice underground; and your posterity, your history, and the immortality of your men of genius will be as frozen slag, burnt down together with the terrestrial globe."], "zh": ["“你的書給了我智慧。所有不知疲倦的人類思想在世紀中創造的東西，都壓縮在我腦中一小塊。我知道我比你們所有人都聰明。", "“而我鄙視你們的書，鄙視所有世俗的祝福和智慧。一切都是空虛、脆弱、虛幻和欺騙，就像海市蜃樓。雖然你們驕傲、聰明、美麗，但死亡會像地下的老鼠一樣將你們從地球上抹去；而你們的後代、你們的歷史，以及你們天才的永生將如同冰凍的熔渣，與這顆地球一起燒毀。"]}, {"id": 15, "en": ["\"You are mad, and gone the wrong way. You take lie for truth and ugliness for beauty. You would marvel if by certain conditions there should suddenly grow on apple and orange trees, instead of fruit, frogs and lizards, and if roses should begin to breathe the odour of a sweating horse. So do I marvel at you, who have bartered heaven for earth. I do not want to understand you.", "\"That I may show you in deed my contempt for that by which you live, I waive the two millions of which I once dreamed as of paradise, and which I now despise. That I may deprive myself of my right to them, I shall come out from here five minutes before the stipulated term, and thus shall violate the agreement.\""], "zh": ["“你們瘋了，走錯了路。你們把謊言當作真理，把醜陋當作美。若果真有某些條件，蘋果樹和橙樹上突然長出青蛙和蜥蜴，而玫瑰開始散發汗馬的氣味，你們會驚訝不已。我對你們的驚訝也是如此，你們用地換取了天。我不想理解你們。", "“為了讓你們在行動上看到我對你們所生活的東西的蔑視，我放棄我曾經夢想的兩百萬，這對我來說就像天堂，而我現在卻鄙視它們。為了剝奪我對它們的權利，我將在約定的期限前五分鐘從這裡出來，從而違反協議。”"]}, {"id": 16, "en": ["When he had read, the banker put the sheet on the table, kissed the head of the strange man, and began to weep. He went out of the wing. Never at any other time, not even after his terrible losses on the Exchange, had he felt such contempt for himself as now. Coming home, he lay down on his bed, but agitation and tears kept him long from sleep....", "The next morning the poor watchman came running to him and told him that they had seen the man who lived in the wing climbing through the window into the garden. He had gone to the gate and disappeared. Together with his servants the banker went instantly to the wing and established the escape of his prisoner. To avoid unnecessary rumours he took the paper with the renunciation from the table and, on his return, locked it in his safe."], "zh": ["當他讀完後，銀行家把紙放回桌上，吻了那個奇怪的人的頭，開始流淚。他走出了翼樓。此時的他，從未有過的自我厭惡感襲來，甚至在他在交易所遭受可怕損失的時候也沒有感受到。回到家裡，他躺在床上，但焦慮和眼淚讓他久久無法入睡……", "第二天早上，可憐的看守跑來告訴他，他們看到住在翼樓的那個人從窗戶爬進了花園。他已經走到大門，消失不見。銀行家立刻帶著他的僕人們前往翼樓，確認了他的囚犯逃脫。為了避免不必要的傳言，他從桌上拿走了那張放棄的紙，回去後將其鎖進了保險箱。"]}];
+        const dbPrefixes = [{"keys": ["a"], "meaning": "of"}, {"keys": ["a"], "meaning": "on"}, {"keys": ["a"], "meaning": "intensive"}, {"keys": ["a"], "meaning": "ad=to, at, for"}, {"keys": ["a"], "meaning": "ab=from, away"}, {"keys": ["a"], "meaning": "ex=out,extremely"}, {"keys": ["a"], "meaning": "negative(not, without)"}, {"keys": ["ab"], "meaning": "from,away from,off"}, {"keys": ["ad"], "meaning": "to,at,for"}, {"keys": ["al"], "meaning": "all"}, {"keys": ["ambi"], "meaning": "on both sides, about, arount"}, {"keys": ["amphi"], "meaning": "on both sides, around"}, {"keys": ["an"], "meaning": "negative(not, without)"}, {"keys": ["ana"], "meaning": "upon,on,up"}, {"keys": ["ante"], "meaning": "before"}, {"keys": ["anti"], "meaning": "against,opposite to"}, {"keys": ["arch"], "meaning": "chief"}, {"keys": ["suto"], "meaning": "self"}, {"keys": ["be"], "meaning": "to make"}, {"keys": ["be"], "meaning": "to cover with"}, {"keys": ["be"], "meaning": "upon"}, {"keys": ["be"], "meaning": "by"}, {"keys": ["be"], "meaning": "intensive"}, {"keys": ["bene"], "meaning": "well,good"}, {"keys": ["bi"], "meaning": "double,two"}, {"keys": ["cata"], "meaning": "down, downwards, fully"}, {"keys": ["circum"], "meaning": "around, round about"}, {"keys": ["com"], "meaning": "together,with, wholly"}, {"keys": ["contra"], "meaning": "against"}, {"keys": ["de"], "meaning": "down, downard"}, {"keys": ["de"], "meaning": "apart, from"}, {"keys": ["deca"], "meaning": "ten"}, {"keys": ["demi"], "meaning": "half"}, {"keys": ["di"], "meaning": "double,twice"}, {"keys": ["dia"], "meaning": "through,between, across"}, {"keys": ["dis"], "meaning": "apart,away"}, {"keys": ["duo"], "meaning": "two,double"}, {"keys": ["en"], "meaning": "in, into,on,at,near"}, {"keys": ["epi"], "meaning": "upon, to besides, among"}, {"keys": ["eu"], "meaning": "well"}, {"keys": ["ex"], "meaning": "out of, fully"}, {"keys": ["extra"], "meaning": "beyond"}, {"keys": ["for"], "meaning": "away from"}, {"keys": ["fore"], "meaning": "before"}, {"keys": ["forth"], "meaning": "towards"}, {"keys": ["hemi"], "meaning": "half"}, {"keys": ["hetero"], "meaning": "other,different"}, {"keys": ["hexa"], "meaning": "six"}, {"keys": ["homo"], "meaning": "same"}, {"keys": ["hyper"], "meaning": "above,beyond"}, {"keys": ["hypo"], "meaning": "under"}, {"keys": ["in"], "meaning": "in, into,on"}, {"keys": ["in"], "meaning": "negative(=not)"}, {"keys": ["inter"], "meaning": "between, among"}, {"keys": ["intra", "intro"], "meaning": "within, inward"}, {"keys": ["mal(e)"], "meaning": "badly,ill"}, {"keys": ["meta"], "meaning": "among,with, after"}, {"keys": ["mis"], "meaning": "wrong,bad, ill"}, {"keys": ["mone"], "meaning": "single,sole, alone"}, {"keys": ["mult(i)"], "meaning": "many,much"}, {"keys": ["ne"], "meaning": "negative(=not)"}, {"keys": ["ob"], "meaning": "as, toward,at,before, upon,over, about, near, against"}, {"keys": ["octa", "octo"], "meaning": "eight, eighth"}, {"keys": ["omni"], "meaning": "all"}, {"keys": ["para"], "meaning": "beside, beyond, against, contrary"}, {"keys": ["pen"], "meaning": "almost"}, {"keys": ["penta"], "meaning": "five"}, {"keys": ["per"], "meaning": "through, thoroughly, away"}, {"keys": ["peri"], "meaning": "around,round about"}, {"keys": ["poly"], "meaning": "many"}, {"keys": ["post"], "meaning": "after,behind"}, {"keys": ["pre"], "meaning": "before"}, {"keys": ["pro"], "meaning": "for,before, forth, forward"}, {"keys": ["prot(o)"], "meaning": "first"}, {"keys": ["quadr(i)"], "meaning": "four"}, {"keys": ["re"], "meaning": "again, back"}, {"keys": ["retro"], "meaning": "backward"}, {"keys": ["se"], "meaning": "away,apart"}, {"keys": ["semi"], "meaning": "half"}, {"keys": ["sept"], "meaning": "seven"}, {"keys": ["sub"], "meaning": "under"}, {"keys": ["super"], "meaning": "above,over"}, {"keys": ["syn"], "meaning": "with, together"}, {"keys": ["tele afar off"], "meaning": ""}, {"keys": ["tetra"], "meaning": "four"}, {"keys": ["trans"], "meaning": "beyond,across, over"}, {"keys": ["tri"], "meaning": "three,threefoid"}, {"keys": ["twi"], "meaning": "two"}, {"keys": ["ultra"], "meaning": "beyond"}, {"keys": ["un"], "meaning": "not"}, {"keys": ["un"], "meaning": "the reversal of an action"}, {"keys": ["uni"], "meaning": "one"}, {"keys": ["under"], "meaning": "under,beneath"}, {"keys": ["up"], "meaning": "up,aloft"}, {"keys": ["vice"], "meaning": "in place of"}, {"keys": ["with"], "meaning": "against,back"}];
+        const dbRoots = [{"keys": ["act"], "meaning": "to act"}, {"keys": ["alt"], "meaning": "high"}, {"keys": ["age"], "meaning": "act of,state of"}, {"keys": ["alter", "ali"], "meaning": "other"}, {"keys": ["agi", "ago", "ag"], "meaning": "move,go,do,act"}, {"keys": ["am"], "meaning": "to love"}, {"keys": ["anc"], "meaning": "before"}, {"keys": ["ang"], "meaning": "to strangle"}, {"keys": ["anim"], "meaning": "breath,mind"}, {"keys": ["ann"], "meaning": "year"}, {"keys": ["anthrop"], "meaning": "man"}, {"keys": ["apt"], "meaning": "fit"}, {"keys": ["arm"], "meaning": "weapons"}, {"keys": ["aster", "astro", "stella"], "meaning": "star"}, {"keys": ["aud", "aus"], "meaning": "to hear"}, {"keys": ["aug"], "meaning": "to increase,make to grow"}, {"keys": ["avi"], "meaning": "bird"}, {"keys": ["band", "bond"], "meaning": "to bind"}, {"keys": ["bar"], "meaning": "bar"}, {"keys": ["bat"], "meaning": "to beat"}, {"keys": ["bene", "bon"], "meaning": "well,good"}, {"keys": ["bio"], "meaning": "life"}, {"keys": ["brev"], "meaning": "short"}, {"keys": ["cad", "cid", "cas"], "meaning": "to fall"}, {"keys": ["cap", "capit", "capt"], "meaning": "head"}, {"keys": ["cap", "cep", "cept"], "meaning": "to Take"}, {"keys": ["car"], "meaning": "car, to run"}, {"keys": ["carn"], "meaning": "flesh"}, {"keys": ["cause", "cuse", "cus"], "meaning": "cause,motive"}, {"keys": ["cede", "ceed", "cess"], "meaning": "to go, come"}, {"keys": ["ceive", "cept", "cip", "cipate"], "meaning": "to take"}, {"keys": ["cent"], "meaning": "hundred"}, {"keys": ["centr"], "meaning": "center"}, {"keys": ["cern", "cret"], "meaning": "to separate"}, {"keys": ["cert"], "meaning": "sure"}, {"keys": ["chron"], "meaning": "time"}, {"keys": ["cide", "cise"], "meaning": "to cut"}, {"keys": ["circ", "cyc"], "meaning": "ring"}, {"keys": ["cite"], "meaning": "to call,urge"}, {"keys": ["civ"], "meaning": "citizen"}, {"keys": ["claim", "clam"], "meaning": "to cry"}, {"keys": ["clin"], "meaning": "to bend"}, {"keys": ["clud", "clus"], "meaning": "to shut"}, {"keys": ["cognis", "gnos"], "meaning": "to know"}, {"keys": ["cord"], "meaning": "heart"}, {"keys": ["corp"], "meaning": "body"}, {"keys": ["cre", "crea", "cresc"], "meaning": "to make, grow"}, {"keys": ["cred"], "meaning": "to believe"}, {"keys": ["cult"], "meaning": "to till"}, {"keys": ["cumb"], "meaning": "to lie down"}, {"keys": ["cure"], "meaning": "to Take care"}, {"keys": ["cur", "course"], "meaning": "to run"}, {"keys": ["cuss"], "meaning": "to strike, shake"}, {"keys": ["deb", "du"], "meaning": "to owe"}, {"keys": ["dem"], "meaning": "people"}, {"keys": ["dic"], "meaning": "to proclaim"}, {"keys": ["dict", "dit"], "meaning": "to say"}, {"keys": ["dign"], "meaning": "worthy"}, {"keys": ["divid", "divis"], "meaning": "to divide"}, {"keys": ["doc"], "meaning": "to teach"}, {"keys": ["dom"], "meaning": "to tame,rule"}, {"keys": ["dorm"], "meaning": "steep"}, {"keys": ["don", "dot", "dow"], "meaning": "to give"}, {"keys": ["duc", "duce", "duct"], "meaning": "lead"}, {"keys": ["em", "empt"], "meaning": "to take,buy"}, {"keys": ["equ"], "meaning": "equal"}, {"keys": ["ess", "est"], "meaning": "to be"}, {"keys": ["eu"], "meaning": "pleasant, well, good, well-done"}, {"keys": ["fact", "fect"], "meaning": "to make,do"}, {"keys": ["fam"], "meaning": "to speak"}, {"keys": ["fare"], "meaning": "to go"}, {"keys": ["feder", "fide", "fid", "feal"], "meaning": "trust, faith"}, {"keys": ["fend", "fest"], "meaning": "to strike"}, {"keys": ["fer"], "meaning": "to carry,bear"}, {"keys": ["fess"], "meaning": "to speak"}, {"keys": ["fic", "fect"], "meaning": "make,do"}, {"keys": ["fict", "fig"], "meaning": "to feign"}, {"keys": ["fid"], "meaning": "to trust"}, {"keys": ["fin", "fins"], "meaning": "to end"}, {"keys": ["firm"], "meaning": "firm"}, {"keys": ["fix"], "meaning": "fix"}, {"keys": ["flect", "flex"], "meaning": "to bend"}, {"keys": ["flict"], "meaning": "to strike"}, {"keys": ["flu", "fluv", "flux", "fluc"], "meaning": "to flow"}, {"keys": ["form"], "meaning": "to form, form"}, {"keys": ["fort", "forc"], "meaning": "strong"}, {"keys": ["found", "fund"], "meaning": "base"}, {"keys": ["fract", "frag"], "meaning": "to break"}, {"keys": ["ful"], "meaning": "full of"}, {"keys": ["fuse", "found"], "meaning": "to pour"}, {"keys": ["gener", "gen", "gent"], "meaning": "to produce, a race"}, {"keys": ["ger", "gest"], "meaning": "to carry"}, {"keys": ["grad", "gress"], "meaning": "to walk"}, {"keys": ["gram", "graph"], "meaning": "to write,letter"}, {"keys": ["grad", "gred", "gress"], "meaning": "step, degree, walk"}, {"keys": ["grat"], "meaning": "to please"}, {"keys": ["grav"], "meaning": "heavy"}, {"keys": ["gregat"], "meaning": "to collect"}, {"keys": ["hab", "hibit"], "meaning": "to have,live"}, {"keys": ["her"], "meaning": "an heir"}, {"keys": ["here", "hes"], "meaning": "to stick"}, {"keys": ["hum", "hom", "human"], "meaning": "man, earth, ground"}, {"keys": ["hum"], "meaning": "ground"}, {"keys": ["hydro", "hydra", "hydr"], "meaning": "water"}, {"keys": ["insul"], "meaning": "island"}, {"keys": ["it"], "meaning": "to go"}, {"keys": ["ject", "jac", "jec"], "meaning": "to throw, lie"}, {"keys": ["journ"], "meaning": "day"}, {"keys": ["jud", "jus", "jur"], "meaning": "to judge"}, {"keys": ["just", "juris"], "meaning": "law"}, {"keys": ["labor"], "meaning": "to labor"}, {"keys": ["laps"], "meaning": "to slip,glide"}, {"keys": ["late"], "meaning": "to bring,bear"}, {"keys": ["later"], "meaning": "side"}, {"keys": ["lav", "lau", "laut", "lut", "lot"], "meaning": "to wash"}, {"keys": ["lax", "lyse"], "meaning": "to loosen"}, {"keys": ["lect", "leg"], "meaning": "to choose, gather,read"}, {"keys": ["leg"], "meaning": "to appoint, send"}, {"keys": ["leg"], "meaning": "law"}, {"keys": ["lev"], "meaning": "to raise, light"}, {"keys": ["liber", "liver"], "meaning": "free"}, {"keys": ["lig"], "meaning": "to bind"}, {"keys": ["loc", "loco"], "meaning": "place"}, {"keys": ["long", "leng", "ling"], "meaning": "a word, a speech, a thought"}, {"keys": ["log", "logy"], "meaning": "long"}, {"keys": ["log", "loqu", "locut"], "meaning": "to speak"}, {"keys": ["lud"], "meaning": "to play"}, {"keys": ["lumin"], "meaning": "light"}, {"keys": ["lust", "luc"], "meaning": "bright"}, {"keys": ["magn", "maj", "max"], "meaning": "great"}, {"keys": ["mand", "mead"], "meaning": "to order, entrust"}, {"keys": ["man", "manu"], "meaning": "hand"}, {"keys": ["mari", "mar", "mer"], "meaning": "the sea,pool"}, {"keys": ["matr", "matro", "matric", "matri"], "meaning": "mother"}, {"keys": ["medi"], "meaning": "middle,half,between"}, {"keys": ["merc"], "meaning": "to trade, a reward"}, {"keys": ["merge", "mers"], "meaning": "to sink,dip"}, {"keys": ["meter"], "meaning": "to measure"}, {"keys": ["mem"], "meaning": "remember"}, {"keys": ["migr"], "meaning": "to remove"}, {"keys": ["min"], "meaning": "to jut, project"}, {"keys": ["min"], "meaning": "small"}, {"keys": ["mir"], "meaning": "to wonder, behold"}, {"keys": ["miss", "mit"], "meaning": "to send, throw"}, {"keys": ["mod"], "meaning": "manner"}, {"keys": ["mon"], "meaning": "to advise, remind"}, {"keys": ["monstr"], "meaning": "to show"}, {"keys": ["mort", "mor", "mori"], "meaning": "death"}, {"keys": ["mov", "mob", "mot"], "meaning": "to move"}, {"keys": ["mut"], "meaning": "to change"}, {"keys": ["nat", "nasc"], "meaning": "born"}, {"keys": ["nau", "nav"], "meaning": "ship"}, {"keys": ["neg"], "meaning": "to deny"}, {"keys": ["not"], "meaning": "to mark"}, {"keys": ["nounce", "nunci"], "meaning": "to report, declare,"}, {"keys": ["nov"], "meaning": "new"}, {"keys": ["onym"], "meaning": "name"}, {"keys": ["opt"], "meaning": "to wish"}, {"keys": ["opus", "oper"], "meaning": "work"}, {"keys": ["ora"], "meaning": "to speak,pray"}, {"keys": ["ori"], "meaning": "to rise, to begin"}, {"keys": ["pac", "plais"], "meaning": "peace"}, {"keys": ["pan"], "meaning": "bread"}, {"keys": ["par"], "meaning": "to prepare"}, {"keys": ["par"], "meaning": "equal"}, {"keys": ["par"], "meaning": "to appear"}, {"keys": ["part"], "meaning": "a part, to part"}, {"keys": ["passi", "pati", "path"], "meaning": "to suffer"}, {"keys": ["patr"], "meaning": "father"}, {"keys": ["ped", "pod"], "meaning": "food"}, {"keys": ["pel", "puls"], "meaning": "to drive, push, throw"}, {"keys": ["pen", "pun"], "meaning": "to punish"}, {"keys": ["pend", "pens"], "meaning": "to hang,weight"}, {"keys": ["peri"], "meaning": "to go through"}, {"keys": ["pet"], "meaning": "to fly,seek"}, {"keys": ["phan", "fan"], "meaning": "appearance"}, {"keys": ["phon"], "meaning": "sound"}, {"keys": ["phe"], "meaning": "to speak"}, {"keys": ["pict"], "meaning": "to paint,picture"}, {"keys": ["plaud", "plode"], "meaning": "to strike,clap"}, {"keys": ["plen", "plete", "ple", "pli", "ply"], "meaning": "to fill,full"}, {"keys": ["plore"], "meaning": "to flow out"}, {"keys": ["ply", "pli", "ple"], "meaning": "to fold"}, {"keys": ["pon", "pound"], "meaning": "to put"}, {"keys": ["popul", "publ"], "meaning": "people"}, {"keys": ["port"], "meaning": "to carry"}, {"keys": ["port"], "meaning": "gate,habor, entrance"}, {"keys": ["pos"], "meaning": "to place,put"}, {"keys": ["potent", "potes", "posse"], "meaning": "powerful,able"}, {"keys": ["press"], "meaning": "to press"}, {"keys": ["prim", "prin", "prem"], "meaning": "first"}, {"keys": ["pris", "prehend"], "meaning": "to seize"}, {"keys": ["prob", "prov"], "meaning": "to test,try, examine"}, {"keys": ["punct"], "meaning": "to prick,point,dot"}, {"keys": ["pute", "put"], "meaning": "to think, settle"}, {"keys": ["quire", "quisit", "quest"], "meaning": "to seek"}, {"keys": ["radi"], "meaning": "ray"}, {"keys": ["radi"], "meaning": "root"}, {"keys": ["rap", "rav"], "meaning": "to snatch"}, {"keys": ["rect", "reg", "recti"], "meaning": "right, rule, guide,direct"}, {"keys": ["reg"], "meaning": "to rule,king"}, {"keys": ["rog", "roga"], "meaning": "ask,beg"}, {"keys": ["rupt"], "meaning": "to break"}, {"keys": ["sacr", "sanct", "secr"], "meaning": "sacred"}, {"keys": ["sal", "sult"], "meaning": "to leap"}, {"keys": ["sal", "san"], "meaning": "whole"}, {"keys": ["sat", "satis"], "meaning": "full, enough"}, {"keys": ["scan", "scend", "scal"], "meaning": "to climb"}, {"keys": ["scope"], "meaning": "watch"}, {"keys": ["sci"], "meaning": "to know"}, {"keys": ["scribe", "script"], "meaning": "to write"}, {"keys": ["sed", "sess", "sid"], "meaning": "to sit"}, {"keys": ["sens", "sent"], "meaning": "to feel"}, {"keys": ["sequ", "secut", "su"], "meaning": "to follow"}, {"keys": ["sert"], "meaning": "to join,put"}, {"keys": ["serv"], "meaning": "to serve,keep"}, {"keys": ["sign"], "meaning": "to mark"}, {"keys": ["simil", "simul", "sembl"], "meaning": "like, same"}, {"keys": ["sist", "stitut", "sta", "st"], "meaning": "to stand"}, {"keys": ["sol"], "meaning": "alone"}, {"keys": ["solv", "solut"], "meaning": "to loosen"}, {"keys": ["soph"], "meaning": "wisdom"}, {"keys": ["spec", "spect"], "meaning": "to see, look"}, {"keys": ["spir"], "meaning": "to breathe"}, {"keys": ["spond", "spons"], "meaning": "to promise, answer"}, {"keys": ["sta", "stit", "sist", "stet"], "meaning": "stand"}, {"keys": ["stinct", "sting"], "meaning": "to prick"}, {"keys": ["string", "strict", "strain", "stress"], "meaning": "to draw tight"}, {"keys": ["stru", "struct"], "meaning": "to build"}, {"keys": ["suade"], "meaning": "to advise"}, {"keys": ["sume", "sumpt"], "meaning": "to Take, use, waste"}, {"keys": ["surge", "sumpt"], "meaning": "to take"}, {"keys": ["surge", "surrect"], "meaning": "to rise"}, {"keys": ["tang", "tact", "tig", "tag", "ting"], "meaning": "to touch"}, {"keys": ["tain", "ten", "tin", "tent"], "meaning": "to hold,keep"}, {"keys": ["tect"], "meaning": "to cover"}, {"keys": ["temper"], "meaning": "to moderate"}, {"keys": ["tempor", "tempo"], "meaning": "time"}, {"keys": ["tempt", "tent"], "meaning": "to try"}, {"keys": ["tend", "tens", "tent"], "meaning": "to stretch, extend"}, {"keys": ["term"], "meaning": "boundary"}, {"keys": ["terr"], "meaning": "earth"}, {"keys": ["test"], "meaning": "witness"}, {"keys": ["text"], "meaning": "to weave"}, {"keys": ["tort"], "meaning": "to twist"}, {"keys": ["tour", "torn"], "meaning": "to turn"}, {"keys": ["tract", "treat", "trait", "tra"], "meaning": "to draw,pull"}, {"keys": ["tribut"], "meaning": "to pay,bestow"}, {"keys": ["trud", "trus"], "meaning": "to thrust, push"}, {"keys": ["turb"], "meaning": "to disturb"}, {"keys": ["us", "uti"], "meaning": "to use"}, {"keys": ["vac", "van", "void"], "meaning": "empty"}, {"keys": ["vade"], "meaning": "to go"}, {"keys": ["vaga"], "meaning": "to wander"}, {"keys": ["val", "vail", "vali", "valu", "vale"], "meaning": "strong, worth"}, {"keys": ["velop"], "meaning": "to wrap"}, {"keys": ["ven", "vent", "veni"], "meaning": "to come"}, {"keys": ["ver", "very"], "meaning": "true"}, {"keys": ["vers", "vert"], "meaning": "to turn"}, {"keys": ["vi", "voy"], "meaning": "way"}, {"keys": ["vid", "vis"], "meaning": "to see"}, {"keys": ["vig", "veg"], "meaning": "lively"}, {"keys": ["vict", "vinc"], "meaning": "to conquer"}, {"keys": ["viv", "vivi", "vita"], "meaning": "to live, alive"}, {"keys": ["voc", "voke"], "meaning": "to call, voice"}, {"keys": ["vol"], "meaning": "will"}, {"keys": ["volve", "volut"], "meaning": "to roll"}, {"keys": ["volcan", "vulcan"], "meaning": "fire"}, {"keys": ["vulse"], "meaning": "to pluck"}];
+        const dbSuffixes = [{"category": "人物名詞字尾", "keys": ["an", "ian", "ean"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["aire"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ar"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ary"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ee"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["er"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ent"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ess"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["herd"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["iff"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ite"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ain"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ant"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ard", "art"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ate"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["eer"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["en"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ese"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["eur"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ier"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ist"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ive"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["man", "sman"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["or", "our"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["y", "yer"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["on"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ster"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["cle"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["et", "ette"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["el", "le"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["let"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["en", "in"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["kin"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["ling"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["ock"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["(c)ule"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["ie", "y"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ace"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["age"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["al"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ance", "ancy", "ence", "ency"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["cy"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["hood", "head"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ic"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["dom"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ice", "ise"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ing"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ion"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ism", "asm"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["itude"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["(i)um"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ment"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["mony"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ness"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["o(u)r"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ry"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ship"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["t", "th"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ty", "ety", "ity"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ure"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["y"], "meaning": ""}, {"category": "集合名詞字尾", "keys": ["age"], "meaning": ""}, {"category": "集合名詞字尾", "keys": ["ary"], "meaning": ""}, {"category": "集合名詞字尾", "keys": ["ry"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["ace"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["age"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["ary"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["ery"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["ory"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["dom"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["um"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["y"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["able", "ible"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["al", "ial"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["an", "ian"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ant", "ent"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ar"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ary"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ate", "ete", "ute"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ed"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["en"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ern"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ese"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["fold"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ful"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ic"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ical"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["id"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ile"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ine"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ing"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ior"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ique", "esque"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ish"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ite"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ive"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["less"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["like"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ly"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["most"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ory"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ous"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["some"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ward"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["y"], "meaning": ""}, {"category": "副詞字尾", "keys": ["ence"], "meaning": ""}, {"category": "副詞字尾", "keys": ["ling", "long"], "meaning": ""}, {"category": "副詞字尾", "keys": ["ly"], "meaning": ""}, {"category": "副詞字尾", "keys": ["ward(s)"], "meaning": ""}, {"category": "副詞字尾", "keys": ["way(s)", "wise"], "meaning": ""}, {"category": "動詞字尾", "keys": ["ate"], "meaning": ""}, {"category": "動詞字尾", "keys": ["en"], "meaning": ""}, {"category": "動詞字尾", "keys": ["er"], "meaning": ""}, {"category": "動詞字尾", "keys": ["fy"], "meaning": ""}, {"category": "動詞字尾", "keys": ["ize", "ise"], "meaning": ""}, {"category": "動詞字尾", "keys": ["ish"], "meaning": ""}, {"category": "動詞字尾", "keys": ["le"], "meaning": ""}];
+
+        let currentIndex = 0;
+        let currentFontScale = parseFloat(localStorage.getItem('bilingual_font_scale')) || 1.0;
+        const audioPlayer = document.getElementById('audioPlayer');
+
+        document.documentElement.style.setProperty('--font-scale', currentFontScale);
+
+        function changeFontSize(delta) {
+            currentFontScale = Math.min(Math.max(0.7, currentFontScale + delta), 1.8);
+            document.documentElement.style.setProperty('--font-scale', currentFontScale);
+            localStorage.setItem('bilingual_font_scale', currentFontScale);
+        }
+
+        function updatePage() {
+            if (!pages || pages.length === 0) return;
+            const page = pages[currentIndex];
+            const container = document.getElementById('paragraph-box');
+            container.innerHTML = '';
+
+            if (page.en && page.en.length > 0) {
+                const enSec = document.createElement('div');
+                enSec.className = 'en-section';
+                page.en.forEach(pText => {
+                    const p = document.createElement('div'); p.className = 'en-p'; p.innerText = pText; enSec.appendChild(p);
+                });
+                container.appendChild(enSec);
+            }
+
+            if (page.zh && page.zh.length > 0) {
+                const zhSec = document.createElement('div');
+                zhSec.className = 'zh-section';
+                page.zh.forEach(pText => {
+                    const p = document.createElement('div'); p.className = 'zh-p'; p.innerText = pText; zhSec.appendChild(p);
+                });
+                container.appendChild(zhSec);
+            }
+
+            document.getElementById('page-info').innerText = `${currentIndex + 1} / ${pages.length}`;
+            document.getElementById('progress').style.width = `${((currentIndex + 1) / pages.length) * 100}%`;
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === pages.length - 1;
+            document.getElementById('main-content').scrollTop = 0;
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        // 💡 智慧辨識電腦與手機觸控事件
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        document.addEventListener('mouseup', (e) => {
+            // 電腦端：按住 Alt 鍵再選取才觸發（避開 Google 翻譯）
+            // 手機端：直接選取文字就觸發
+            if (isMobile || e.altKey) {
+                const selection = window.getSelection();
+                const text = selection.toString().trim().toLowerCase();
+                if (text && /^[a-zA-Z]+$/.test(text) && text.length > 2) {
+                    analyzeWord(text);
+                }
+            }
+        });
+
+        function analyzeWord(word) {
+            const popup = document.getElementById('root-dict-popup');
+            const title = document.getElementById('popup-word-title');
+            const content = document.getElementById('popup-content');
+
+            title.innerText = `🔍 【${word}】`;
+            content.innerHTML = '';
+            let hasResult = false;
+
+            // 1. 字首
+            let pRes = [];
+            dbPrefixes.forEach(item => {
+                item.keys.forEach(k => { if (word.startsWith(k)) pRes.push(`<b>${k}-</b> : ${item.meaning}`); });
+            });
+            if (pRes.length > 0) {
+                hasResult = true;
+                content.innerHTML += `<div class="tag-group"><div class="tag-title">🚩 字首 Prefix</div>${pRes.map(r => `<div class="tag-item">${r}</div>`).join('')}</div>`;
+            }
+
+            // 2. 字根
+            let rRes = [];
+            dbRoots.forEach(item => {
+                item.keys.forEach(k => { if (word.includes(k) && k.length >= 2) rRes.push(`<b>-${k}-</b> : ${item.meaning}`); });
+            });
+            if (rRes.length > 0) {
+                hasResult = true;
+                content.innerHTML += `<div class="tag-group"><div class="tag-title">🌱 字根 Root</div>${rRes.map(r => `<div class="tag-item">${r}</div>`).join('')}</div>`;
+            }
+
+            // 3. 字尾
+            let sRes = [];
+            dbSuffixes.forEach(item => {
+                item.keys.forEach(k => {
+                    if (word.endsWith(k) && k.length >= 2) {
+                        const mStr = item.meaning ? ` : ${item.meaning}` : '';
+                        sRes.push(`<b>-${k}</b> <span class="suffix-badge">${item.category}</span>${mStr}`);
+                    }
+                });
+            });
+            if (sRes.length > 0) {
+                hasResult = true;
+                content.innerHTML += `<div class="tag-group"><div class="tag-title">🔚 字尾 Suffix</div>${sRes.map(r => `<div class="tag-item">${r}</div>`).join('')}</div>`;
+            }
+
+            popup.style.display = hasResult ? 'block' : 'none';
+        }
+
+        function closePopup() { document.getElementById('root-dict-popup').style.display = 'none'; }
+        function nextPage() { if (currentIndex < pages.length - 1) { currentIndex++; updatePage(); closePopup(); } }
+        function prevPage() { if (currentIndex > 0) { currentIndex--; updatePage(); closePopup(); } }
+        function seekProgress(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            currentIndex = Math.floor(((e.clientX - rect.left) / rect.width) * pages.length);
+            updatePage(); closePopup();
+        }
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+        function toggleMp3Play() {
+            const label = document.getElementById('mp3BtnLabel');
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            if (audioPlayer.paused) {
+                audioPlayer.play().then(() => label.textContent = " 暫停").catch(() => alert('未找到 MP3 檔案'));
+            } else { audioPlayer.pause(); label.textContent = " 全文"; }
+        }
+        function speakCurrentPage() {
+            if (audioPlayer && !audioPlayer.paused) { audioPlayer.pause(); document.getElementById('mp3BtnLabel').textContent = " 全文MP3"; }
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const textToSpeak = (pages[currentIndex].en || []).join(' ');
+            if (!textToSpeak) return;
+            const sentences = textToSpeak.match(/[^.!?,;—]+(?:--|[^.!?,;—])*/g) || [textToSpeak];
+            let sentenceIndex = 0;
+            function speakNext() {
+                if (sentenceIndex >= sentences.length) return;
+                const utterance = new SpeechSynthesisUtterance(sentences[sentenceIndex].trim());
+                utterance.lang = 'en-US'; utterance.rate = 0.9;
+                utterance.onend = () => { sentenceIndex++; speakNext(); };
+                utterance.onerror = () => { sentenceIndex++; speakNext(); };
+                window.speechSynthesis.speak(utterance);
+            }
+            speakNext();
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextPage();
+            else if (e.key === 'ArrowLeft') prevPage();
+        });
+        updatePage();
+    </script>
+</body>
+</html>
