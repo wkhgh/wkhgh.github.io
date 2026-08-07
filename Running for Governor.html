@@ -253,7 +253,7 @@
 <body>
 
     <!-- MP3 聲音播放元件（預設完全不自動播放） -->
-    <audio id="audioPlayer" src="Running for Governor.mp3" preload="none"></audio>
+    <!--<audio id="audioPlayer" src="Running for Governor.mp3" preload="none"></audio> -->
 
     <header>
         <div class="title">📖 馬克．吐溫《競選州長》</div>
@@ -261,7 +261,8 @@
             <button onclick="changeFontSize(-0.1)" title="縮小字體">A-</button>
             <button onclick="changeFontSize(0.1)" title="放大字體">A+</button>
             <button onclick="speakCurrentPage()" title="朗讀">🔊<span class="btn-label"> 朗讀</span></button>
-            <button id="mp3Btn" onclick="toggleMp3Play()" title="全文 播放/暫停">🎧<span class="btn-label" id="mp3BtnLabel"> 全文</span></button>
+            <button id="ytBtn" onclick="openYouTube()" title="前往 YouTube 播放影片">🎧<span class="btn-label"> YouTube</span></button>
+   </button>
             <button onclick="toggleDarkMode()" title="切換">🌙<span class="btn-label"> 切換</span></button>
             <button id="fullscreenBtn" onclick="toggleFullscreen()" title="全螢幕">⛶<span class="btn-label"> 全螢幕</span></button>
         </div>
@@ -387,29 +388,21 @@
             }
         });
 
-        // 🎧 全文 MP3 手動播放 / 暫停控制
-        function toggleMp3Play() {
-            const label = document.getElementById('mp3BtnLabel');
+   
+	// 🎧 開啟新分頁播放 YouTube 影片
+	function openYouTube() {
+	    // 如果有正在執行的語音朗讀，先停止
+	    if ('speechSynthesis' in window) {
+		window.speechSynthesis.cancel();
+	    }
 
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // 停止單頁 TTS 朗讀
-            }
-
-            if (audioPlayer.paused) {
-                audioPlayer.play().then(() => {
-                    label.textContent = " 暫停";
-                }).catch(err => {
-                    alert('未找到全文 MP3 檔案，請確認音訊檔已放入資料夾。');
-                });
-            } else {
-                audioPlayer.pause();
-                label.textContent = " 全文";
-            }
-        }
-
-        audioPlayer.onended = function() {
-            document.getElementById('mp3BtnLabel').textContent = " 全文MP3";
-        };
+	    // 💡 請將下方網址替換為您對應的 YouTube 影片網址
+	    const youtubeUrl = "https://youtu.be/wgJOfQqJbjg";
+	    
+	    // 開啟新分頁
+	    window.open(youtubeUrl, '_blank');
+	}        
+            
 
         // 🔊 朗讀目前這一頁（會把頁面內所有偵測到的英文段落依序唸出）
         function speakCurrentPage() {
