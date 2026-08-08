@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>莫泊桑 《我的叔叔于勒》</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-main: #2b2d42;
+            --text-sub: #4a5568;
+            --card-bg: #ffffff;
+            --accent-color: #3182ce;
+            --border-color: #e2e8f0;
+            --font-scale: 1;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a202c;
+            --text-main: #edf2f7;
+            --text-sub: #cbd5e0;
+            --card-bg: #2d3748;
+            --accent-color: #63b3ed;
+            --border-color: #4a5568;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0; padding: 0; height: 100vh; overflow: hidden;
+            background-color: var(--bg-color); color: var(--text-main);
+            display: flex; flex-direction: column;
+            font-family: Georgia, "Times New Roman", "標楷體", serif;
+        }
+
+        header {
+            height: 65px; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 25px; background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color); flex-shrink: 0; z-index: 20;
+            user-select: none;
+        }
+
+        .title {
+            font-size: 1.2rem; font-weight: bold; color: var(--text-main);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45%;
+        }
+
+        .controls { display: flex; align-items: center; gap: 5px; }
+
+        .controls button {
+            background: none; border: 1px solid var(--border-color); color: var(--text-main);
+            padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.88rem;
+        }
+
+        main { flex: 1; display: flex; position: relative; overflow-y: auto; padding: 15px 0; }
+
+        .click-zone { position: absolute; top: 0; bottom: 0; width: 8%; z-index: 5; cursor: pointer; user-select: none; }
+        .click-left { left: 0; } .click-right { right: 0; }
+
+        .card-container { width: 95%; max-width: 1200px; margin: auto; padding: 0 10px; z-index: 10; }
+
+        .paragraph-box {
+            background-color: var(--card-bg); padding: 30px 40px; border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color);
+        }
+
+        .en-p {
+            font-size: calc(1.18rem * var(--font-scale)); line-height: 1.65;
+            font-family: Georgia, serif; color: var(--text-main); margin-bottom: 16px;
+            user-select: text !important; cursor: text;
+        }
+
+        .zh-section { border-top: 1px dashed var(--border-color); padding-top: 20px; }
+
+        .zh-p {
+            font-size: calc(1.25rem * var(--font-scale)); line-height: 1.85;
+            font-family: "標楷體", serif; color: var(--text-sub); margin-bottom: 16px;
+            user-select: text !important;
+        }
+
+        /* 字根分析彈窗 */
+        #root-dict-popup {
+            display: none; position: fixed; bottom: 80px; left: 30px; width: 340px; max-height: 420px;
+            background-color: var(--card-bg); border: 2px solid var(--accent-color);
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 999;
+            padding: 16px; overflow-y: auto; font-family: -apple-system, sans-serif;
+        }
+
+        .popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 12px; }
+        .popup-title { font-size: 1.1rem; font-weight: bold; color: var(--accent-color); }
+        .close-btn { cursor: pointer; font-weight: bold; font-size: 1.2rem; color: var(--text-sub); }
+        .tag-group { margin-bottom: 10px; }
+        .tag-title { font-size: 0.85rem; font-weight: bold; color: var(--text-sub); margin-bottom: 4px; }
+        .tag-item { background-color: var(--bg-color); border-left: 3px solid var(--accent-color); padding: 6px 10px; border-radius: 4px; margin-bottom: 6px; font-size: 0.9rem; }
+        .suffix-badge { display: inline-block; background-color: var(--accent-color); color: white; padding: 1px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 4px; }
+        .no-result { font-size: 0.85rem; color: var(--text-sub); line-height: 1.6; padding: 6px 2px 10px 2px; }
+        .etymo-link { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); text-align: center; }
+        .etymo-link a { color: var(--accent-color); text-decoration: none; font-size: 0.88rem; font-weight: bold; }
+        .etymo-link a:hover { text-decoration: underline; }
+
+        footer {
+            height: 65px; padding: 8px 25px; background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; gap: 6px; flex-shrink: 0; z-index: 20; user-select: none;
+        }
+        .progress-bar-container { width: 100%; background-color: var(--border-color); height: 6px; border-radius: 3px; overflow: hidden; cursor: pointer; }
+        .progress-bar { height: 100%; background-color: var(--accent-color); width: 0%; transition: width 0.2s; }
+        .footer-controls { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: var(--text-sub); }
+        .nav-btn { background-color: var(--accent-color); color: white; border: none; padding: 8px 22px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: bold; }
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        @media (max-width: 600px) {
+            #root-dict-popup { left: 5%; right: 5%; width: 90%; bottom: 75px; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="audioPlayer" src="MY UNCLE JULES.mp3" preload="none"></audio>
+
+    <header>
+        <div class="title">📖 莫泊桑 《我的叔叔于勒》</div>
+        <div class="controls">
+            <button onclick="changeFontSize(-0.1)">A-</button>
+            <button onclick="changeFontSize(0.1)">A+</button>
+            <button onclick="speakCurrentPage()">🔊<span class="btn-label"> 朗讀</span></button>
+            <button id="mp3Btn" onclick="toggleMp3Play()">🎧<span class="btn-label" id="mp3BtnLabel"> 全文</span></button>
+            <button onclick="toggleDarkMode()">🌙<span class="btn-label"> 切換</span></button>
+            <button id="fullscreenBtn" onclick="toggleFullscreen()">⛶<span class="btn-label"> 全螢幕</span></button>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <div class="click-zone click-left" onclick="prevPage()"></div>
+        <div class="click-zone click-right" onclick="nextPage()"></div>
+
+        <div class="card-container">
+            <div class="paragraph-box" id="paragraph-box"></div>
+        </div>
+    </main>
+
+    <div id="root-dict-popup">
+        <div class="popup-header">
+            <span class="popup-title" id="popup-word-title">🌱 單字結構分析</span>
+            <span class="close-btn" onclick="closePopup()">✕</span>
+        </div>
+        <div id="popup-content"></div>
+    </div>
+
+    <footer>
+        <div class="progress-bar-container" onclick="seekProgress(event)">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div class="footer-controls">
+            <button class="nav-btn" id="prev-btn" onclick="prevPage()">上一頁</button>
+            <span id="page-info">0 / 0</span>
+            <button class="nav-btn" id="next-btn" onclick="nextPage()">下一頁</button>
+        </div>
+    </footer>
+
+    <script>
+        const pages = [{"id": 1, "en": ["A white-haired old man begged us for alms. My companion, Joseph Davranche, gave him five francs. Noticing my surprised look, he said:"], "zh": ["一位白髮蒼蒼的老人向我們乞討。我的同伴約瑟夫·達夫朗什給了他五法郎。注意到我驚訝的眼神，他說："]}, {"id": 2, "en": ["“That poor unfortunate reminds me of a story which I shall tell you, the memory of which continually pursues me. Here it is:"], "zh": ["「那個可憐的窮光蛋讓我想起了一個故事，我這就講給你聽。這段回憶一直纏繞著我，揮之不去。故事是這樣的："]}, {"id": 3, "en": ["“My family, which came originally from Havre, was not rich. We just managed to make both ends meet. My father worked hard, came home late from the office, and earned very little. I had two sisters."], "zh": ["「我們家祖籍哈弗爾，並不富裕。日子過得僅能勉強糊口。我父親工作很辛苦，每天很晚才從辦公室回家，賺得卻極少。我還有兩個姐姐。"]}, {"id": 4, "en": ["“My mother suffered a good deal from our reduced circumstances, and she often had harsh words for her husband, veiled and sly reproaches. The poor man then made a gesture which used to distress me. He would pass his open hand over his forehead, as if to wipe away perspiration which did not exist, and he would answer nothing. I felt his helpless suffering. We economized on everything, and never would accept an invitation to dinner, so as not to have to return the courtesy. All our provisions were bought at bargain sales. My sisters made their own gowns, and long discussions would arise on the price of a piece of braid worth fifteen centimes a yard. Our meals usually consisted of soup and beef, prepared with every kind of sauce."], "zh": ["「母親因家境窘迫而受了不少苦，她經常對丈夫厲聲責備，或是冷嘲熱諷。這時，可憐的父親總會做出一個讓我心酸的舉動：他會用手掌撫過額頭，彷彿要擦去那並不存在的汗水，而且一言不發。我能感受到他那無助的痛苦。我們事事節省，從不接受別人的晚餐邀請，以免還要回請。家裡所有的日常用品都是買特價品。姐姐們自己縫製衣裳，甚至會為了一碼值十五個生丁的滾邊絲帶價格爭論大半天。我們的伙食通常是湯和牛肉，配上各種調味醬。"]}, {"id": 5, "en": ["“They say it is wholesome and nourishing, but I should have preferred a change."], "zh": ["「大家都說這既健康又營養，但我倒寧願能換換口味。"]}, {"id": 6, "en": ["“I used to go through terrible scenes on account of lost buttons and torn trousers."], "zh": ["「那時，我也常因掉了鈕扣或弄破褲子而挨一頓臭罵。"]}, {"id": 7, "en": ["“Every Sunday, dressed in our best, we would take our walk along the breakwater. My father, in a frock coat, high hat and kid gloves, would offer his arm to my mother, decked out and beribboned like a ship on a holiday. My sisters, who were always ready first, would await the signal for leaving; but at the last minute some one always found a spot on my father's frock coat, and it had to be wiped away quickly with a rag moistened with benzine."], "zh": ["「每到星期天，我們都會穿戴整齊，沿著防波堤散步。父親穿著禮服、戴著高帽和羊皮手套，把胳膊遞給母親。母親則打扮得花枝招展、飄帶飛揚，就像節日裡張燈結彩的船隻一樣。姐姐們總是先準備好，等待出發的信號；但在最後一刻，總有人會在父親的禮服上發現一處污漬，必須趕緊用蘸了汽油的抹布擦掉。"]}, {"id": 8, "en": ["“My father, in his shirt sleeves, his silk hat on his head, would await the completion of the operation, while my mother, putting on her spectacles, and taking off her gloves in order not to spoil them, would make haste."], "zh": ["「這時，父親會穿著襯衫、頭戴絲綢禮帽，在一旁等待清理完畢。母親則戴上眼鏡，摘下手套以免弄髒，急急忙忙地擦拭著。"]}, {"id": 9, "en": ["“Then we set out ceremoniously. My sisters marched on ahead, arm in arm. They were of marriageable age and had to be displayed. I walked on the left of my mother and my father on her right. I remember the pompous air of my poor parents in these Sunday walks, their stern expression, their stiff walk. They moved slowly, with a serious expression, their bodies straight, their legs stiff, as if something of extreme importance depended upon their appearance."], "zh": ["「接著，我們便莊重地出發了。姐姐們手挽著手走在前面。她們已到了適婚年齡，必須展現給大眾看。我走在母親左邊，父親走在她的右邊。我至今還記得我那可憐的父母在星期天散步時那種自命不凡的神氣，他們表情嚴肅，步履僵硬。他們走得很慢，神色莊重，身體挺直，雙腿緊繃，彷彿他們的儀表關係到某種極其重大的事情。"]}, {"id": 10, "en": ["“Every Sunday, when the big steamers were returning from unknown and distant countries, my father would invariably utter the same words:"], "zh": ["「每個星期天，當那些巨大的輪船從遙遠未知的國度駛回時，父親總是會一字不差地說出同樣的話："]}, {"id": 11, "en": ["“'What a surprise it would be if Jules were on that one! Eh?'"], "zh": ["「『要是于勒就在那艘船上，那該是多大的驚喜啊！是不是？』"]}, {"id": 12, "en": ["“My Uncle Jules, my father's brother, was the only hope of the family, after being its only fear. I had heard about him since childhood, and it seemed to me that I should recognize him immediately, knowing as much about him as I did. I knew every detail of his life up to the day of his departure for America, although this period of his life was spoken of only in hushed tones."], "zh": ["「我的于勒叔叔——父親的弟弟——曾是全家唯一的恐懼，而後又成了全家唯一的希望。我從小就聽說他的事，因為對他了解太深，我覺得自己一眼就能認出他來。我清楚他去美國前的每一處生活細節，儘管那段時期的往事大家只敢低聲議論。"]}, {"id": 13, "en": ["“It seems that he had led a bad life, that is to say, he had squandered a little money, which action, in a poor family, is one of the greatest crimes. With rich people a man who amuses himself only sows his wild oats. He is what is generally called a sport. But among needy families a boy who forces his parents to break into the capital becomes a good-for-nothing, a rascal, a scamp. And this distinction is just, although the action be the same, for consequences alone determine the seriousness of the act."], "zh": ["「據說，他以前生活荒唐，也就是說，他揮霍了一些錢財——這種行徑在窮苦家庭裡簡直是滔天大罪。在富貴人家，一個尋歡作樂的男人頂多算是在宣洩青春的狂野，通常被稱為『花花公子』。但在貧困人家，一個逼得父母動用老本的孩子就成了無賴、流氓、敗家子。這種區分是公允的，雖然行為本身相同，但唯有後果才能決定行為的嚴重性。"]}, {"id": 14, "en": ["“Well, Uncle Jules had visibly diminished the inheritance on which my father had counted, after he had swallowed his own to the last penny. Then, according to the custom of the times, he had been shipped off to America on a freighter going from Havre to New York."], "zh": ["「總之，于勒叔叔把自己的遺產揮霍得一文不剩之後，又顯著地縮減了我父親所指望的那份遺產。於是，按照當時的慣例，他被送上了一艘從哈弗爾開往紐約的貨船，遣送到美國去了。"]}, {"id": 15, "en": ["“Once there, my uncle began to sell something or other, and he soon wrote that he was making a little money and that he soon hoped to be able to indemnify my father for the harm he had done him. This letter caused a profound emotion in the family. Jules, who up to that time had not been worth his salt, suddenly became a good man, a kind-hearted fellow, true and honest like all the Davranches."], "zh": ["「到了那裡，叔叔開始做起某種買賣，不久便寫信回來說他賺了一點錢，並希望很快就能彌補他對父親造成的損失。這封信在我們家引起了巨大的震動。直到那時還一無是處的于勒，突然間成了好人、熱心腸的小夥子，而且像所有的達夫朗什家人一樣，忠實而誠實。"]}, {"id": 16, "en": ["“One of the captains told us that he had rented a large shop and was doing an important business."], "zh": ["「一位船長告訴我們，于勒租了一間大店鋪，生意做得很红火。"]}, {"id": 17, "en": ["“Two years later a second letter came, saying: 'My dear Philippe, I am writing to tell you not to worry about my health, which is excellent. Business is good. I leave to-morrow for a long trip to South America. I may be away for several years without sending you any news. If I shouldn't write, don't worry. When my fortune is made I shall return to Havre. I hope that it will not be too long and that we shall all live happily together....'"], "zh": ["「兩年後，第二封信來了，上面寫著：『親愛的菲利普，寫這封信是想告訴你，不要擔心我的身體，我好得很。生意不錯。我明天要動身去南美洲進行一次長途旅行，可能會有好幾年無法給你們寄信。如果我沒寫信，千萬別擔心。等我發了財，我就會回到哈弗爾。希望這一天不會太遠，到時候我們大家就能幸福地生活在一起……』"]}, {"id": 18, "en": ["“This letter became the gospel of the family. It was read on the slightest provocation, and it was shown to everybody."], "zh": ["「這封信成了我們家的聖經。一有機會就拿出來讀，還向每個人炫耀。"]}, {"id": 19, "en": ["“For ten years nothing was heard from Uncle Jules; but as time went on my father's hope grew, and my mother, also, often said:"], "zh": ["「整整十年，我們沒有聽到于勒叔叔的任何音訊；但隨著時間的流逝，父親的希望愈發強烈，母親也經常說："]}, {"id": 20, "en": ["“'When that good Jules is here, our position will be different. There is one who knew how to get along!'"], "zh": ["「『等好心的大好人于勒回來，我們的處境就大不一樣了。他可真是一個懂得如何出人頭地的人！』"]}, {"id": 21, "en": ["“And every Sunday, while watching the big steamers approaching from the horizon, pouring out a stream of smoke, my father would repeat his eternal question:"], "zh": ["「於是每個星期天，望著從地平線上駛來、噴著濃煙的大輪船，父親都會重複他那永恆的提問："]}, {"id": 22, "en": ["“'What a surprise it would be if Jules were on that one! Eh?'"], "zh": ["「『要是于勒就在那艘船上，那該是多大的驚喜啊！是不是？』"]}, {"id": 23, "en": ["“We almost expected to see him waving his handkerchief and crying:"], "zh": ["「我們幾乎期待著看到他揮舞著手帕，大喊："]}, {"id": 24, "en": ["“'Hey! Philippe!'"], "zh": ["「『嘿！菲利普！』"]}, {"id": 25, "en": ["“Thousands of schemes had been planned on the strength of this expected return; we were even to buy a little house with my uncle's money—a little place in the country near Ingouville. In fact, I wouldn't swear that my father had not already begun negotiations."], "zh": ["「憑藉著對這場歸來的期盼，我們勾勒了成千上萬個計劃；我們甚至打算用叔叔的錢在安古維爾附近買一棟鄉間小別墅。事實上，我敢說父親說不定已經開始進行談判了。"]}, {"id": 26, "en": ["“The elder of my sisters was then twenty-eight, the other twenty-six. They were not yet married, and that was a great grief to every one."], "zh": ["「那時，我的大姐二十八歲，二姐二十六歲。她們都還沒出嫁，這成了全家人的心病。"]}, {"id": 27, "en": ["“At last a suitor presented himself for the younger one. He was a clerk, not rich, but honorable. I have always been morally certain that Uncle Jules' letter, which was shown him one evening, had swept away the young man's hesitation and definitely decided him."], "zh": ["「終於，有人來向二姐求婚了。他是一名職員，不富有，但人品端正。我一直打從心底確信，某天晚上給他看的那封于勒叔叔的信，消除了一切顧慮，讓他下定了決心。"]}, {"id": 28, "en": ["“He was accepted eagerly, and it was decided that after the wedding the whole family should take a trip to Jersey."], "zh": ["「我們欣然接受了他的求婚，並決定婚禮過後，全家一起去澤西島旅行。"]}, {"id": 29, "en": ["“Jersey is the ideal trip for poor people. It is not far; one crosses a strip of sea in a steamer and lands on foreign soil, as this little island belongs to England. Thus, a Frenchman, with a two hours' sail, can observe a neighboring people at home and study their customs."], "zh": ["「對於窮人來說，澤西島是理想的旅行目的地。那裡不遠，坐輪船跨過一片海就能踏上異國土地，因為這座小島屬於英國。因此，一個法國人只需坐兩個小時的船，就能觀察鄰國人民的生活，研究他們的風俗。"]}, {"id": 30, "en": ["“This trip to Jersey completely absorbed our ideas, was our sole anticipation, the constant thought of our minds."], "zh": ["「這次澤西島之行佔據了我們所有的心思，成了我們唯一的期盼，時刻縈繞在腦海中。"]}, {"id": 31, "en": ["“At last we left. I see it as plainly as if it had happened yesterday. The boat was getting up steam against the quay at Granville; my father, bewildered, was superintending the loading of our three pieces of baggage; my mother, nervous, had taken the arm of my unmarried sister, who seemed lost since the departure of the other one, like the last chicken of a brood; behind us came the bride and groom, who always stayed behind, a thing that often made me turn round."], "zh": ["「終於，我們出發了。那一幕我看得清清楚楚，彷彿就發生在昨天。輪船在格蘭維爾的碼頭旁生火待發；父親手忙腳亂地監督著我們僅有的三件行李上船；母親神經緊張地挽著大姐的胳膊——自從二姐出嫁後，大姐就像一窩小雞中剩下的最後一隻，顯得有些落寞；在我們身後，跟著新郎和新娘，他們總是落在後面，這讓我忍不住頻頻回頭。"]}, {"id": 32, "en": ["“The whistle sounded. We got on board, and the vessel, leaving the breakwater, forged ahead through a sea as flat as a marble table. We watched the coast disappear in the distance, happy and proud, like all who do not travel much."], "zh": ["「汽笛拉響了。我們登上船，輪船駛離防波堤，在平坦如大理石桌面的海面上破浪前行。我們望著海岸線在遠方漸漸消失，心中充滿了快樂與自豪，就像所有不常旅行的人一樣。"]}, {"id": 33, "en": ["“My father was swelling out his chest in the breeze, beneath his frock coat, which had that morning been very carefully cleaned; and he spread around him that odor of benzine which always made me recognize Sunday. Suddenly he noticed two elegantly dressed ladies to whom two gentlemen were offering oysters. An old, ragged sailor was opening them with his knife and passing them to the gentlemen, who would then offer them to the ladies. They ate them in a dainty manner, holding the shell on a fine handkerchief and advancing their mouths a little in order not to spot their dresses. Then they would drink the liquid with a rapid little motion and throw the shell overboard."], "zh": ["「父親在海風中挺起胸膛，身上的禮服當天早上被仔細清理過，散發著那股總能讓我聯想到星期天的汽油味。突然，他注意到兩位衣著優雅的女士，兩位紳士正請她們吃牡蠣。一個衣衫襤褸的老水手用小刀把牡蠣撬開，遞給兩位紳士，再由他們呈給女士。她們吃得十分文雅，用一塊精緻的手帕托著貝殼，嘴巴微微前伸，以免弄髒衣服。接著，她們輕快地一吸，將汁水喝下，再把貝殼扔進海裡。"]}, {"id": 34, "en": ["“My father was probably pleased with this delicate manner of eating oysters on a moving ship. He considered it good form, refined, and, going up to my mother and sisters, he asked:"], "zh": ["「父親顯然很欣賞這種在行駛的船上吃牡蠣的優雅方式。他認為這很高雅、體面，便走到母親和姐姐們身邊問道："]}, {"id": 35, "en": ["“'Would you like me to offer you some oysters?'"], "zh": ["「『你們想吃點牡蠣嗎？我來買。』"]}, {"id": 36, "en": ["“My mother hesitated on account of the expense, but my two sisters immediately accepted. My mother said in a provoked manner:"], "zh": ["「母親因為心疼錢而有些猶豫，但我的兩個姐姐立刻答應了。母親有些惱怒地說："]}, {"id": 37, "en": ["“'I am afraid that they will hurt my stomach. Offer the children some, but not too much, it would make them sick.' Then, turning toward me, she added:"], "zh": ["「『我怕這東西會傷胃。給孩子們買一點吧，但別太多，吃多了會生病的。』接著，她轉向我補充道："]}, {"id": 38, "en": ["“'As for Joseph, he doesn't need any. Boys shouldn't be spoiled.'"], "zh": ["「『至於約瑟夫，他就不用了。男孩子不能太嬌慣。』"]}, {"id": 39, "en": ["“However, I remained beside my mother, finding this discrimination unjust. I watched my father as he pompously conducted my two sisters and his son-in-law toward the ragged old sailor."], "zh": ["「然而，我覺得這種區別對待很不公平，於是留在了母親身邊。我注視著父親，看他神氣活現地帶著我的兩個姐姐和女婿，走向那個衣衫襤褸的老水手。"]}, {"id": 40, "en": ["“The two ladies had just left, and my father showed my sisters how to eat them without spilling the liquor. He even tried to give them an example, and seized an oyster. He attempted to imitate the ladies, and immediately spilled all the liquid over his coat. I heard my mother mutter:"], "zh": ["「那兩位女士剛剛離開，父親便向姐姐們示範如何吃牡蠣而不灑出汁水。他甚至想以身作則，親自拿起了一個。他試圖模仿那幾位女士，結果立刻把汁水全灑在了大衣上。我聽到母親嘟囔著："]}, {"id": 41, "en": ["“'He would do far better to keep quiet.'"], "zh": ["「『他最好還是安分點。』"]}, {"id": 42, "en": ["“But, suddenly, my father appeared to be worried; he retreated a few steps, stared at his family gathered around the old shell opener, and quickly came toward us. He seemed very pale, with a peculiar look. In a low voice he said to my mother:"], "zh": ["「但是，突然間，父親似乎顯得有些焦慮；他退後了幾步，盯著圍在老水手身邊的家人，然後迅速朝我們走來。他的臉色十分蒼白，眼神有些異樣。他低聲對母親說："]}, {"id": 43, "en": ["“'It's extraordinary how that man opening the oysters looks like Jules.'"], "zh": ["「『真是奇了，那個撬牡蠣的人長得真像于勒。』"]}, {"id": 44, "en": ["“Astonished, my mother asked:"], "zh": ["「母親吃驚地問："]}, {"id": 45, "en": ["“'What Jules?'"], "zh": ["「『哪個于勒？』"]}, {"id": 46, "en": ["“My father continued:"], "zh": ["「父親繼續說："]}, {"id": 47, "en": ["“'Why, my brother. If I did not know that he was well off in America, I should think it was he.'"], "zh": ["「『還能有誰，我弟弟啊。如果我不是知道他在美國過得很好，我真會以為就是他。』"]}, {"id": 48, "en": ["“Bewildered, my mother stammered:"], "zh": ["「母親困惑得結結巴巴地說："]}, {"id": 49, "en": ["“'You are crazy! As long as you know that it is not he, why do you say such foolish things?'"], "zh": ["「『你瘋了嗎！既然明知道不是他，為什麼還要胡說八道？』"]}, {"id": 50, "en": ["“But my father insisted:"], "zh": ["「但父親堅持說："]}, {"id": 51, "en": ["“'Go on over and see, Clarisse! I would rather have you see with your own eyes.'"], "zh": ["「『過去看看吧，克拉麗絲！我倒希望妳親眼瞧瞧。』"]}, {"id": 52, "en": ["“She arose and walked to her daughters. I, too, was watching the man. He was old, dirty, wrinkled, and did not lift his eyes from his work."], "zh": ["「她站起身，走向女兒們。我也注視著那個男人。他蒼老、骯髒、滿臉皺紋，眼睛始終不離開手頭的工作。"]}, {"id": 53, "en": ["“My mother returned. I noticed that she was trembling. She exclaimed quickly:"], "zh": ["「母親回來了。我注意到她渾身都在發抖。她急忙低聲說："]}, {"id": 54, "en": ["“'I believe that it is he. Why don't you ask the captain? But be very careful that we don't have this rogue on our hands again!'"], "zh": ["「『我看真的是他。你為什麼不去問問船長？但千萬要小心，別再讓這個流氓粘上我們！』"]}, {"id": 55, "en": ["“My father walked away, but I followed him. I felt strangely moved."], "zh": ["「父親走開了，我則跟在他後面。我感到一陣莫名的心潮澎湃。"]}, {"id": 56, "en": ["“The captain, a tall, thin man, with blond whiskers, was walking along the bridge with an important air as if he were commanding the Indian mail steamer."], "zh": ["「船長是一個高大瘦削的男人，留著金色絡腮鬍，正在船橋上踱步，神氣活現得彷彿在指揮一艘開往印度的郵輪。"]}, {"id": 57, "en": ["“My father addressed him ceremoniously, and questioned him about his profession, adding many compliments:"], "zh": ["「父親客氣地向他打招呼，詢問他的職業，並說了許多恭維話："]}, {"id": 58, "en": ["“'What might be the importance of Jersey? What did it produce? What was the population? The customs? The nature of the soil?' etc., etc."], "zh": ["「『澤西島的重要性如何？出產什麼？人口有多少？風俗習慣是怎樣的？土地性質如何？』等等，等等。"]}, {"id": 59, "en": ["“'You have there an old shell opener who seems quite interesting. Do you know anything about him?'"], "zh": ["「最後，他轉入正題：『您那兒有個撬牡蠣的老頭，看起來挺有趣的。您知道關於他的什麼事嗎？』"]}, {"id": 60, "en": ["“The captain, whom this conversation began to weary, answered dryly:"], "zh": ["「對這場談話感到有些厭煩的船長冷淡地回答："]}, {"id": 61, "en": ["“'He is some old French tramp whom I found last year in America, and I brought him back. It seems that he has some relatives in Havre, but that he doesn't wish to return to them because he owes them money. His name is Jules—Jules Darmanche or Darvanche or something like that. It seems that he was once rich over there, but you can see what's left of him now.'"], "zh": ["「『他是個法國老流浪漢，是我去年在美國發現並帶回來的。聽說他在哈弗爾有些親戚，但他不想回去，因為他欠他們的錢。他叫于勒——于勒·達爾曼什或達夫朗什之類的。聽說他以前在美洲挺有錢的，但您瞧瞧，他現在落魄成什麼樣了。』"]}, {"id": 62, "en": ["“My father turned ashy pale and muttered, his throat contracted, his eyes haggard."], "zh": ["「父親臉色變得慘白，喉嚨發緊，眼神呆滯地嘟囔著："]}, {"id": 63, "en": ["“'Ah! ah! very well, very well. I'm not in the least surprised. Thank you very much, captain.'"], "zh": ["「『啊！啊！好，很好。我一點也不驚訝。非常感謝您，船長。』"]}, {"id": 64, "en": ["“He went away, and the astonished sailor watched him disappear. He returned to my mother so upset that she said to him:"], "zh": ["「他走開了，而感到詫異的船長看著他的背影消失。他回到母親身邊時，神情如此慌亂，以至於母親對他說："]}, {"id": 65, "en": ["“'Sit down; some one will notice that something is the matter.'"], "zh": ["「『坐下，別讓人瞧出不對勁。』"]}, {"id": 66, "en": ["“He sank down on a bench and stammered:"], "zh": ["「他癱坐在長椅上，結結巴巴地說："]}, {"id": 67, "en": ["“'It's he! It's he!'"], "zh": ["「『 carpet 呀！是他！真的是他！』"]}, {"id": 68, "en": ["“Then he asked:"], "zh": ["「然後他問："]}, {"id": 69, "en": ["“'What are we going to do?'"], "zh": ["「『我們該辦？』"]}, {"id": 70, "en": ["“She answered quickly:"], "zh": ["「她急忙回答："]}, {"id": 71, "en": ["“'We must get the children out of the way. Since Joseph knows everything, he can go and get them. We must take good care that our son-in-law doesn't find out.'"], "zh": ["「『得趕緊把孩子們支開。既然約瑟夫什麼都知道，讓他去把她們帶過來。我們必須加倍小心，絕不能讓女婿發現。』"]}, {"id": 72, "en": ["“My father seemed absolutely bewildered. He murmured:"], "zh": ["「父親顯然完全不知所措。他喃喃道："]}, {"id": 73, "en": ["“'What a catastrophe!'"], "zh": ["「『這簡直是場災難！』"]}, {"id": 74, "en": ["“Suddenly growing furious, my mother exclaimed:"], "zh": ["「母親突然勃然大怒，大聲說："]}, {"id": 75, "en": ["“'I always thought that that thief never would do anything, and that he would drop down on us again! As if one could expect anything from a Davranche!'"], "zh": ["「『我就知道這個賊不會有什麼出息，早晚還會賴到我們頭上！達夫朗什家的人能有什麼指望！』"]}, {"id": 76, "en": ["“My father passed his hand over his forehead, as he always did when his wife reproached him. She added:"], "zh": ["「父親把手撫在額頭上，就像平時被妻子責備時那樣。她又說："]}, {"id": 77, "en": ["“'Give Joseph some money so that he can pay for the oysters. All that it needed to cap the climax would be to be recognized by that beggar. That would be very pleasant! Let's get down to the other end of the boat, and take care that that man doesn't come near us!'"], "zh": ["「『給約瑟夫點錢，讓他去付牡蠣的帳。要是被那個叫花子認出來，那才真是倒楣透頂呢。那可就太好看（尷尬）了！我們走到船的另一頭去，小心別讓那個男人靠近我們！』"]}, {"id": 78, "en": ["“They gave me five francs and walked away."], "zh": ["「他們給了我五法郎，然後走開了。"]}, {"id": 79, "en": ["“Astonished, my sisters were awaiting their father. I said that mamma had felt a sudden attack of sea-sickness, and I asked the shell opener:"], "zh": ["「我的姐姐們感到驚訝，正在等待著父親。我說媽媽突然有點暈船，然後問那個撬牡蠣的人："]}, {"id": 80, "en": ["“'How much do we owe you, monsieur?'"], "zh": ["「『先生，我們該付您多少錢？』"]}, {"id": 81, "en": ["“I felt like laughing: he was my uncle! He answered:"], "zh": ["「我想笑：他可是我的親叔叔啊！他回答："]}, {"id": 82, "en": ["“'Two francs fifty.'"], "zh": ["「『兩法郎五十生丁。』"]}, {"id": 83, "en": ["“I held out my five francs and he returned the change. I looked at his hand; it was a poor, wrinkled, sailor's hand, and I looked at his face, an unhappy old face. I said to myself:"], "zh": ["「我遞過去五法郎，他找了零錢。我看著他的手，那是隻貧苦、滿是皺紋的老水手的手；我又看著他的臉，那是一張憂傷而蒼老的面龐。我對自己說："]}, {"id": 84, "en": ["“'That is my uncle, the brother of my father, my uncle!'"], "zh": ["「『這是我的叔叔，我父親的弟弟，我的叔叔！』"]}, {"id": 85, "en": ["“I gave him a ten-cent tip. He thanked me:"], "zh": ["「我給了他十個生丁的小費。他向我道謝："]}, {"id": 86, "en": ["“'God bless you, my young sir!'"], "zh": ["「『上帝保佑您，年輕的先生！』"]}, {"id": 87, "en": ["“He spoke like a poor man receiving alms. I couldn't help thinking that he must have begged over there! My sisters looked at me, surprised at my generosity. When I returned the two francs to my father, my mother asked me in surprise:"], "zh": ["「他的語氣就像一個接受施捨的窮人。我忍不住想，他在美洲一定也乞討過！姐姐們看著我，對我的慷慨感到驚訝。當我把剩下的兩法郎多還給父親時，母親驚訝地問我："]}, {"id": 88, "en": ["“'Was there three francs' worth? That is impossible.'"], "zh": ["「『要三法郎嗎？這不可能。』"]}, {"id": 89, "en": ["“I answered in a firm voice"], "zh": ["「我用堅定的聲音回答："]}, {"id": 90, "en": ["“'I gave ten cents as a tip.'"], "zh": ["「『我給了十個生丁的小費。』"]}, {"id": 91, "en": ["“My mother started, and, staring at me, she exclaimed:"], "zh": ["「母親嚇了一跳，死死盯著我大喊："]}, {"id": 92, "en": ["“'You must be crazy! Give ten cents to that man, to that vagabond—'"], "zh": ["「『你瘋了嗎！給那個男人十個生丁，給那個流浪漢——』"]}, {"id": 93, "en": ["“She stopped at a look from my father, who was pointing at his son-in-law. Then everybody was silent."], "zh": ["「在父親的示意下，她止住了話，父親正指著他的女婿。接著，大家都沉默了。"]}, {"id": 94, "en": ["“Before us, on the distant horizon, a purple shadow seemed to rise out of the sea. It was Jersey."], "zh": ["「在我們面前，遙遠的地平線上，一抹紫色的陰影彷彿從海中升起。那是澤西島。"]}, {"id": 95, "en": ["“As we approached the breakwater a violent desire seized me once more to see my Uncle Jules, to be near him, to say to him something consoling, something tender. But as no one was eating any more oysters, he had disappeared, having probably gone below to the dirty hold which was the home of the poor wretch."], "zh": ["「當我們接近防波堤時，我再次產生了強烈的渴望，想看看我的于勒叔叔，想走近他，對他說一些安慰、溫柔的話。但由於沒有人再吃牡蠣，他已經消失了，大概是下到了那骯髒的底艙，那裡是那個可憐蟲的棲身之所。"]}, {"id": 96, "en": ["“And we came back on the Saint-Malo boat, so as not to run into him. My mother was consumed with anxiety."], "zh": ["「後來，我們改乘聖馬洛的船回來，以免再次遇到他。母親一路上都焦慮萬分。"]}, {"id": 97, "en": ["“I never saw my father's brother again! That's why you will sometimes see me give a hundred sous to vagabonds.”"], "zh": ["「我再也沒有見過我父親的弟弟！這就是為什麼你們有時會看到我給流浪漢一百個蘇的原因。」"]}];
+        const dbPrefixes = [{"keys": ["a"], "meaning": "of"}, {"keys": ["a"], "meaning": "on"}, {"keys": ["a"], "meaning": "intensive"}, {"keys": ["a"], "meaning": "ad=to, at, for"}, {"keys": ["a"], "meaning": "ab=from, away"}, {"keys": ["a"], "meaning": "ex=out,extremely"}, {"keys": ["a"], "meaning": "negative(not, without)"}, {"keys": ["ab"], "meaning": "from,away from,off"}, {"keys": ["ad"], "meaning": "to,at,for"}, {"keys": ["al"], "meaning": "all"}, {"keys": ["ambi"], "meaning": "on both sides, about, arount"}, {"keys": ["amphi"], "meaning": "on both sides, around"}, {"keys": ["an"], "meaning": "negative(not, without)"}, {"keys": ["ana"], "meaning": "upon,on,up"}, {"keys": ["ante"], "meaning": "before"}, {"keys": ["anti"], "meaning": "against,opposite to"}, {"keys": ["arch"], "meaning": "chief"}, {"keys": ["suto"], "meaning": "self"}, {"keys": ["be"], "meaning": "to make"}, {"keys": ["be"], "meaning": "to cover with"}, {"keys": ["be"], "meaning": "upon"}, {"keys": ["be"], "meaning": "by"}, {"keys": ["be"], "meaning": "intensive"}, {"keys": ["bene"], "meaning": "well,good"}, {"keys": ["bi"], "meaning": "double,two"}, {"keys": ["cata"], "meaning": "down, downwards, fully"}, {"keys": ["circum"], "meaning": "around, round about"}, {"keys": ["com"], "meaning": "together,with, wholly"}, {"keys": ["contra"], "meaning": "against"}, {"keys": ["de"], "meaning": "down, downard"}, {"keys": ["de"], "meaning": "apart, from"}, {"keys": ["deca"], "meaning": "ten"}, {"keys": ["demi"], "meaning": "half"}, {"keys": ["di"], "meaning": "double,twice"}, {"keys": ["dia"], "meaning": "through,between, across"}, {"keys": ["dis"], "meaning": "apart,away"}, {"keys": ["duo"], "meaning": "two,double"}, {"keys": ["en"], "meaning": "in, into,on,at,near"}, {"keys": ["epi"], "meaning": "upon, to besides, among"}, {"keys": ["eu"], "meaning": "well"}, {"keys": ["ex"], "meaning": "out of, fully"}, {"keys": ["extra"], "meaning": "beyond"}, {"keys": ["for"], "meaning": "away from"}, {"keys": ["fore"], "meaning": "before"}, {"keys": ["forth"], "meaning": "towards"}, {"keys": ["hemi"], "meaning": "half"}, {"keys": ["hetero"], "meaning": "other,different"}, {"keys": ["hexa"], "meaning": "six"}, {"keys": ["homo"], "meaning": "same"}, {"keys": ["hyper"], "meaning": "above,beyond"}, {"keys": ["hypo"], "meaning": "under"}, {"keys": ["in"], "meaning": "in, into,on"}, {"keys": ["in"], "meaning": "negative(=not)"}, {"keys": ["inter"], "meaning": "between, among"}, {"keys": ["intra", "intro"], "meaning": "within, inward"}, {"keys": ["mal(e)"], "meaning": "badly,ill"}, {"keys": ["meta"], "meaning": "among,with, after"}, {"keys": ["mis"], "meaning": "wrong,bad, ill"}, {"keys": ["mone"], "meaning": "single,sole, alone"}, {"keys": ["mult(i)"], "meaning": "many,much"}, {"keys": ["ne"], "meaning": "negative(=not)"}, {"keys": ["ob"], "meaning": "as, toward,at,before, upon,over, about, near, against"}, {"keys": ["octa", "octo"], "meaning": "eight, eighth"}, {"keys": ["omni"], "meaning": "all"}, {"keys": ["para"], "meaning": "beside, beyond, against, contrary"}, {"keys": ["pen"], "meaning": "almost"}, {"keys": ["penta"], "meaning": "five"}, {"keys": ["per"], "meaning": "through, thoroughly, away"}, {"keys": ["peri"], "meaning": "around,round about"}, {"keys": ["poly"], "meaning": "many"}, {"keys": ["post"], "meaning": "after,behind"}, {"keys": ["pre"], "meaning": "before"}, {"keys": ["pro"], "meaning": "for,before, forth, forward"}, {"keys": ["prot(o)"], "meaning": "first"}, {"keys": ["quadr(i)"], "meaning": "four"}, {"keys": ["re"], "meaning": "again, back"}, {"keys": ["retro"], "meaning": "backward"}, {"keys": ["se"], "meaning": "away,apart"}, {"keys": ["semi"], "meaning": "half"}, {"keys": ["sept"], "meaning": "seven"}, {"keys": ["sub"], "meaning": "under"}, {"keys": ["super"], "meaning": "above,over"}, {"keys": ["syn"], "meaning": "with, together"}, {"keys": ["tele afar off"], "meaning": ""}, {"keys": ["tetra"], "meaning": "four"}, {"keys": ["trans"], "meaning": "beyond,across, over"}, {"keys": ["tri"], "meaning": "three,threefoid"}, {"keys": ["twi"], "meaning": "two"}, {"keys": ["ultra"], "meaning": "beyond"}, {"keys": ["un"], "meaning": "not"}, {"keys": ["un"], "meaning": "the reversal of an action"}, {"keys": ["uni"], "meaning": "one"}, {"keys": ["under"], "meaning": "under,beneath"}, {"keys": ["up"], "meaning": "up,aloft"}, {"keys": ["vice"], "meaning": "in place of"}, {"keys": ["with"], "meaning": "against,back"}];
+        const dbRoots = [{"keys": ["act"], "meaning": "to act"}, {"keys": ["alt"], "meaning": "high"}, {"keys": ["age"], "meaning": "act of,state of"}, {"keys": ["alter", "ali"], "meaning": "other"}, {"keys": ["agi", "ago", "ag"], "meaning": "move,go,do,act"}, {"keys": ["am"], "meaning": "to love"}, {"keys": ["anc"], "meaning": "before"}, {"keys": ["ang"], "meaning": "to strangle"}, {"keys": ["anim"], "meaning": "breath,mind"}, {"keys": ["ann"], "meaning": "year"}, {"keys": ["anthrop"], "meaning": "man"}, {"keys": ["apt"], "meaning": "fit"}, {"keys": ["arm"], "meaning": "weapons"}, {"keys": ["aster", "astro", "stella"], "meaning": "star"}, {"keys": ["aud", "aus"], "meaning": "to hear"}, {"keys": ["aug"], "meaning": "to increase,make to grow"}, {"keys": ["avi"], "meaning": "bird"}, {"keys": ["band", "bond"], "meaning": "to bind"}, {"keys": ["bar"], "meaning": "bar"}, {"keys": ["bat"], "meaning": "to beat"}, {"keys": ["bene", "bon"], "meaning": "well,good"}, {"keys": ["bio"], "meaning": "life"}, {"keys": ["brev"], "meaning": "short"}, {"keys": ["cad", "cid", "cas"], "meaning": "to fall"}, {"keys": ["cap", "capit", "capt"], "meaning": "head"}, {"keys": ["cap", "cep", "cept"], "meaning": "to Take"}, {"keys": ["car"], "meaning": "car, to run"}, {"keys": ["carn"], "meaning": "flesh"}, {"keys": ["cause", "cuse", "cus"], "meaning": "cause,motive"}, {"keys": ["cede", "ceed", "cess"], "meaning": "to go, come"}, {"keys": ["ceive", "cept", "cip", "cipate"], "meaning": "to take"}, {"keys": ["cent"], "meaning": "hundred"}, {"keys": ["centr"], "meaning": "center"}, {"keys": ["cern", "cret"], "meaning": "to separate"}, {"keys": ["cert"], "meaning": "sure"}, {"keys": ["chron"], "meaning": "time"}, {"keys": ["cide", "cise"], "meaning": "to cut"}, {"keys": ["circ", "cyc"], "meaning": "ring"}, {"keys": ["cite"], "meaning": "to call,urge"}, {"keys": ["civ"], "meaning": "citizen"}, {"keys": ["claim", "clam"], "meaning": "to cry"}, {"keys": ["clin"], "meaning": "to bend"}, {"keys": ["clud", "clus"], "meaning": "to shut"}, {"keys": ["cognis", "gnos"], "meaning": "to know"}, {"keys": ["cord"], "meaning": "heart"}, {"keys": ["corp"], "meaning": "body"}, {"keys": ["cre", "crea", "cresc"], "meaning": "to make, grow"}, {"keys": ["cred"], "meaning": "to believe"}, {"keys": ["cult"], "meaning": "to till"}, {"keys": ["cumb"], "meaning": "to lie down"}, {"keys": ["cure"], "meaning": "to Take care"}, {"keys": ["cur", "course"], "meaning": "to run"}, {"keys": ["cuss"], "meaning": "to strike, shake"}, {"keys": ["deb", "du"], "meaning": "to owe"}, {"keys": ["dem"], "meaning": "people"}, {"keys": ["dic"], "meaning": "to proclaim"}, {"keys": ["dict", "dit"], "meaning": "to say"}, {"keys": ["dign"], "meaning": "worthy"}, {"keys": ["divid", "divis"], "meaning": "to divide"}, {"keys": ["doc"], "meaning": "to teach"}, {"keys": ["dom"], "meaning": "to tame,rule"}, {"keys": ["dorm"], "meaning": "steep"}, {"keys": ["don", "dot", "dow"], "meaning": "to give"}, {"keys": ["duc", "duce", "duct"], "meaning": "lead"}, {"keys": ["em", "empt"], "meaning": "to take,buy"}, {"keys": ["equ"], "meaning": "equal"}, {"keys": ["ess", "est"], "meaning": "to be"}, {"keys": ["eu"], "meaning": "pleasant, well, good, well-done"}, {"keys": ["fact", "fect"], "meaning": "to make,do"}, {"keys": ["fam"], "meaning": "to speak"}, {"keys": ["fare"], "meaning": "to go"}, {"keys": ["feder", "fide", "fid", "feal"], "meaning": "trust, faith"}, {"keys": ["fend", "fest"], "meaning": "to strike"}, {"keys": ["fer"], "meaning": "to carry,bear"}, {"keys": ["fess"], "meaning": "to speak"}, {"keys": ["fic", "fect"], "meaning": "make,do"}, {"keys": ["fict", "fig"], "meaning": "to feign"}, {"keys": ["fid"], "meaning": "to trust"}, {"keys": ["fin", "fins"], "meaning": "to end"}, {"keys": ["firm"], "meaning": "firm"}, {"keys": ["fix"], "meaning": "fix"}, {"keys": ["flect", "flex"], "meaning": "to bend"}, {"keys": ["flict"], "meaning": "to strike"}, {"keys": ["flu", "fluv", "flux", "fluc"], "meaning": "to flow"}, {"keys": ["form"], "meaning": "to form, form"}, {"keys": ["fort", "forc"], "meaning": "strong"}, {"keys": ["found", "fund"], "meaning": "base"}, {"keys": ["fract", "frag"], "meaning": "to break"}, {"keys": ["ful"], "meaning": "full of"}, {"keys": ["fuse", "found"], "meaning": "to pour"}, {"keys": ["gener", "gen", "gent"], "meaning": "to produce, a race"}, {"keys": ["ger", "gest"], "meaning": "to carry"}, {"keys": ["grad", "gress"], "meaning": "to walk"}, {"keys": ["gram", "graph"], "meaning": "to write,letter"}, {"keys": ["grad", "gred", "gress"], "meaning": "step, degree, walk"}, {"keys": ["grat"], "meaning": "to please"}, {"keys": ["grav"], "meaning": "heavy"}, {"keys": ["gregat"], "meaning": "to collect"}, {"keys": ["hab", "hibit"], "meaning": "to have,live"}, {"keys": ["her"], "meaning": "an heir"}, {"keys": ["here", "hes"], "meaning": "to stick"}, {"keys": ["hum", "hom", "human"], "meaning": "man, earth, ground"}, {"keys": ["hum"], "meaning": "ground"}, {"keys": ["hydro", "hydra", "hydr"], "meaning": "water"}, {"keys": ["insul"], "meaning": "island"}, {"keys": ["it"], "meaning": "to go"}, {"keys": ["ject", "jac", "jec"], "meaning": "to throw, lie"}, {"keys": ["journ"], "meaning": "day"}, {"keys": ["jud", "jus", "jur"], "meaning": "to judge"}, {"keys": ["just", "juris"], "meaning": "law"}, {"keys": ["labor"], "meaning": "to labor"}, {"keys": ["laps"], "meaning": "to slip,glide"}, {"keys": ["late"], "meaning": "to bring,bear"}, {"keys": ["later"], "meaning": "side"}, {"keys": ["lav", "lau", "laut", "lut", "lot"], "meaning": "to wash"}, {"keys": ["lax", "lyse"], "meaning": "to loosen"}, {"keys": ["lect", "leg"], "meaning": "to choose, gather,read"}, {"keys": ["leg"], "meaning": "to appoint, send"}, {"keys": ["leg"], "meaning": "law"}, {"keys": ["lev"], "meaning": "to raise, light"}, {"keys": ["liber", "liver"], "meaning": "free"}, {"keys": ["lig"], "meaning": "to bind"}, {"keys": ["loc", "loco"], "meaning": "place"}, {"keys": ["long", "leng", "ling"], "meaning": "a word, a speech, a thought"}, {"keys": ["log", "logy"], "meaning": "long"}, {"keys": ["log", "loqu", "locut"], "meaning": "to speak"}, {"keys": ["lud"], "meaning": "to play"}, {"keys": ["lumin"], "meaning": "light"}, {"keys": ["lust", "luc"], "meaning": "bright"}, {"keys": ["magn", "maj", "max"], "meaning": "great"}, {"keys": ["mand", "mead"], "meaning": "to order, entrust"}, {"keys": ["man", "manu"], "meaning": "hand"}, {"keys": ["mari", "mar", "mer"], "meaning": "the sea,pool"}, {"keys": ["matr", "matro", "matric", "matri"], "meaning": "mother"}, {"keys": ["medi"], "meaning": "middle,half,between"}, {"keys": ["merc"], "meaning": "to trade, a reward"}, {"keys": ["merge", "mers"], "meaning": "to sink,dip"}, {"keys": ["meter"], "meaning": "to measure"}, {"keys": ["mem"], "meaning": "remember"}, {"keys": ["migr"], "meaning": "to remove"}, {"keys": ["min"], "meaning": "to jut, project"}, {"keys": ["min"], "meaning": "small"}, {"keys": ["mir"], "meaning": "to wonder, behold"}, {"keys": ["miss", "mit"], "meaning": "to send, throw"}, {"keys": ["mod"], "meaning": "manner"}, {"keys": ["mon"], "meaning": "to advise, remind"}, {"keys": ["monstr"], "meaning": "to show"}, {"keys": ["mort", "mor", "mori"], "meaning": "death"}, {"keys": ["mov", "mob", "mot"], "meaning": "to move"}, {"keys": ["mut"], "meaning": "to change"}, {"keys": ["nat", "nasc"], "meaning": "born"}, {"keys": ["nau", "nav"], "meaning": "ship"}, {"keys": ["neg"], "meaning": "to deny"}, {"keys": ["not"], "meaning": "to mark"}, {"keys": ["nounce", "nunci"], "meaning": "to report, declare,"}, {"keys": ["nov"], "meaning": "new"}, {"keys": ["onym"], "meaning": "name"}, {"keys": ["opt"], "meaning": "to wish"}, {"keys": ["opus", "oper"], "meaning": "work"}, {"keys": ["ora"], "meaning": "to speak,pray"}, {"keys": ["ori"], "meaning": "to rise, to begin"}, {"keys": ["pac", "plais"], "meaning": "peace"}, {"keys": ["pan"], "meaning": "bread"}, {"keys": ["par"], "meaning": "to prepare"}, {"keys": ["par"], "meaning": "equal"}, {"keys": ["par"], "meaning": "to appear"}, {"keys": ["part"], "meaning": "a part, to part"}, {"keys": ["passi", "pati", "path"], "meaning": "to suffer"}, {"keys": ["patr"], "meaning": "father"}, {"keys": ["ped", "pod"], "meaning": "food"}, {"keys": ["pel", "puls"], "meaning": "to drive, push, throw"}, {"keys": ["pen", "pun"], "meaning": "to punish"}, {"keys": ["pend", "pens"], "meaning": "to hang,weight"}, {"keys": ["peri"], "meaning": "to go through"}, {"keys": ["pet"], "meaning": "to fly,seek"}, {"keys": ["phan", "fan"], "meaning": "appearance"}, {"keys": ["phon"], "meaning": "sound"}, {"keys": ["phe"], "meaning": "to speak"}, {"keys": ["pict"], "meaning": "to paint,picture"}, {"keys": ["plaud", "plode"], "meaning": "to strike,clap"}, {"keys": ["plen", "plete", "ple", "pli", "ply"], "meaning": "to fill,full"}, {"keys": ["plore"], "meaning": "to flow out"}, {"keys": ["ply", "pli", "ple"], "meaning": "to fold"}, {"keys": ["pon", "pound"], "meaning": "to put"}, {"keys": ["popul", "publ"], "meaning": "people"}, {"keys": ["port"], "meaning": "to carry"}, {"keys": ["port"], "meaning": "gate,habor, entrance"}, {"keys": ["pos"], "meaning": "to place,put"}, {"keys": ["potent", "potes", "posse"], "meaning": "powerful,able"}, {"keys": ["press"], "meaning": "to press"}, {"keys": ["prim", "prin", "prem"], "meaning": "first"}, {"keys": ["pris", "prehend"], "meaning": "to seize"}, {"keys": ["prob", "prov"], "meaning": "to test,try, examine"}, {"keys": ["punct"], "meaning": "to prick,point,dot"}, {"keys": ["pute", "put"], "meaning": "to think, settle"}, {"keys": ["quire", "quisit", "quest"], "meaning": "to seek"}, {"keys": ["radi"], "meaning": "ray"}, {"keys": ["radi"], "meaning": "root"}, {"keys": ["rap", "rav"], "meaning": "to snatch"}, {"keys": ["rect", "reg", "recti"], "meaning": "right, rule, guide,direct"}, {"keys": ["reg"], "meaning": "to rule,king"}, {"keys": ["rog", "roga"], "meaning": "ask,beg"}, {"keys": ["rupt"], "meaning": "to break"}, {"keys": ["sacr", "sanct", "secr"], "meaning": "sacred"}, {"keys": ["sal", "sult"], "meaning": "to leap"}, {"keys": ["sal", "san"], "meaning": "whole"}, {"keys": ["sat", "satis"], "meaning": "full, enough"}, {"keys": ["scan", "scend", "scal"], "meaning": "to climb"}, {"keys": ["scope"], "meaning": "watch"}, {"keys": ["sci"], "meaning": "to know"}, {"keys": ["scribe", "script"], "meaning": "to write"}, {"keys": ["sed", "sess", "sid"], "meaning": "to sit"}, {"keys": ["sens", "sent"], "meaning": "to feel"}, {"keys": ["sequ", "secut", "su"], "meaning": "to follow"}, {"keys": ["sert"], "meaning": "to join,put"}, {"keys": ["serv"], "meaning": "to serve,keep"}, {"keys": ["sign"], "meaning": "to mark"}, {"keys": ["simil", "simul", "sembl"], "meaning": "like, same"}, {"keys": ["sist", "stitut", "sta", "st"], "meaning": "to stand"}, {"keys": ["sol"], "meaning": "alone"}, {"keys": ["solv", "solut"], "meaning": "to loosen"}, {"keys": ["soph"], "meaning": "wisdom"}, {"keys": ["spec", "spect"], "meaning": "to see, look"}, {"keys": ["spir"], "meaning": "to breathe"}, {"keys": ["spond", "spons"], "meaning": "to promise, answer"}, {"keys": ["sta", "stit", "sist", "stet"], "meaning": "stand"}, {"keys": ["stinct", "sting"], "meaning": "to prick"}, {"keys": ["string", "strict", "strain", "stress"], "meaning": "to draw tight"}, {"keys": ["stru", "struct"], "meaning": "to build"}, {"keys": ["suade"], "meaning": "to advise"}, {"keys": ["sume", "sumpt"], "meaning": "to Take, use, waste"}, {"keys": ["surge", "sumpt"], "meaning": "to take"}, {"keys": ["surge", "surrect"], "meaning": "to rise"}, {"keys": ["tang", "tact", "tig", "tag", "ting"], "meaning": "to touch"}, {"keys": ["tain", "ten", "tin", "tent"], "meaning": "to hold,keep"}, {"keys": ["tect"], "meaning": "to cover"}, {"keys": ["temper"], "meaning": "to moderate"}, {"keys": ["tempor", "tempo"], "meaning": "time"}, {"keys": ["tempt", "tent"], "meaning": "to try"}, {"keys": ["tend", "tens", "tent"], "meaning": "to stretch, extend"}, {"keys": ["term"], "meaning": "boundary"}, {"keys": ["terr"], "meaning": "earth"}, {"keys": ["test"], "meaning": "witness"}, {"keys": ["text"], "meaning": "to weave"}, {"keys": ["tort"], "meaning": "to twist"}, {"keys": ["tour", "torn"], "meaning": "to turn"}, {"keys": ["tract", "treat", "trait", "tra"], "meaning": "to draw,pull"}, {"keys": ["tribut"], "meaning": "to pay,bestow"}, {"keys": ["trud", "trus"], "meaning": "to thrust, push"}, {"keys": ["turb"], "meaning": "to disturb"}, {"keys": ["us", "uti"], "meaning": "to use"}, {"keys": ["vac", "van", "void"], "meaning": "empty"}, {"keys": ["vade"], "meaning": "to go"}, {"keys": ["vaga"], "meaning": "to wander"}, {"keys": ["val", "vail", "vali", "valu", "vale"], "meaning": "strong, worth"}, {"keys": ["velop"], "meaning": "to wrap"}, {"keys": ["ven", "vent", "veni"], "meaning": "to come"}, {"keys": ["ver", "very"], "meaning": "true"}, {"keys": ["vers", "vert"], "meaning": "to turn"}, {"keys": ["vi", "voy"], "meaning": "way"}, {"keys": ["vid", "vis"], "meaning": "to see"}, {"keys": ["vig", "veg"], "meaning": "lively"}, {"keys": ["vict", "vinc"], "meaning": "to conquer"}, {"keys": ["viv", "vivi", "vita"], "meaning": "to live, alive"}, {"keys": ["voc", "voke"], "meaning": "to call, voice"}, {"keys": ["vol"], "meaning": "will"}, {"keys": ["volve", "volut"], "meaning": "to roll"}, {"keys": ["volcan", "vulcan"], "meaning": "fire"}, {"keys": ["vulse"], "meaning": "to pluck"}];
+        const dbSuffixes = [{"category": "人物名詞字尾", "keys": ["an", "ian", "ean"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["aire"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ar"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ary"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ee"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["er"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ent"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ess"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["herd"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["iff"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ite"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ain"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ant"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ard", "art"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ate"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["eer"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["en"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ese"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["eur"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ier"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ist"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ive"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["man", "sman"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["or", "our"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["y", "yer"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["on"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ster"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["cle"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["et", "ette"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["el", "le"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["let"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["en", "in"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["kin"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["ling"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["ock"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["(c)ule"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["ie", "y"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ace"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["age"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["al"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ance", "ancy", "ence", "ency"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["cy"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["hood", "head"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ic"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["dom"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ice", "ise"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ing"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ion"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ism", "asm"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["itude"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["(i)um"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ment"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["mony"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ness"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["o(u)r"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ry"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ship"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["t", "th"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ty", "ety", "ity"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ure"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["y"], "meaning": ""}, {"category": "集合名詞字尾", "keys": ["age"], "meaning": ""}, {"category": "集合名詞字尾", "keys": ["ary"], "meaning": ""}, {"category": "集合名詞字尾", "keys": ["ry"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["ace"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["age"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["ary"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["ery"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["ory"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["dom"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["um"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["y"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["able", "ible"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["al", "ial"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["an", "ian"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ant", "ent"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ar"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ary"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ate", "ete", "ute"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ed"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["en"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ern"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ese"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["fold"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ful"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ic"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ical"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["id"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ile"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ine"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ing"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ior"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ique", "esque"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ish"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ite"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ive"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["less"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["like"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ly"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["most"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ory"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ous"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["some"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ward"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["y"], "meaning": ""}, {"category": "副詞字尾", "keys": ["ence"], "meaning": ""}, {"category": "副詞字尾", "keys": ["ling", "long"], "meaning": ""}, {"category": "副詞字尾", "keys": ["ly"], "meaning": ""}, {"category": "副詞字尾", "keys": ["ward(s)"], "meaning": ""}, {"category": "副詞字尾", "keys": ["way(s)", "wise"], "meaning": ""}, {"category": "動詞字尾", "keys": ["ate"], "meaning": ""}, {"category": "動詞字尾", "keys": ["en"], "meaning": ""}, {"category": "動詞字尾", "keys": ["er"], "meaning": ""}, {"category": "動詞字尾", "keys": ["fy"], "meaning": ""}, {"category": "動詞字尾", "keys": ["ize", "ise"], "meaning": ""}, {"category": "動詞字尾", "keys": ["ish"], "meaning": ""}, {"category": "動詞字尾", "keys": ["le"], "meaning": ""}];
+
+        let currentIndex = 0;
+        let currentFontScale = parseFloat(localStorage.getItem('bilingual_font_scale')) || 1.0;
+        const audioPlayer = document.getElementById('audioPlayer');
+
+        document.documentElement.style.setProperty('--font-scale', currentFontScale);
+
+        function changeFontSize(delta) {
+            currentFontScale = Math.min(Math.max(0.7, currentFontScale + delta), 1.8);
+            document.documentElement.style.setProperty('--font-scale', currentFontScale);
+            localStorage.setItem('bilingual_font_scale', currentFontScale);
+        }
+
+        function updatePage() {
+            if (!pages || pages.length === 0) return;
+            const page = pages[currentIndex];
+            const container = document.getElementById('paragraph-box');
+            container.innerHTML = '';
+
+            if (page.en && page.en.length > 0) {
+                const enSec = document.createElement('div');
+                enSec.className = 'en-section';
+                page.en.forEach(pText => {
+                    const p = document.createElement('div'); p.className = 'en-p'; p.innerText = pText; enSec.appendChild(p);
+                });
+                container.appendChild(enSec);
+            }
+
+            if (page.zh && page.zh.length > 0) {
+                const zhSec = document.createElement('div');
+                zhSec.className = 'zh-section';
+                page.zh.forEach(pText => {
+                    const p = document.createElement('div'); p.className = 'zh-p'; p.innerText = pText; zhSec.appendChild(p);
+                });
+                container.appendChild(zhSec);
+            }
+
+            document.getElementById('page-info').innerText = `${currentIndex + 1} / ${pages.length}`;
+            document.getElementById('progress').style.width = `${((currentIndex + 1) / pages.length) * 100}%`;
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === pages.length - 1;
+            document.getElementById('main-content').scrollTop = 0;
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        // 💡 智慧辨識電腦與手機觸控事件
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        document.addEventListener('mouseup', (e) => {
+            // 電腦端：按住 Alt 鍵再選取才觸發（避開 Google 翻譯／一般選字）
+            // 手機端：直接選取文字就觸發
+            if (isMobile || e.altKey) {
+                const selection = window.getSelection();
+                const text = selection.toString().trim().toLowerCase();
+                if (text && /^[a-zA-Z]+$/.test(text) && text.length > 2) {
+                    analyzeWord(text);
+                }
+            }
+        });
+
+        // 💡 電腦端：直接在英文段落雙擊單字即可查詢，不需要按 Alt，看小說時更方便
+        document.addEventListener('dblclick', (e) => {
+            if (isMobile) return; // 手機交給上面的 mouseup 處理，避免重複觸發
+            if (!e.target.closest('.en-p')) return; // 只在英文段落內生效
+            const selection = window.getSelection();
+            const text = selection.toString().trim().toLowerCase();
+            if (text && /^[a-zA-Z]+$/.test(text) && text.length > 2) {
+                analyzeWord(text);
+            }
+        });
+
+        function analyzeWord(word) {
+            const popup = document.getElementById('root-dict-popup');
+            const title = document.getElementById('popup-word-title');
+            const content = document.getElementById('popup-content');
+
+            title.innerText = `🔍 【${word}】`;
+            content.innerHTML = '';
+            let hasResult = false;
+
+            // 1. 字首：只取「最長匹配」，避免像 un / uni 這種短字首淹沒真正對的長字首
+            let pMatches = [];
+            dbPrefixes.forEach(item => {
+                item.keys.forEach(k => {
+                    if (word.startsWith(k)) pMatches.push({ key: k, meaning: item.meaning });
+                });
+            });
+            const maxPLen = pMatches.reduce((m, x) => Math.max(m, x.key.length), 0);
+            pMatches = pMatches.filter(x => x.key.length === maxPLen);
+
+            // 2. 字尾：同樣只取「最長匹配」，並把同一個字尾在不同分類下的結果合併成一行
+            let sRaw = [];
+            dbSuffixes.forEach(item => {
+                item.keys.forEach(k => {
+                    if (word.endsWith(k) && k.length >= 2) sRaw.push({ key: k, meaning: item.meaning, category: item.category });
+                });
+            });
+            const maxSLen = sRaw.reduce((m, x) => Math.max(m, x.key.length), 0);
+            sRaw = sRaw.filter(x => x.key.length === maxSLen);
+            const sGrouped = {};
+            sRaw.forEach(x => {
+                if (!sGrouped[x.key]) sGrouped[x.key] = { meanings: new Set(), categories: [] };
+                if (x.meaning) sGrouped[x.key].meanings.add(x.meaning);
+                sGrouped[x.key].categories.push(x.category);
+            });
+            const sMatches = Object.keys(sGrouped).map(k => ({
+                key: k,
+                meaning: Array.from(sGrouped[k].meanings).join('；'),
+                categories: sGrouped[k].categories
+            }));
+
+            // 3. 字根：貪婪比對——優先用最長的字根，且已被字首/字尾/其他較長字根「占用」的字母範圍不再重複標記
+            //    （例如 university 拆完 uni- 與 -ity 之後，中間巧合出現的 it 就不會再被誤判成字根）
+            const prefixZoneEnd = maxPLen;
+            const suffixZoneStart = word.length - maxSLen;
+
+            const rootCandidates = {};
+            dbRoots.forEach(item => {
+                item.keys.forEach(k => {
+                    if (k.length < 2) return;
+                    if (!rootCandidates[k]) rootCandidates[k] = [];
+                    rootCandidates[k].push(item.meaning);
+                });
+            });
+            const sortedKeys = Object.keys(rootCandidates).sort((a, b) => b.length - a.length);
+
+            let claimed = [];
+            let rMatches = [];
+            sortedKeys.forEach(k => {
+                let searchFrom = 0;
+                while (true) {
+                    const idx = word.indexOf(k, searchFrom);
+                    if (idx === -1) break;
+                    const end = idx + k.length;
+                    const insidePrefix = end <= prefixZoneEnd;
+                    const insideSuffix = idx >= suffixZoneStart;
+                    const overlapsClaimed = claimed.some(([cs, ce]) => idx < ce && end > cs);
+                    if (!insidePrefix && !insideSuffix && !overlapsClaimed) {
+                        claimed.push([idx, end]);
+                        rMatches.push({ key: k, meaning: rootCandidates[k].join('；') });
+                        break;
+                    }
+                    searchFrom = idx + 1;
+                }
+            });
+            rMatches.sort((a, b) => b.key.length - a.key.length);
+
+            if (pMatches.length > 0) {
+                hasResult = true;
+                const rows = pMatches.map(x => `<div class="tag-item"><b>${x.key}-</b> : ${x.meaning}</div>`).join('');
+                content.innerHTML += `<div class="tag-group"><div class="tag-title">🚩 字首 Prefix</div>${rows}</div>`;
+            }
+
+            if (rMatches.length > 0) {
+                hasResult = true;
+                const rows = rMatches.map(x => `<div class="tag-item"><b>-${x.key}-</b> : ${x.meaning}</div>`).join('');
+                content.innerHTML += `<div class="tag-group"><div class="tag-title">🌱 字根 Root</div>${rows}</div>`;
+            }
+
+            if (sMatches.length > 0) {
+                hasResult = true;
+                const rows = sMatches.map(x => {
+                    const mStr = x.meaning ? ` : ${x.meaning}` : '';
+                    const badges = x.categories.map(c => `<span class="suffix-badge">${c}</span>`).join('');
+                    return `<div class="tag-item"><b>-${x.key}</b>${badges}${mStr}</div>`;
+                }).join('');
+                content.innerHTML += `<div class="tag-group"><div class="tag-title">🔚 字尾 Suffix</div>${rows}</div>`;
+            }
+
+            if (!hasResult) {
+                content.innerHTML += `<div class="no-result">本機字根資料庫沒有找到相符的片段，這個字可能是不規則變化，或不屬於常見的拉丁／希臘字源。</div>`;
+            }
+
+            // 無論本機資料庫有沒有結果，都附上 Etymonline 連結，方便查真正完整、精確的字源
+            const etymoUrl = `https://www.etymonline.com/word/${encodeURIComponent(word)}`;
+            content.innerHTML += `<div class="etymo-link"><a href="${etymoUrl}" target="_blank" rel="noopener">📖 到 Etymonline 查看完整字源 →</a></div>`;
+
+            popup.style.display = 'block';
+        }
+
+        function closePopup() { document.getElementById('root-dict-popup').style.display = 'none'; }
+        function nextPage() { if (currentIndex < pages.length - 1) { currentIndex++; updatePage(); closePopup(); } }
+        function prevPage() { if (currentIndex > 0) { currentIndex--; updatePage(); closePopup(); } }
+        function seekProgress(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            currentIndex = Math.floor(((e.clientX - rect.left) / rect.width) * pages.length);
+            updatePage(); closePopup();
+        }
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+        function toggleMp3Play() {
+            const label = document.getElementById('mp3BtnLabel');
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            if (audioPlayer.paused) {
+                audioPlayer.play().then(() => label.textContent = " 暫停").catch(() => alert('未找到 MP3 檔案'));
+            } else { audioPlayer.pause(); label.textContent = " 全文"; }
+        }
+        function speakCurrentPage() {
+            if (audioPlayer && !audioPlayer.paused) { audioPlayer.pause(); document.getElementById('mp3BtnLabel').textContent = " 全文MP3"; }
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const textToSpeak = (pages[currentIndex].en || []).join(' ');
+            if (!textToSpeak) return;
+            const sentences = textToSpeak.match(/[^.!?,;—]+(?:--|[^.!?,;—])*/g) || [textToSpeak];
+            let sentenceIndex = 0;
+            function speakNext() {
+                if (sentenceIndex >= sentences.length) return;
+                const utterance = new SpeechSynthesisUtterance(sentences[sentenceIndex].trim());
+                utterance.lang = 'en-US'; utterance.rate = 0.9;
+                utterance.onend = () => { sentenceIndex++; speakNext(); };
+                utterance.onerror = () => { sentenceIndex++; speakNext(); };
+                window.speechSynthesis.speak(utterance);
+            }
+            speakNext();
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextPage();
+            else if (e.key === 'ArrowLeft') prevPage();
+        });
+        updatePage();
+    </script>
+</body>
+</html>
