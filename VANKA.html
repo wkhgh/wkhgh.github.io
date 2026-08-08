@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>契訶夫《凡卡》</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-main: #2b2d42;
+            --text-sub: #4a5568;
+            --card-bg: #ffffff;
+            --accent-color: #3182ce;
+            --border-color: #e2e8f0;
+            --font-scale: 1;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a202c;
+            --text-main: #edf2f7;
+            --text-sub: #cbd5e0;
+            --card-bg: #2d3748;
+            --accent-color: #63b3ed;
+            --border-color: #4a5568;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0; padding: 0; height: 100vh; overflow: hidden;
+            background-color: var(--bg-color); color: var(--text-main);
+            display: flex; flex-direction: column;
+            font-family: Georgia, "Times New Roman", "標楷體", serif;
+        }
+
+        header {
+            height: 65px; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 25px; background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color); flex-shrink: 0; z-index: 20;
+            user-select: none;
+        }
+
+        .title {
+            font-size: 1.2rem; font-weight: bold; color: var(--text-main);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45%;
+        }
+
+        .controls { display: flex; align-items: center; gap: 5px; }
+
+        .controls button {
+            background: none; border: 1px solid var(--border-color); color: var(--text-main);
+            padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.88rem;
+        }
+
+        main { flex: 1; display: flex; position: relative; overflow-y: auto; padding: 15px 0; }
+
+        .click-zone { position: absolute; top: 0; bottom: 0; width: 8%; z-index: 5; cursor: pointer; user-select: none; }
+        .click-left { left: 0; } .click-right { right: 0; }
+
+        .card-container { width: 95%; max-width: 1200px; margin: auto; padding: 0 10px; z-index: 10; }
+
+        .paragraph-box {
+            background-color: var(--card-bg); padding: 30px 40px; border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color);
+        }
+
+        .en-p {
+            font-size: calc(1.18rem * var(--font-scale)); line-height: 1.65;
+            font-family: Georgia, serif; color: var(--text-main); margin-bottom: 16px;
+            user-select: text !important; cursor: text;
+        }
+
+        .zh-section { border-top: 1px dashed var(--border-color); padding-top: 20px; }
+
+        .zh-p {
+            font-size: calc(1.25rem * var(--font-scale)); line-height: 1.85;
+            font-family: "標楷體", serif; color: var(--text-sub); margin-bottom: 16px;
+            user-select: text !important;
+        }
+
+        /* 字根分析彈窗 */
+        #root-dict-popup {
+            display: none; position: fixed; bottom: 80px; left: 30px; width: 340px; max-height: 420px;
+            background-color: var(--card-bg); border: 2px solid var(--accent-color);
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 999;
+            padding: 16px; overflow-y: auto; font-family: -apple-system, sans-serif;
+        }
+
+        .popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 12px; }
+        .popup-title { font-size: 1.1rem; font-weight: bold; color: var(--accent-color); }
+        .close-btn { cursor: pointer; font-weight: bold; font-size: 1.2rem; color: var(--text-sub); }
+        .tag-group { margin-bottom: 10px; }
+        .tag-title { font-size: 0.85rem; font-weight: bold; color: var(--text-sub); margin-bottom: 4px; }
+        .tag-item { background-color: var(--bg-color); border-left: 3px solid var(--accent-color); padding: 6px 10px; border-radius: 4px; margin-bottom: 6px; font-size: 0.9rem; }
+        .suffix-badge { display: inline-block; background-color: var(--accent-color); color: white; padding: 1px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 4px; }
+        .no-result { font-size: 0.85rem; color: var(--text-sub); line-height: 1.6; padding: 6px 2px 10px 2px; }
+        .etymo-link { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); text-align: center; }
+        .etymo-link a { color: var(--accent-color); text-decoration: none; font-size: 0.88rem; font-weight: bold; }
+        .etymo-link a:hover { text-decoration: underline; }
+
+        footer {
+            height: 65px; padding: 8px 25px; background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; gap: 6px; flex-shrink: 0; z-index: 20; user-select: none;
+        }
+        .progress-bar-container { width: 100%; background-color: var(--border-color); height: 6px; border-radius: 3px; overflow: hidden; cursor: pointer; }
+        .progress-bar { height: 100%; background-color: var(--accent-color); width: 0%; transition: width 0.2s; }
+        .footer-controls { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: var(--text-sub); }
+        .nav-btn { background-color: var(--accent-color); color: white; border: none; padding: 8px 22px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: bold; }
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        @media (max-width: 600px) {
+            #root-dict-popup { left: 5%; right: 5%; width: 90%; bottom: 75px; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="audioPlayer" src="VANKA.mp3" preload="none"></audio>
+
+    <header>
+        <div class="title">📖 契訶夫《凡卡》</div>
+        <div class="controls">
+            <button onclick="changeFontSize(-0.1)">A-</button>
+            <button onclick="changeFontSize(0.1)">A+</button>
+            <button onclick="speakCurrentPage()">🔊<span class="btn-label"> 朗讀</span></button>
+            <button id="mp3Btn" onclick="toggleMp3Play()">🎧<span class="btn-label" id="mp3BtnLabel"> 全文</span></button>
+            <button onclick="toggleDarkMode()">🌙<span class="btn-label"> 切換</span></button>
+            <button id="fullscreenBtn" onclick="toggleFullscreen()">⛶<span class="btn-label"> 全螢幕</span></button>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <div class="click-zone click-left" onclick="prevPage()"></div>
+        <div class="click-zone click-right" onclick="nextPage()"></div>
+
+        <div class="card-container">
+            <div class="paragraph-box" id="paragraph-box"></div>
+        </div>
+    </main>
+
+    <div id="root-dict-popup">
+        <div class="popup-header">
+            <span class="popup-title" id="popup-word-title">🌱 單字結構分析</span>
+            <span class="close-btn" onclick="closePopup()">✕</span>
+        </div>
+        <div id="popup-content"></div>
+    </div>
+
+    <footer>
+        <div class="progress-bar-container" onclick="seekProgress(event)">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div class="footer-controls">
+            <button class="nav-btn" id="prev-btn" onclick="prevPage()">上一頁</button>
+            <span id="page-info">0 / 0</span>
+            <button class="nav-btn" id="next-btn" onclick="nextPage()">下一頁</button>
+        </div>
+    </footer>
+
+    <script>
+        const pages = [{"id": 1, "en": ["VANKA ZHUKOV, a boy of nine, who had been for three months apprenticed to Alyahin the shoemaker, was sitting up on Christmas Eve. Waiting till his master and mistress and their workmen had gone to the midnight service, he took out of his master’s cupboard a bottle of ink and a pen with a rusty nib, and, spreading out a crumpled sheet of paper in front of him, began writing. Before forming the first letter he several times looked round fearfully at the door and the windows, stole a glance at the dark ikon, on both sides of which stretched shelves full of lasts, and heaved a broken sigh. The paper lay on the bench while he knelt before it."], "zh": ["瓦卡·朱科夫，九歲的男孩，已經跟隨鞋匠阿利亞欣學徒三個月，聖誕前夜他坐在那裡。等到他的主人和女主人及工人們都去參加午夜禮拜後，他從主人的櫥櫃裡拿出一瓶墨水和一支生鏽的筆，將一張皺巴巴的紙展開在面前，開始寫信。在寫下第一個字母之前，他幾次驚恐地朝門和窗戶看，偷偷瞥了一眼黑暗中的聖像，兩側擺滿了鞋楦，然後重重地嘆了口氣。紙張躺在長凳上，而他則跪在它面前。"]}, {"id": 2, "en": ["“Dear grandfather, Konstantin Makaritch,” he wrote, “I am writing you a letter. I wish you a happy Christmas, and all blessings from God Almighty. I have neither father nor mother, you are the only one left me.”", "Vanka raised his eyes to the dark ikon on which the light of his candle was reflected, and vividly recalled his grandfather, Konstantin Makaritch, who was night watchman to a family called Zhivarev. He was a thin but extraordinarily nimble and lively little old man of sixty-five, with an everlastingly laughing face and drunken eyes. By day he slept in the servants’ kitchen, or made jokes with the cooks; at night, wrapped in an ample sheepskin, he walked round the grounds and tapped with his little mallet. Old Kashtanka and Eel, so-called on account of his dark colour and his long body like a weasel’s, followed him with hanging heads. This Eel was exceptionally polite and affectionate, and looked with equal kindness on strangers and his own masters, but had not a very good reputation. Under his politeness and meekness was hidden the most Jesuitical cunning. No one knew better how to creep up on occasion and snap at one’s legs, to slip into the store-room, or steal a hen from a peasant. His hind legs had been nearly pulled off more than once, twice he had been hanged, every week he was thrashed till he was half dead, but he always revived."], "zh": ["「親愛的祖父，康斯坦丁·馬卡里奇，」他寫道，「我正在給您寫信。祝您聖誕快樂，願全能的上帝賜予您一切祝福。我沒有父親也沒有母親，您是我唯一剩下的人。」", "瓦卡抬起頭，望向黑暗中的聖像，蠟燭的光映照在上面，他清晰地回想起他的祖父康斯坦丁·馬卡里奇，他是名叫日瓦列夫的家庭的夜間守衛。祖父是一位瘦小卻異常靈活和活潑的六十五歲老人，臉上永遠帶著笑容，眼神醉意朦朧。白天他在僕人的廚房裡睡覺，或是和廚師們開玩笑；晚上，他裹著一件寬大的羊皮大衣，圍著院子走，拿著小木槌敲打著。老卡什坦卡和名叫鰻魚的狗，因為牠的毛色暗淡和長得像黃鼠狼，低著頭跟在他身後。這隻鰻魚特別有禮貌且親切，對陌生人和自己的主人都一樣友好，但名聲卻不太好。在他的禮貌和溫順之下，隱藏著最狡猾的心機。沒有人比他更懂得在合適的時候悄悄接近並咬住人的腿，溜進儲藏室，或是從農民那裡偷一隻母雞。他的後腿曾經多次被拉扯得快要斷掉，兩次被吊起，每週都被打得半死，但他總是能活過來。"]}, {"id": 3, "en": ["At this moment grandfather was, no doubt, standing at the gate, screwing up his eyes at the red windows of the church, stamping with his high felt boots, and joking with the servants. His little mallet was hanging on his belt. He was clasping his hands, shrugging with the cold, and, with an aged chuckle, pinching first the housemaid, then the cook.", "“How about a pinch of snuff?” he was saying, offering the women his snuff-box.", "The women would take a sniff and sneeze. Grandfather would be indescribably delighted, go off into a merry chuckle, and cry:", "“Tear it off, it has frozen on!”"], "zh": ["此刻，祖父無疑正站在大門口，眯著眼睛看著教堂紅色的窗戶，穿著高高的毛氈靴子在那裡跺腳，和僕人們開著玩笑。他的小木槌掛在腰帶上。他雙手交叉，因為寒冷而縮肩，帶著年老的笑聲，先捏了捏女僕，然後又捏了捏廚師。", "「來一點鼻煙怎麼樣？」他一邊說，一邊把鼻煙盒遞給女人們。", "女人們會吸一口，然後打噴嚏。祖父會高興得無法形容，笑得開懷，喊道：", "「快點，快點，它凍住了！」"]}, {"id": 4, "en": ["They give the dogs a sniff of snuff too. Kashtanka sneezes, wriggles her head, and walks away offended. Eel does not sneeze, from politeness, but wags his tail. And the weather is glorious. The air is still, fresh, and transparent. The night is dark, but one can see the whole village with its white roofs and coils of smoke coming from the chimneys, the trees silvered with hoar frost, the snowdrifts. The whole sky spangled with gay twinkling stars, and the Milky Way is as distinct as though it had been washed and rubbed with snow for a holiday. . . .", "Vanka sighed, dipped his pen, and went on writing:"], "zh": ["他們也讓狗聞一聞鼻煙。卡什坦卡打了個噴嚏，扭動著頭，生氣地走開了。鰻魚則因為禮貌沒有打噴嚏，而是搖著尾巴。天氣真好。空氣靜謐、清新而透明。夜色雖然黑暗，但整個村莊的白色屋頂和從煙囪裡冒出的煙霧清晰可見，樹木被霜覆蓋，雪堆如山。整個天空閃爍著五彩斑斕的星星，銀河清晰可見，彷彿為了節日而被雪洗刷和擦拭過……", "瓦卡嘆了口氣，沾了沾筆，繼續寫道："]}, {"id": 5, "en": ["“And yesterday I had a wigging. The master pulled me out into the yard by my hair, and whacked me with a boot-stretcher because I accidentally fell asleep while I was rocking their brat in the cradle. And a week ago the mistress told me to clean a herring, and I began from the tail end, and she took the herring and thrust its head in my face. The workmen laugh at me and send me to the tavern for vodka, and tell me to steal the master’s cucumbers for them, and the master beats me with anything that comes to hand. And there is nothing to eat. In the morning they give me bread, for dinner, porridge, and in the evening, bread again; but as for tea, or soup, the master and mistress gobble it all up themselves. And I am put to sleep in the passage, and when their wretched brat cries I get no sleep at all, but have to rock the cradle. Dear grandfather, show the divine mercy, take me away from here, home to the village. It’s more than I can bear. I bow down to your feet, and will pray to God for you for ever, take me away from here or I shall die.”"], "zh": ["「昨天我被罵了一頓。主人把我拉到院子裡，抓著我的頭髮，用鞋撐打了我，因為我在搖他們的嬰兒時不小心睡著了。還有一週前，女主人讓我清理一條鯡魚，我從尾巴開始清理，她卻把魚的頭塞到我臉上。工人們笑我，讓我去酒館買伏特加，還叫我偷主人的黃瓜，主人則用手邊的任何東西打我。而且我沒有東西吃。早上給我麵包，午餐是粥，晚上又是麵包；至於茶或湯，主人和女主人全自己吃了。我被放在走廊裡睡覺，當他們可憐的嬰兒哭的時候，我根本無法睡覺，只能搖著搖籃。親愛的祖父，施予我神聖的憐憫，帶我回家，回到村莊。這一切我再也無法忍受。我向您跪下，永遠為您祈禱，帶我離開這裡，否則我會死。」"]}, {"id": 6, "en": ["Vanka’s mouth worked, he rubbed his eyes with his black fist, and gave a sob.", "“I will powder your snuff for you,” he went on. “I will pray for you, and if I do anything you can thrash me like Sidor’s goat. And if you think I’ve no job, then I will beg the steward for Christ’s sake to let me clean his boots, or I’ll go for a shepherd-boy instead of Fedka. Dear grandfather, it is more than I can bear, it’s simply no life at all. I wanted to run away to the village, but I have no boots, and I am afraid of the frost. When I grow up big I will take care of you for this, and not let anyone annoy you, and when you die I will pray for the rest of your soul, just as for my mammy’s.”"], "zh": ["瓦卡的嘴巴動著，他用黑色的小拳頭揉著眼睛，抽泣著。", "「我會為您磨鼻煙，」他繼續說。「我會為您祈禱，如果我做錯了什麼，您可以像打西多爾的山羊那樣打我。如果您覺得我沒有工作，那我會為基督的緣故向管家請求讓我清理他的靴子，或者我會去當牧羊男孩，代替費德卡。親愛的祖父，這一切我再也無法忍受，根本不是生活。我想逃回村莊，但我沒有靴子，還怕凍傷。等我長大了，我會照顧您，不讓任何人打擾您，當您去世時，我會為您的靈魂祈禱，就像為我媽媽的靈魂一樣。」"]}, {"id": 7, "en": ["“Moscow is a big town. It’s all gentlemen’s houses, and there are lots of horses, but there are no sheep, and the dogs are not spiteful. The lads here don’t go out with the star, and they don’t let anyone go into the choir, and once I saw in a shop window fishing-hooks for sale, fitted ready with the line and for all sorts of fish, awfully good ones, there was even one hook that would hold a forty-pound sheat-fish. And I have seen shops where there are guns of all sorts, after the pattern of the master’s guns at home, so that I shouldn’t wonder if they are a hundred roubles each. . . . And in the butchers’ shops there are grouse and woodcocks and fish and hares, but the shopmen don’t say where they shoot them.”"], "zh": ["「莫斯科是一個大城市。這裡全是紳士的房子，馬很多，但沒有羊，狗也不惡毒。這裡的孩子們不會帶著星星出門，也不讓任何人進入合唱團，而我曾在商店的櫥窗裡看到賣魚鉤的，已經配好了線，還有各種魚的，特別好，甚至還有一個鉤子能夠掛住四十磅的鱸魚。我還見過商店裡有各種槍，樣式和主人家裡的槍一樣，所以我不會驚訝如果它們每把都要一百盧布……而在肉店裡有松雞、林鴿、魚和野兔，但店員們卻不說它們是在哪裡打到的。」"]}, {"id": 8, "en": ["“Dear grandfather, when they have the Christmas tree at the big house, get me a gilt walnut, and put it away in the green trunk. Ask the young lady Olga Ignatyevna, say it’s for Vanka.”", "Vanka gave a tremulous sigh, and again stared at the window. He remembered how his grandfather always went into the forest to get the Christmas tree for his master’s family, and took his grandson with him. It was a merry time! Grandfather made a noise in his throat, the forest crackled with the frost, and looking at them Vanka chortled too. Before chopping down the Christmas tree, grandfather would smoke a pipe, slowly take a pinch of snuff, and laugh at frozen Vanka. . . . The young fir trees, covered with hoar frost, stood motionless, waiting to see which of them was to die. Wherever one looked, a hare flew like an arrow over the snowdrifts . . . . Grandfather could not refrain from shouting: “Hold him, hold him . . . hold him! Ah, the bob-tailed devil!”"], "zh": ["「親愛的祖父，當他們在大房子裡擺聖誕樹時，給我一個金色的核桃，放在綠色的箱子裡。請問年輕的小姐奧爾加·伊格納季耶夫娜，說是給瓦卡的。」", "瓦卡發出一聲顫抖的嘆息，再次盯著窗戶。他想起祖父總是進森林為主人家找聖誕樹，還帶著他的孫子一起去。那是快樂的時光！祖父在喉嚨裡發出聲音，森林因為霜而發出噼啪聲，瓦卡看著他也咯咯笑。在砍下聖誕樹之前，祖父會抽煙斗，慢慢地吸一口鼻煙，然後笑著看著凍得發抖的瓦卡……那些被霜覆蓋的小松樹靜靜地矗立著，等待著哪一棵會被砍倒。無論往哪裡看，一隻野兔像箭一樣飛過雪堆……祖父忍不住大喊：「抓住他，抓住他……抓住他！啊，這隻短尾巴的惡魔！」"]}, {"id": 9, "en": ["When he had cut down the Christmas tree, grandfather used to drag it to the big house, and there set to work to decorate it. . . . The young lady, who was Vanka’s favourite, Olga Ignatyevna, was the busiest of all. When Vanka’s mother Pelageya was alive, and a servant in the big house, Olga Ignatyevna used to give him goodies, and having nothing better to do, taught him to read and write, to count up to a hundred, and even to dance a quadrille. When Pelageya died, Vanka had been transferred to the servants’ kitchen to be with his grandfather, and from the kitchen to the shoemaker’s in Moscow."], "zh": ["當他砍下聖誕樹後，祖父會把它拖到大房子，然後開始裝飾它……最忙碌的就是瓦卡最喜歡的年輕小姐奧爾加·伊格納季耶夫娜。當瓦卡的母親佩拉蓋亞還活著，並且在大房子裡做僕人的時候，奧爾加·伊格納季耶夫娜常常給他零食，因為沒有更好的事情可做，教他讀書寫字，數到一百，甚至還教他跳四手舞。當佩拉蓋亞去世後，瓦卡被調到僕人的廚房，和祖父在一起，然後從廚房轉到莫斯科的鞋匠那裡。"]}, {"id": 10, "en": ["“Do come, dear grandfather,” Vanka went on with his letter. “For Christ’s sake, I beg you, take me away. Have pity on an unhappy orphan like me; here everyone knocks me about, and I am fearfully hungry; I can’t tell you what misery it is, I am always crying. And the other day the master hit me on the head with a last, so that I fell down. My life is wretched, worse than any dog’s. . . . I send greetings to Alyona, one-eyed Yegorka, and the coachman, and don’t give my concertina to anyone. I remain, your grandson, Ivan Zhukov. Dear grandfather, do come.”"], "zh": ["「親愛的祖父，求您來吧，」瓦卡繼續寫他的信。「為了基督的緣故，我懇求您，帶我走。可憐一個像我這樣不幸的孤兒；在這裡每個人都打我，我非常餓；我無法告訴您有多痛苦，我總是在哭。前幾天，主人用鞋撐打了我的頭，讓我摔倒了。我的生活悲慘，甚至比狗的生活還要糟糕……我向阿廖娜、一隻獨眼的葉戈爾卡和馬車夫問好，並且不要把我的手風琴給任何人。我仍然是您的孫子，伊凡·朱科夫。親愛的祖父，求您來吧。」"]}, {"id": 11, "en": ["Vanka folded the sheet of writing-paper twice, and put it into an envelope he had bought the day before for a kopeck. . . . After thinking a little, he dipped the pen and wrote the address:", "To grandfather in the village.", "Then he scratched his head, thought a little, and added: Konstantin Makaritch. Glad that he had not been prevented from writing, he put on his cap and, without putting on his little greatcoat, ran out into the street as he was in his shirt. . . .", "The shopmen at the butcher’s, whom he had questioned the day before, told him that letters were put in post-boxes, and from the boxes were carried about all over the earth in mailcarts with drunken drivers and ringing bells. Vanka ran to the nearest post-box, and thrust the precious letter in the slit. . . .", "An hour later, lulled by sweet hopes, he was sound asleep. . . . He dreamed of the stove. On the stove was sitting his grandfather, swinging his bare legs, and reading the letter to the cooks. . . .", "By the stove was Eel, wagging his tail."], "zh": ["瓦卡將寫好的信紙對折兩次，放進他前一天花一個科比克買的信封裡……想了一會兒，他沾了沾筆，寫下地址：", "寄給村裡的祖父。", "然後他抓了抓頭，想了一會兒，補上了：康斯坦丁·馬卡里奇。高興的是他沒有被阻止寫信，他戴上帽子，沒有穿上小外套，就這樣跑到街上，穿著襯衫……", "他前一天在肉店詢問的店員告訴他，信件要放進郵筒，然後從郵筒裡用郵車運送到全世界，駕駛的都是喝醉的司機，還有響亮的鈴聲。瓦卡跑到最近的郵筒，將那封珍貴的信塞進了縫隙裡……", "一小時後，伴隨著甜美的希望，他沉沉入睡……他夢見爐子。爐子上坐著他的祖父，搖著光溜溜的腿，正在給廚師們讀信……", "在爐子旁邊，鰻魚搖著尾巴。"]}];
+        const dbPrefixes = [{"keys": ["a"], "meaning": "of"}, {"keys": ["a"], "meaning": "on"}, {"keys": ["a"], "meaning": "intensive"}, {"keys": ["a"], "meaning": "ad=to, at, for"}, {"keys": ["a"], "meaning": "ab=from, away"}, {"keys": ["a"], "meaning": "ex=out,extremely"}, {"keys": ["a"], "meaning": "negative(not, without)"}, {"keys": ["ab"], "meaning": "from,away from,off"}, {"keys": ["ad"], "meaning": "to,at,for"}, {"keys": ["al"], "meaning": "all"}, {"keys": ["ambi"], "meaning": "on both sides, about, arount"}, {"keys": ["amphi"], "meaning": "on both sides, around"}, {"keys": ["an"], "meaning": "negative(not, without)"}, {"keys": ["ana"], "meaning": "upon,on,up"}, {"keys": ["ante"], "meaning": "before"}, {"keys": ["anti"], "meaning": "against,opposite to"}, {"keys": ["arch"], "meaning": "chief"}, {"keys": ["suto"], "meaning": "self"}, {"keys": ["be"], "meaning": "to make"}, {"keys": ["be"], "meaning": "to cover with"}, {"keys": ["be"], "meaning": "upon"}, {"keys": ["be"], "meaning": "by"}, {"keys": ["be"], "meaning": "intensive"}, {"keys": ["bene"], "meaning": "well,good"}, {"keys": ["bi"], "meaning": "double,two"}, {"keys": ["cata"], "meaning": "down, downwards, fully"}, {"keys": ["circum"], "meaning": "around, round about"}, {"keys": ["com"], "meaning": "together,with, wholly"}, {"keys": ["contra"], "meaning": "against"}, {"keys": ["de"], "meaning": "down, downard"}, {"keys": ["de"], "meaning": "apart, from"}, {"keys": ["deca"], "meaning": "ten"}, {"keys": ["demi"], "meaning": "half"}, {"keys": ["di"], "meaning": "double,twice"}, {"keys": ["dia"], "meaning": "through,between, across"}, {"keys": ["dis"], "meaning": "apart,away"}, {"keys": ["duo"], "meaning": "two,double"}, {"keys": ["en"], "meaning": "in, into,on,at,near"}, {"keys": ["epi"], "meaning": "upon, to besides, among"}, {"keys": ["eu"], "meaning": "well"}, {"keys": ["ex"], "meaning": "out of, fully"}, {"keys": ["extra"], "meaning": "beyond"}, {"keys": ["for"], "meaning": "away from"}, {"keys": ["fore"], "meaning": "before"}, {"keys": ["forth"], "meaning": "towards"}, {"keys": ["hemi"], "meaning": "half"}, {"keys": ["hetero"], "meaning": "other,different"}, {"keys": ["hexa"], "meaning": "six"}, {"keys": ["homo"], "meaning": "same"}, {"keys": ["hyper"], "meaning": "above,beyond"}, {"keys": ["hypo"], "meaning": "under"}, {"keys": ["in"], "meaning": "in, into,on"}, {"keys": ["in"], "meaning": "negative(=not)"}, {"keys": ["inter"], "meaning": "between, among"}, {"keys": ["intra", "intro"], "meaning": "within, inward"}, {"keys": ["mal(e)"], "meaning": "badly,ill"}, {"keys": ["meta"], "meaning": "among,with, after"}, {"keys": ["mis"], "meaning": "wrong,bad, ill"}, {"keys": ["mone"], "meaning": "single,sole, alone"}, {"keys": ["mult(i)"], "meaning": "many,much"}, {"keys": ["ne"], "meaning": "negative(=not)"}, {"keys": ["ob"], "meaning": "as, toward,at,before, upon,over, about, near, against"}, {"keys": ["octa", "octo"], "meaning": "eight, eighth"}, {"keys": ["omni"], "meaning": "all"}, {"keys": ["para"], "meaning": "beside, beyond, against, contrary"}, {"keys": ["pen"], "meaning": "almost"}, {"keys": ["penta"], "meaning": "five"}, {"keys": ["per"], "meaning": "through, thoroughly, away"}, {"keys": ["peri"], "meaning": "around,round about"}, {"keys": ["poly"], "meaning": "many"}, {"keys": ["post"], "meaning": "after,behind"}, {"keys": ["pre"], "meaning": "before"}, {"keys": ["pro"], "meaning": "for,before, forth, forward"}, {"keys": ["prot(o)"], "meaning": "first"}, {"keys": ["quadr(i)"], "meaning": "four"}, {"keys": ["re"], "meaning": "again, back"}, {"keys": ["retro"], "meaning": "backward"}, {"keys": ["se"], "meaning": "away,apart"}, {"keys": ["semi"], "meaning": "half"}, {"keys": ["sept"], "meaning": "seven"}, {"keys": ["sub"], "meaning": "under"}, {"keys": ["super"], "meaning": "above,over"}, {"keys": ["syn"], "meaning": "with, together"}, {"keys": ["tele afar off"], "meaning": ""}, {"keys": ["tetra"], "meaning": "four"}, {"keys": ["trans"], "meaning": "beyond,across, over"}, {"keys": ["tri"], "meaning": "three,threefoid"}, {"keys": ["twi"], "meaning": "two"}, {"keys": ["ultra"], "meaning": "beyond"}, {"keys": ["un"], "meaning": "not"}, {"keys": ["un"], "meaning": "the reversal of an action"}, {"keys": ["uni"], "meaning": "one"}, {"keys": ["under"], "meaning": "under,beneath"}, {"keys": ["up"], "meaning": "up,aloft"}, {"keys": ["vice"], "meaning": "in place of"}, {"keys": ["with"], "meaning": "against,back"}];
+        const dbRoots = [{"keys": ["act"], "meaning": "to act"}, {"keys": ["alt"], "meaning": "high"}, {"keys": ["age"], "meaning": "act of,state of"}, {"keys": ["alter", "ali"], "meaning": "other"}, {"keys": ["agi", "ago", "ag"], "meaning": "move,go,do,act"}, {"keys": ["am"], "meaning": "to love"}, {"keys": ["anc"], "meaning": "before"}, {"keys": ["ang"], "meaning": "to strangle"}, {"keys": ["anim"], "meaning": "breath,mind"}, {"keys": ["ann"], "meaning": "year"}, {"keys": ["anthrop"], "meaning": "man"}, {"keys": ["apt"], "meaning": "fit"}, {"keys": ["arm"], "meaning": "weapons"}, {"keys": ["aster", "astro", "stella"], "meaning": "star"}, {"keys": ["aud", "aus"], "meaning": "to hear"}, {"keys": ["aug"], "meaning": "to increase,make to grow"}, {"keys": ["avi"], "meaning": "bird"}, {"keys": ["band", "bond"], "meaning": "to bind"}, {"keys": ["bar"], "meaning": "bar"}, {"keys": ["bat"], "meaning": "to beat"}, {"keys": ["bene", "bon"], "meaning": "well,good"}, {"keys": ["bio"], "meaning": "life"}, {"keys": ["brev"], "meaning": "short"}, {"keys": ["cad", "cid", "cas"], "meaning": "to fall"}, {"keys": ["cap", "capit", "capt"], "meaning": "head"}, {"keys": ["cap", "cep", "cept"], "meaning": "to Take"}, {"keys": ["car"], "meaning": "car, to run"}, {"keys": ["carn"], "meaning": "flesh"}, {"keys": ["cause", "cuse", "cus"], "meaning": "cause,motive"}, {"keys": ["cede", "ceed", "cess"], "meaning": "to go, come"}, {"keys": ["ceive", "cept", "cip", "cipate"], "meaning": "to take"}, {"keys": ["cent"], "meaning": "hundred"}, {"keys": ["centr"], "meaning": "center"}, {"keys": ["cern", "cret"], "meaning": "to separate"}, {"keys": ["cert"], "meaning": "sure"}, {"keys": ["chron"], "meaning": "time"}, {"keys": ["cide", "cise"], "meaning": "to cut"}, {"keys": ["circ", "cyc"], "meaning": "ring"}, {"keys": ["cite"], "meaning": "to call,urge"}, {"keys": ["civ"], "meaning": "citizen"}, {"keys": ["claim", "clam"], "meaning": "to cry"}, {"keys": ["clin"], "meaning": "to bend"}, {"keys": ["clud", "clus"], "meaning": "to shut"}, {"keys": ["cognis", "gnos"], "meaning": "to know"}, {"keys": ["cord"], "meaning": "heart"}, {"keys": ["corp"], "meaning": "body"}, {"keys": ["cre", "crea", "cresc"], "meaning": "to make, grow"}, {"keys": ["cred"], "meaning": "to believe"}, {"keys": ["cult"], "meaning": "to till"}, {"keys": ["cumb"], "meaning": "to lie down"}, {"keys": ["cure"], "meaning": "to Take care"}, {"keys": ["cur", "course"], "meaning": "to run"}, {"keys": ["cuss"], "meaning": "to strike, shake"}, {"keys": ["deb", "du"], "meaning": "to owe"}, {"keys": ["dem"], "meaning": "people"}, {"keys": ["dic"], "meaning": "to proclaim"}, {"keys": ["dict", "dit"], "meaning": "to say"}, {"keys": ["dign"], "meaning": "worthy"}, {"keys": ["divid", "divis"], "meaning": "to divide"}, {"keys": ["doc"], "meaning": "to teach"}, {"keys": ["dom"], "meaning": "to tame,rule"}, {"keys": ["dorm"], "meaning": "steep"}, {"keys": ["don", "dot", "dow"], "meaning": "to give"}, {"keys": ["duc", "duce", "duct"], "meaning": "lead"}, {"keys": ["em", "empt"], "meaning": "to take,buy"}, {"keys": ["equ"], "meaning": "equal"}, {"keys": ["ess", "est"], "meaning": "to be"}, {"keys": ["eu"], "meaning": "pleasant, well, good, well-done"}, {"keys": ["fact", "fect"], "meaning": "to make,do"}, {"keys": ["fam"], "meaning": "to speak"}, {"keys": ["fare"], "meaning": "to go"}, {"keys": ["feder", "fide", "fid", "feal"], "meaning": "trust, faith"}, {"keys": ["fend", "fest"], "meaning": "to strike"}, {"keys": ["fer"], "meaning": "to carry,bear"}, {"keys": ["fess"], "meaning": "to speak"}, {"keys": ["fic", "fect"], "meaning": "make,do"}, {"keys": ["fict", "fig"], "meaning": "to feign"}, {"keys": ["fid"], "meaning": "to trust"}, {"keys": ["fin", "fins"], "meaning": "to end"}, {"keys": ["firm"], "meaning": "firm"}, {"keys": ["fix"], "meaning": "fix"}, {"keys": ["flect", "flex"], "meaning": "to bend"}, {"keys": ["flict"], "meaning": "to strike"}, {"keys": ["flu", "fluv", "flux", "fluc"], "meaning": "to flow"}, {"keys": ["form"], "meaning": "to form, form"}, {"keys": ["fort", "forc"], "meaning": "strong"}, {"keys": ["found", "fund"], "meaning": "base"}, {"keys": ["fract", "frag"], "meaning": "to break"}, {"keys": ["ful"], "meaning": "full of"}, {"keys": ["fuse", "found"], "meaning": "to pour"}, {"keys": ["gener", "gen", "gent"], "meaning": "to produce, a race"}, {"keys": ["ger", "gest"], "meaning": "to carry"}, {"keys": ["grad", "gress"], "meaning": "to walk"}, {"keys": ["gram", "graph"], "meaning": "to write,letter"}, {"keys": ["grad", "gred", "gress"], "meaning": "step, degree, walk"}, {"keys": ["grat"], "meaning": "to please"}, {"keys": ["grav"], "meaning": "heavy"}, {"keys": ["gregat"], "meaning": "to collect"}, {"keys": ["hab", "hibit"], "meaning": "to have,live"}, {"keys": ["her"], "meaning": "an heir"}, {"keys": ["here", "hes"], "meaning": "to stick"}, {"keys": ["hum", "hom", "human"], "meaning": "man, earth, ground"}, {"keys": ["hum"], "meaning": "ground"}, {"keys": ["hydro", "hydra", "hydr"], "meaning": "water"}, {"keys": ["insul"], "meaning": "island"}, {"keys": ["it"], "meaning": "to go"}, {"keys": ["ject", "jac", "jec"], "meaning": "to throw, lie"}, {"keys": ["journ"], "meaning": "day"}, {"keys": ["jud", "jus", "jur"], "meaning": "to judge"}, {"keys": ["just", "juris"], "meaning": "law"}, {"keys": ["labor"], "meaning": "to labor"}, {"keys": ["laps"], "meaning": "to slip,glide"}, {"keys": ["late"], "meaning": "to bring,bear"}, {"keys": ["later"], "meaning": "side"}, {"keys": ["lav", "lau", "laut", "lut", "lot"], "meaning": "to wash"}, {"keys": ["lax", "lyse"], "meaning": "to loosen"}, {"keys": ["lect", "leg"], "meaning": "to choose, gather,read"}, {"keys": ["leg"], "meaning": "to appoint, send"}, {"keys": ["leg"], "meaning": "law"}, {"keys": ["lev"], "meaning": "to raise, light"}, {"keys": ["liber", "liver"], "meaning": "free"}, {"keys": ["lig"], "meaning": "to bind"}, {"keys": ["loc", "loco"], "meaning": "place"}, {"keys": ["long", "leng", "ling"], "meaning": "a word, a speech, a thought"}, {"keys": ["log", "logy"], "meaning": "long"}, {"keys": ["log", "loqu", "locut"], "meaning": "to speak"}, {"keys": ["lud"], "meaning": "to play"}, {"keys": ["lumin"], "meaning": "light"}, {"keys": ["lust", "luc"], "meaning": "bright"}, {"keys": ["magn", "maj", "max"], "meaning": "great"}, {"keys": ["mand", "mead"], "meaning": "to order, entrust"}, {"keys": ["man", "manu"], "meaning": "hand"}, {"keys": ["mari", "mar", "mer"], "meaning": "the sea,pool"}, {"keys": ["matr", "matro", "matric", "matri"], "meaning": "mother"}, {"keys": ["medi"], "meaning": "middle,half,between"}, {"keys": ["merc"], "meaning": "to trade, a reward"}, {"keys": ["merge", "mers"], "meaning": "to sink,dip"}, {"keys": ["meter"], "meaning": "to measure"}, {"keys": ["mem"], "meaning": "remember"}, {"keys": ["migr"], "meaning": "to remove"}, {"keys": ["min"], "meaning": "to jut, project"}, {"keys": ["min"], "meaning": "small"}, {"keys": ["mir"], "meaning": "to wonder, behold"}, {"keys": ["miss", "mit"], "meaning": "to send, throw"}, {"keys": ["mod"], "meaning": "manner"}, {"keys": ["mon"], "meaning": "to advise, remind"}, {"keys": ["monstr"], "meaning": "to show"}, {"keys": ["mort", "mor", "mori"], "meaning": "death"}, {"keys": ["mov", "mob", "mot"], "meaning": "to move"}, {"keys": ["mut"], "meaning": "to change"}, {"keys": ["nat", "nasc"], "meaning": "born"}, {"keys": ["nau", "nav"], "meaning": "ship"}, {"keys": ["neg"], "meaning": "to deny"}, {"keys": ["not"], "meaning": "to mark"}, {"keys": ["nounce", "nunci"], "meaning": "to report, declare,"}, {"keys": ["nov"], "meaning": "new"}, {"keys": ["onym"], "meaning": "name"}, {"keys": ["opt"], "meaning": "to wish"}, {"keys": ["opus", "oper"], "meaning": "work"}, {"keys": ["ora"], "meaning": "to speak,pray"}, {"keys": ["ori"], "meaning": "to rise, to begin"}, {"keys": ["pac", "plais"], "meaning": "peace"}, {"keys": ["pan"], "meaning": "bread"}, {"keys": ["par"], "meaning": "to prepare"}, {"keys": ["par"], "meaning": "equal"}, {"keys": ["par"], "meaning": "to appear"}, {"keys": ["part"], "meaning": "a part, to part"}, {"keys": ["passi", "pati", "path"], "meaning": "to suffer"}, {"keys": ["patr"], "meaning": "father"}, {"keys": ["ped", "pod"], "meaning": "food"}, {"keys": ["pel", "puls"], "meaning": "to drive, push, throw"}, {"keys": ["pen", "pun"], "meaning": "to punish"}, {"keys": ["pend", "pens"], "meaning": "to hang,weight"}, {"keys": ["peri"], "meaning": "to go through"}, {"keys": ["pet"], "meaning": "to fly,seek"}, {"keys": ["phan", "fan"], "meaning": "appearance"}, {"keys": ["phon"], "meaning": "sound"}, {"keys": ["phe"], "meaning": "to speak"}, {"keys": ["pict"], "meaning": "to paint,picture"}, {"keys": ["plaud", "plode"], "meaning": "to strike,clap"}, {"keys": ["plen", "plete", "ple", "pli", "ply"], "meaning": "to fill,full"}, {"keys": ["plore"], "meaning": "to flow out"}, {"keys": ["ply", "pli", "ple"], "meaning": "to fold"}, {"keys": ["pon", "pound"], "meaning": "to put"}, {"keys": ["popul", "publ"], "meaning": "people"}, {"keys": ["port"], "meaning": "to carry"}, {"keys": ["port"], "meaning": "gate,habor, entrance"}, {"keys": ["pos"], "meaning": "to place,put"}, {"keys": ["potent", "potes", "posse"], "meaning": "powerful,able"}, {"keys": ["press"], "meaning": "to press"}, {"keys": ["prim", "prin", "prem"], "meaning": "first"}, {"keys": ["pris", "prehend"], "meaning": "to seize"}, {"keys": ["prob", "prov"], "meaning": "to test,try, examine"}, {"keys": ["punct"], "meaning": "to prick,point,dot"}, {"keys": ["pute", "put"], "meaning": "to think, settle"}, {"keys": ["quire", "quisit", "quest"], "meaning": "to seek"}, {"keys": ["radi"], "meaning": "ray"}, {"keys": ["radi"], "meaning": "root"}, {"keys": ["rap", "rav"], "meaning": "to snatch"}, {"keys": ["rect", "reg", "recti"], "meaning": "right, rule, guide,direct"}, {"keys": ["reg"], "meaning": "to rule,king"}, {"keys": ["rog", "roga"], "meaning": "ask,beg"}, {"keys": ["rupt"], "meaning": "to break"}, {"keys": ["sacr", "sanct", "secr"], "meaning": "sacred"}, {"keys": ["sal", "sult"], "meaning": "to leap"}, {"keys": ["sal", "san"], "meaning": "whole"}, {"keys": ["sat", "satis"], "meaning": "full, enough"}, {"keys": ["scan", "scend", "scal"], "meaning": "to climb"}, {"keys": ["scope"], "meaning": "watch"}, {"keys": ["sci"], "meaning": "to know"}, {"keys": ["scribe", "script"], "meaning": "to write"}, {"keys": ["sed", "sess", "sid"], "meaning": "to sit"}, {"keys": ["sens", "sent"], "meaning": "to feel"}, {"keys": ["sequ", "secut", "su"], "meaning": "to follow"}, {"keys": ["sert"], "meaning": "to join,put"}, {"keys": ["serv"], "meaning": "to serve,keep"}, {"keys": ["sign"], "meaning": "to mark"}, {"keys": ["simil", "simul", "sembl"], "meaning": "like, same"}, {"keys": ["sist", "stitut", "sta", "st"], "meaning": "to stand"}, {"keys": ["sol"], "meaning": "alone"}, {"keys": ["solv", "solut"], "meaning": "to loosen"}, {"keys": ["soph"], "meaning": "wisdom"}, {"keys": ["spec", "spect"], "meaning": "to see, look"}, {"keys": ["spir"], "meaning": "to breathe"}, {"keys": ["spond", "spons"], "meaning": "to promise, answer"}, {"keys": ["sta", "stit", "sist", "stet"], "meaning": "stand"}, {"keys": ["stinct", "sting"], "meaning": "to prick"}, {"keys": ["string", "strict", "strain", "stress"], "meaning": "to draw tight"}, {"keys": ["stru", "struct"], "meaning": "to build"}, {"keys": ["suade"], "meaning": "to advise"}, {"keys": ["sume", "sumpt"], "meaning": "to Take, use, waste"}, {"keys": ["surge", "sumpt"], "meaning": "to take"}, {"keys": ["surge", "surrect"], "meaning": "to rise"}, {"keys": ["tang", "tact", "tig", "tag", "ting"], "meaning": "to touch"}, {"keys": ["tain", "ten", "tin", "tent"], "meaning": "to hold,keep"}, {"keys": ["tect"], "meaning": "to cover"}, {"keys": ["temper"], "meaning": "to moderate"}, {"keys": ["tempor", "tempo"], "meaning": "time"}, {"keys": ["tempt", "tent"], "meaning": "to try"}, {"keys": ["tend", "tens", "tent"], "meaning": "to stretch, extend"}, {"keys": ["term"], "meaning": "boundary"}, {"keys": ["terr"], "meaning": "earth"}, {"keys": ["test"], "meaning": "witness"}, {"keys": ["text"], "meaning": "to weave"}, {"keys": ["tort"], "meaning": "to twist"}, {"keys": ["tour", "torn"], "meaning": "to turn"}, {"keys": ["tract", "treat", "trait", "tra"], "meaning": "to draw,pull"}, {"keys": ["tribut"], "meaning": "to pay,bestow"}, {"keys": ["trud", "trus"], "meaning": "to thrust, push"}, {"keys": ["turb"], "meaning": "to disturb"}, {"keys": ["us", "uti"], "meaning": "to use"}, {"keys": ["vac", "van", "void"], "meaning": "empty"}, {"keys": ["vade"], "meaning": "to go"}, {"keys": ["vaga"], "meaning": "to wander"}, {"keys": ["val", "vail", "vali", "valu", "vale"], "meaning": "strong, worth"}, {"keys": ["velop"], "meaning": "to wrap"}, {"keys": ["ven", "vent", "veni"], "meaning": "to come"}, {"keys": ["ver", "very"], "meaning": "true"}, {"keys": ["vers", "vert"], "meaning": "to turn"}, {"keys": ["vi", "voy"], "meaning": "way"}, {"keys": ["vid", "vis"], "meaning": "to see"}, {"keys": ["vig", "veg"], "meaning": "lively"}, {"keys": ["vict", "vinc"], "meaning": "to conquer"}, {"keys": ["viv", "vivi", "vita"], "meaning": "to live, alive"}, {"keys": ["voc", "voke"], "meaning": "to call, voice"}, {"keys": ["vol"], "meaning": "will"}, {"keys": ["volve", "volut"], "meaning": "to roll"}, {"keys": ["volcan", "vulcan"], "meaning": "fire"}, {"keys": ["vulse"], "meaning": "to pluck"}];
+        const dbSuffixes = [{"category": "人物名詞字尾", "keys": ["an", "ian", "ean"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["aire"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ar"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ary"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ee"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["er"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ent"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ess"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["herd"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["iff"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ite"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ain"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ant"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ard", "art"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ate"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["eer"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["en"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ese"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["eur"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ier"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ist"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ive"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["man", "sman"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["or", "our"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["y", "yer"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["on"], "meaning": ""}, {"category": "人物名詞字尾", "keys": ["ster"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["cle"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["et", "ette"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["el", "le"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["let"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["en", "in"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["kin"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["ling"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["ock"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["(c)ule"], "meaning": ""}, {"category": "個體名詞字尾", "keys": ["ie", "y"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ace"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["age"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["al"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ance", "ancy", "ence", "ency"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["cy"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["hood", "head"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ic"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["dom"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ice", "ise"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ing"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ion"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ism", "asm"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["itude"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["(i)um"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ment"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["mony"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ness"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["o(u)r"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ry"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ship"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["t", "th"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ty", "ety", "ity"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["ure"], "meaning": ""}, {"category": "抽象名詞字尾", "keys": ["y"], "meaning": ""}, {"category": "集合名詞字尾", "keys": ["age"], "meaning": ""}, {"category": "集合名詞字尾", "keys": ["ary"], "meaning": ""}, {"category": "集合名詞字尾", "keys": ["ry"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["ace"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["age"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["ary"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["ery"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["ory"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["dom"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["um"], "meaning": ""}, {"category": "場所名詞字尾", "keys": ["y"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["able", "ible"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["al", "ial"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["an", "ian"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ant", "ent"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ar"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ary"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ate", "ete", "ute"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ed"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["en"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ern"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ese"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["fold"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ful"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ic"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ical"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["id"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ile"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ine"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ing"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ior"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ique", "esque"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ish"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ite"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ive"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["less"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["like"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ly"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["most"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ory"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ous"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["some"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["ward"], "meaning": ""}, {"category": "形容詞字尾", "keys": ["y"], "meaning": ""}, {"category": "副詞字尾", "keys": ["ence"], "meaning": ""}, {"category": "副詞字尾", "keys": ["ling", "long"], "meaning": ""}, {"category": "副詞字尾", "keys": ["ly"], "meaning": ""}, {"category": "副詞字尾", "keys": ["ward(s)"], "meaning": ""}, {"category": "副詞字尾", "keys": ["way(s)", "wise"], "meaning": ""}, {"category": "動詞字尾", "keys": ["ate"], "meaning": ""}, {"category": "動詞字尾", "keys": ["en"], "meaning": ""}, {"category": "動詞字尾", "keys": ["er"], "meaning": ""}, {"category": "動詞字尾", "keys": ["fy"], "meaning": ""}, {"category": "動詞字尾", "keys": ["ize", "ise"], "meaning": ""}, {"category": "動詞字尾", "keys": ["ish"], "meaning": ""}, {"category": "動詞字尾", "keys": ["le"], "meaning": ""}];
+
+        let currentIndex = 0;
+        let currentFontScale = parseFloat(localStorage.getItem('bilingual_font_scale')) || 1.0;
+        const audioPlayer = document.getElementById('audioPlayer');
+
+        document.documentElement.style.setProperty('--font-scale', currentFontScale);
+
+        function changeFontSize(delta) {
+            currentFontScale = Math.min(Math.max(0.7, currentFontScale + delta), 1.8);
+            document.documentElement.style.setProperty('--font-scale', currentFontScale);
+            localStorage.setItem('bilingual_font_scale', currentFontScale);
+        }
+
+        function updatePage() {
+            if (!pages || pages.length === 0) return;
+            const page = pages[currentIndex];
+            const container = document.getElementById('paragraph-box');
+            container.innerHTML = '';
+
+            if (page.en && page.en.length > 0) {
+                const enSec = document.createElement('div');
+                enSec.className = 'en-section';
+                page.en.forEach(pText => {
+                    const p = document.createElement('div'); p.className = 'en-p'; p.innerText = pText; enSec.appendChild(p);
+                });
+                container.appendChild(enSec);
+            }
+
+            if (page.zh && page.zh.length > 0) {
+                const zhSec = document.createElement('div');
+                zhSec.className = 'zh-section';
+                page.zh.forEach(pText => {
+                    const p = document.createElement('div'); p.className = 'zh-p'; p.innerText = pText; zhSec.appendChild(p);
+                });
+                container.appendChild(zhSec);
+            }
+
+            document.getElementById('page-info').innerText = `${currentIndex + 1} / ${pages.length}`;
+            document.getElementById('progress').style.width = `${((currentIndex + 1) / pages.length) * 100}%`;
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === pages.length - 1;
+            document.getElementById('main-content').scrollTop = 0;
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        // 💡 智慧辨識電腦與手機觸控事件
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        document.addEventListener('mouseup', (e) => {
+            // 電腦端：按住 Alt 鍵再選取才觸發（避開 Google 翻譯／一般選字）
+            // 手機端：直接選取文字就觸發
+            if (isMobile || e.altKey) {
+                const selection = window.getSelection();
+                const text = selection.toString().trim().toLowerCase();
+                if (text && /^[a-zA-Z]+$/.test(text) && text.length > 2) {
+                    analyzeWord(text);
+                }
+            }
+        });
+
+        // 💡 電腦端：直接在英文段落雙擊單字即可查詢，不需要按 Alt，看小說時更方便
+        document.addEventListener('dblclick', (e) => {
+            if (isMobile) return; // 手機交給上面的 mouseup 處理，避免重複觸發
+            if (!e.target.closest('.en-p')) return; // 只在英文段落內生效
+            const selection = window.getSelection();
+            const text = selection.toString().trim().toLowerCase();
+            if (text && /^[a-zA-Z]+$/.test(text) && text.length > 2) {
+                analyzeWord(text);
+            }
+        });
+
+        function analyzeWord(word) {
+            const popup = document.getElementById('root-dict-popup');
+            const title = document.getElementById('popup-word-title');
+            const content = document.getElementById('popup-content');
+
+            title.innerText = `🔍 【${word}】`;
+            content.innerHTML = '';
+            let hasResult = false;
+
+            // 1. 字首：只取「最長匹配」，避免像 un / uni 這種短字首淹沒真正對的長字首
+            let pMatches = [];
+            dbPrefixes.forEach(item => {
+                item.keys.forEach(k => {
+                    if (word.startsWith(k)) pMatches.push({ key: k, meaning: item.meaning });
+                });
+            });
+            const maxPLen = pMatches.reduce((m, x) => Math.max(m, x.key.length), 0);
+            pMatches = pMatches.filter(x => x.key.length === maxPLen);
+
+            // 2. 字尾：同樣只取「最長匹配」，並把同一個字尾在不同分類下的結果合併成一行
+            let sRaw = [];
+            dbSuffixes.forEach(item => {
+                item.keys.forEach(k => {
+                    if (word.endsWith(k) && k.length >= 2) sRaw.push({ key: k, meaning: item.meaning, category: item.category });
+                });
+            });
+            const maxSLen = sRaw.reduce((m, x) => Math.max(m, x.key.length), 0);
+            sRaw = sRaw.filter(x => x.key.length === maxSLen);
+            const sGrouped = {};
+            sRaw.forEach(x => {
+                if (!sGrouped[x.key]) sGrouped[x.key] = { meanings: new Set(), categories: [] };
+                if (x.meaning) sGrouped[x.key].meanings.add(x.meaning);
+                sGrouped[x.key].categories.push(x.category);
+            });
+            const sMatches = Object.keys(sGrouped).map(k => ({
+                key: k,
+                meaning: Array.from(sGrouped[k].meanings).join('；'),
+                categories: sGrouped[k].categories
+            }));
+
+            // 3. 字根：貪婪比對——優先用最長的字根，且已被字首/字尾/其他較長字根「占用」的字母範圍不再重複標記
+            //    （例如 university 拆完 uni- 與 -ity 之後，中間巧合出現的 it 就不會再被誤判成字根）
+            const prefixZoneEnd = maxPLen;
+            const suffixZoneStart = word.length - maxSLen;
+
+            const rootCandidates = {};
+            dbRoots.forEach(item => {
+                item.keys.forEach(k => {
+                    if (k.length < 2) return;
+                    if (!rootCandidates[k]) rootCandidates[k] = [];
+                    rootCandidates[k].push(item.meaning);
+                });
+            });
+            const sortedKeys = Object.keys(rootCandidates).sort((a, b) => b.length - a.length);
+
+            let claimed = [];
+            let rMatches = [];
+            sortedKeys.forEach(k => {
+                let searchFrom = 0;
+                while (true) {
+                    const idx = word.indexOf(k, searchFrom);
+                    if (idx === -1) break;
+                    const end = idx + k.length;
+                    const insidePrefix = end <= prefixZoneEnd;
+                    const insideSuffix = idx >= suffixZoneStart;
+                    const overlapsClaimed = claimed.some(([cs, ce]) => idx < ce && end > cs);
+                    if (!insidePrefix && !insideSuffix && !overlapsClaimed) {
+                        claimed.push([idx, end]);
+                        rMatches.push({ key: k, meaning: rootCandidates[k].join('；') });
+                        break;
+                    }
+                    searchFrom = idx + 1;
+                }
+            });
+            rMatches.sort((a, b) => b.key.length - a.key.length);
+
+            if (pMatches.length > 0) {
+                hasResult = true;
+                const rows = pMatches.map(x => `<div class="tag-item"><b>${x.key}-</b> : ${x.meaning}</div>`).join('');
+                content.innerHTML += `<div class="tag-group"><div class="tag-title">🚩 字首 Prefix</div>${rows}</div>`;
+            }
+
+            if (rMatches.length > 0) {
+                hasResult = true;
+                const rows = rMatches.map(x => `<div class="tag-item"><b>-${x.key}-</b> : ${x.meaning}</div>`).join('');
+                content.innerHTML += `<div class="tag-group"><div class="tag-title">🌱 字根 Root</div>${rows}</div>`;
+            }
+
+            if (sMatches.length > 0) {
+                hasResult = true;
+                const rows = sMatches.map(x => {
+                    const mStr = x.meaning ? ` : ${x.meaning}` : '';
+                    const badges = x.categories.map(c => `<span class="suffix-badge">${c}</span>`).join('');
+                    return `<div class="tag-item"><b>-${x.key}</b>${badges}${mStr}</div>`;
+                }).join('');
+                content.innerHTML += `<div class="tag-group"><div class="tag-title">🔚 字尾 Suffix</div>${rows}</div>`;
+            }
+
+            if (!hasResult) {
+                content.innerHTML += `<div class="no-result">本機字根資料庫沒有找到相符的片段，這個字可能是不規則變化，或不屬於常見的拉丁／希臘字源。</div>`;
+            }
+
+            // 無論本機資料庫有沒有結果，都附上 Etymonline 連結，方便查真正完整、精確的字源
+            const etymoUrl = `https://www.etymonline.com/word/${encodeURIComponent(word)}`;
+            content.innerHTML += `<div class="etymo-link"><a href="${etymoUrl}" target="_blank" rel="noopener">📖 到 Etymonline 查看完整字源 →</a></div>`;
+
+            popup.style.display = 'block';
+        }
+
+        function closePopup() { document.getElementById('root-dict-popup').style.display = 'none'; }
+        function nextPage() { if (currentIndex < pages.length - 1) { currentIndex++; updatePage(); closePopup(); } }
+        function prevPage() { if (currentIndex > 0) { currentIndex--; updatePage(); closePopup(); } }
+        function seekProgress(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            currentIndex = Math.floor(((e.clientX - rect.left) / rect.width) * pages.length);
+            updatePage(); closePopup();
+        }
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+        function toggleMp3Play() {
+            const label = document.getElementById('mp3BtnLabel');
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            if (audioPlayer.paused) {
+                audioPlayer.play().then(() => label.textContent = " 暫停").catch(() => alert('未找到 MP3 檔案'));
+            } else { audioPlayer.pause(); label.textContent = " 全文"; }
+        }
+        function speakCurrentPage() {
+            if (audioPlayer && !audioPlayer.paused) { audioPlayer.pause(); document.getElementById('mp3BtnLabel').textContent = " 全文MP3"; }
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const textToSpeak = (pages[currentIndex].en || []).join(' ');
+            if (!textToSpeak) return;
+            const sentences = textToSpeak.match(/[^.!?,;—]+(?:--|[^.!?,;—])*/g) || [textToSpeak];
+            let sentenceIndex = 0;
+            function speakNext() {
+                if (sentenceIndex >= sentences.length) return;
+                const utterance = new SpeechSynthesisUtterance(sentences[sentenceIndex].trim());
+                utterance.lang = 'en-US'; utterance.rate = 0.9;
+                utterance.onend = () => { sentenceIndex++; speakNext(); };
+                utterance.onerror = () => { sentenceIndex++; speakNext(); };
+                window.speechSynthesis.speak(utterance);
+            }
+            speakNext();
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextPage();
+            else if (e.key === 'ArrowLeft') prevPage();
+        });
+        updatePage();
+    </script>
+</body>
+</html>
