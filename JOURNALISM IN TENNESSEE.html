@@ -119,7 +119,7 @@
 </head>
 <body>
 
-    <audio id="audioPlayer" src="JOURNALISM IN TENNESSEE2.mp3" preload="none"></audio>
+    <audio id="audioPlayer" src="JOURNALISM IN TENNESSEE11.mp3" preload="none"></audio>
 
     <header>
         <div class="title">📖 馬克．吐溫《田納西報業》</div>
@@ -169,27 +169,6 @@
 
         let currentIndex = 0;
         let currentFontScale = parseFloat(localStorage.getItem('bilingual_font_scale')) || 1.0;
-
-        // Chrome/Edge 長時間朗讀保活計時器（見 speakCurrentPage 說明）
-        let speechKeepAliveTimer = null;
-        // 保底逾時計時器：手機瀏覽器有時候一句話唸到一半會整個凍結卡死，
-        // onend/onerror 永遠不會被觸發，靠它強制往下一句推進（見 speakCurrentPage 說明）
-        let speechWatchdogTimer = null;
-        // 輪詢計時器：定期詢問瀏覽器「現在到底還在不在講話」，
-        // 用來比保底逾時更快、更準確地偵測到一句話其實已經結束（見 speakCurrentPage 說明）
-        let speechPollTimer = null;
-        // 朗讀「代號」：每次開始新的朗讀或停止朗讀都會遞增。
-        // 換頁/停止之後，就算舊的、卡住很久的語音回呼後來才姍姍來遲地觸發，
-        // 只要代號對不上，就直接忽略，不會再繼續往下唸、也不會佔用畫面。
-        let speechSession = 0;
-
-        function stopSpeaking() {
-            speechSession++;
-            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-            if (speechKeepAliveTimer) { clearInterval(speechKeepAliveTimer); speechKeepAliveTimer = null; }
-            if (speechWatchdogTimer) { clearTimeout(speechWatchdogTimer); speechWatchdogTimer = null; }
-            if (speechPollTimer) { clearInterval(speechPollTimer); speechPollTimer = null; }
-        }
         const audioPlayer = document.getElementById('audioPlayer');
 
         document.documentElement.style.setProperty('--font-scale', currentFontScale);
@@ -221,7 +200,7 @@
             document.getElementById('prev-btn').disabled = currentIndex === 0;
             document.getElementById('next-btn').disabled = currentIndex === pages.length - 1;
             document.getElementById('main-content').scrollTop = 0;
-            stopSpeaking();
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         }
 
         // 💡 智慧辨識電腦與手機觸控事件
@@ -371,7 +350,7 @@
         function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
         function toggleMp3Play() {
             const label = document.getElementById('mp3BtnLabel');
-            stopSpeaking();
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             if (audioPlayer.paused) {
                 audioPlayer.play().then(() => label.textContent = " 暫停").catch(() => alert('未找到 MP3 檔案'));
             } else { audioPlayer.pause(); label.textContent = " 全文"; }
@@ -379,81 +358,17 @@
         function speakCurrentPage() {
             if (audioPlayer && !audioPlayer.paused) { audioPlayer.pause(); document.getElementById('mp3BtnLabel').textContent = " 全文MP3"; }
             if (!('speechSynthesis' in window)) return;
-            stopSpeaking();
-            const mySession = speechSession; // 記住這次朗讀的代號，換頁/停止後這個代號就會失效
-
+            window.speechSynthesis.cancel();
             const textToSpeak = (pages[currentIndex].en || []).join(' ');
             if (!textToSpeak) return;
             const sentences = textToSpeak.match(/[^.!?,;—]+(?:--|[^.!?,;—])*/g) || [textToSpeak];
             let sentenceIndex = 0;
-
-            // 💡 Chrome / Edge 對「連續朗讀超過約 10~15 秒」有個知名臭蟲：
-            //    語音引擎會自己悄悄卡住、不再出聲，且不會觸發 onerror。
-            //    這裡用一個定時器每隔 10 秒做一次 pause()+resume()，
-            //    讓瀏覽器誤以為朗讀「剛剛才被打斷又恢復」，藉此保持引擎運作，
-            //    這是這個瀏覽器臭蟲公認的繞過方式。
-            speechKeepAliveTimer = setInterval(() => {
-                if (mySession !== speechSession) return;
-                if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-                    window.speechSynthesis.pause();
-                    window.speechSynthesis.resume();
-                }
-            }, 10000);
-
             function speakNext() {
-                if (mySession !== speechSession) return; // 已經換頁或被停止，這次朗讀已經過期
-                if (sentenceIndex >= sentences.length) { stopSpeaking(); return; }
-
-                // handled 確保「正常唸完」「輪詢偵測到已結束」「保底逾時強制推進」
-                // 這三條路徑不管誰先誰後觸發，都只會真正推進一次，不會跳過或重複下一句
-                let handled = false;
-                let started = false;   // 這句話是否真的已經開始發聲（避免還沒開始就被誤判成結束）
-
-                function cleanupTimers() {
-                    if (speechWatchdogTimer) { clearTimeout(speechWatchdogTimer); speechWatchdogTimer = null; }
-                    if (speechPollTimer) { clearInterval(speechPollTimer); speechPollTimer = null; }
-                }
-
-                function advanceOnce() {
-                    if (handled) return;
-                    handled = true;
-                    cleanupTimers();
-                    if (mySession !== speechSession) return;
-                    sentenceIndex++;
-                    speakNext();
-                }
-
-                const currentSentence = sentences[sentenceIndex].trim();
-                const utterance = new SpeechSynthesisUtterance(currentSentence);
+                if (sentenceIndex >= sentences.length) return;
+                const utterance = new SpeechSynthesisUtterance(sentences[sentenceIndex].trim());
                 utterance.lang = 'en-US'; utterance.rate = 0.9;
-                utterance.onstart = () => { started = true; };
-                utterance.onend = advanceOnce;
-                utterance.onerror = advanceOnce;
-
-                // 💡 不猜這句話要唸多久，改成每 400ms 直接問瀏覽器
-                //    「現在到底還在不在講話」。手機上 onend/onerror 有時候
-                //    不會觸發，但只要瀏覽器自己回報「已經不在講話了」，
-                //    就可以直接判斷這句其實已經結束（或已經悄悄失敗），
-                //    往下一句走，不用死等一個可能永遠不會來的通知。
-                //    一定要等到 onstart 真的觸發過，才開始檢查，避免這句
-                //    根本還沒真正開口就被誤判成「已經講完」而提前跳過。
-                speechPollTimer = setInterval(() => {
-                    if (handled) return;
-                    if (started && !window.speechSynthesis.speaking) {
-                        advanceOnce();
-                    }
-                }, 400);
-
-                // 保底的最長等待時間：只有在瀏覽器語音引擎「仍然回報還在講話」
-                // 但實際上已經整個凍結、真的卡死很久的極端狀況才會用到，
-                // 所以刻意設得比較寬鬆，避免正常朗讀被誤判成卡住而提前跳過內容。
-                const estimatedMs = Math.max(8000, currentSentence.length * 260);
-                speechWatchdogTimer = setTimeout(() => {
-                    if (handled) return;
-                    window.speechSynthesis.cancel();
-                    advanceOnce();
-                }, estimatedMs);
-
+                utterance.onend = () => { sentenceIndex++; speakNext(); };
+                utterance.onerror = () => { sentenceIndex++; speakNext(); };
                 window.speechSynthesis.speak(utterance);
             }
             speakNext();
