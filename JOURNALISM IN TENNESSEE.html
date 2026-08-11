@@ -172,9 +172,12 @@
 
         // Chrome/Edge 長時間朗讀保活計時器（見 speakCurrentPage 說明）
         let speechKeepAliveTimer = null;
-        // 看門狗計時器：手機瀏覽器有時候一句話唸到一半會整個卡死，
+        // 保底逾時計時器：手機瀏覽器有時候一句話唸到一半會整個凍結卡死，
         // onend/onerror 永遠不會被觸發，靠它強制往下一句推進（見 speakCurrentPage 說明）
         let speechWatchdogTimer = null;
+        // 輪詢計時器：定期詢問瀏覽器「現在到底還在不在講話」，
+        // 用來比保底逾時更快、更準確地偵測到一句話其實已經結束（見 speakCurrentPage 說明）
+        let speechPollTimer = null;
         // 朗讀「代號」：每次開始新的朗讀或停止朗讀都會遞增。
         // 換頁/停止之後，就算舊的、卡住很久的語音回呼後來才姍姍來遲地觸發，
         // 只要代號對不上，就直接忽略，不會再繼續往下唸、也不會佔用畫面。
@@ -185,6 +188,7 @@
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             if (speechKeepAliveTimer) { clearInterval(speechKeepAliveTimer); speechKeepAliveTimer = null; }
             if (speechWatchdogTimer) { clearTimeout(speechWatchdogTimer); speechWatchdogTimer = null; }
+            if (speechPollTimer) { clearInterval(speechPollTimer); speechPollTimer = null; }
         }
         const audioPlayer = document.getElementById('audioPlayer');
 
@@ -400,13 +404,20 @@
                 if (mySession !== speechSession) return; // 已經換頁或被停止，這次朗讀已經過期
                 if (sentenceIndex >= sentences.length) { stopSpeaking(); return; }
 
-                // handled 確保「正常唸完」跟「看門狗逾時強制推進」這兩條路徑
-                // 就算前後腳都被觸發，也只會真正推進一次，不會跳過或重複下一句
+                // handled 確保「正常唸完」「輪詢偵測到已結束」「保底逾時強制推進」
+                // 這三條路徑不管誰先誰後觸發，都只會真正推進一次，不會跳過或重複下一句
                 let handled = false;
+                let started = false;   // 這句話是否真的已經開始發聲（避免還沒開始就被誤判成結束）
+
+                function cleanupTimers() {
+                    if (speechWatchdogTimer) { clearTimeout(speechWatchdogTimer); speechWatchdogTimer = null; }
+                    if (speechPollTimer) { clearInterval(speechPollTimer); speechPollTimer = null; }
+                }
+
                 function advanceOnce() {
                     if (handled) return;
                     handled = true;
-                    if (speechWatchdogTimer) { clearTimeout(speechWatchdogTimer); speechWatchdogTimer = null; }
+                    cleanupTimers();
                     if (mySession !== speechSession) return;
                     sentenceIndex++;
                     speakNext();
@@ -415,17 +426,28 @@
                 const currentSentence = sentences[sentenceIndex].trim();
                 const utterance = new SpeechSynthesisUtterance(currentSentence);
                 utterance.lang = 'en-US'; utterance.rate = 0.9;
+                utterance.onstart = () => { started = true; };
                 utterance.onend = advanceOnce;
                 utterance.onerror = advanceOnce;
 
-                // 💡 手機瀏覽器（尤其 iOS Safari）另一個更麻煩的已知問題：
-                //    某一句話唸到一半，整個語音引擎會直接卡死，
-                //    onend / onerror 兩個回呼「永遠都不會」被觸發，
-                //    導致朗讀從此卡在原地、再也不會繼續。
-                //    這裡依文字長度粗估這句話大概要唸多久，
-                //    如果超過預估時間還沒收到「唸完了」的通知，
-                //    就強制當作這句結束、繼續下一句，避免整個卡死。
-                const estimatedMs = Math.max(4000, currentSentence.length * 120);
+                // 💡 不猜這句話要唸多久，改成每 400ms 直接問瀏覽器
+                //    「現在到底還在不在講話」。手機上 onend/onerror 有時候
+                //    不會觸發，但只要瀏覽器自己回報「已經不在講話了」，
+                //    就可以直接判斷這句其實已經結束（或已經悄悄失敗），
+                //    往下一句走，不用死等一個可能永遠不會來的通知。
+                //    一定要等到 onstart 真的觸發過，才開始檢查，避免這句
+                //    根本還沒真正開口就被誤判成「已經講完」而提前跳過。
+                speechPollTimer = setInterval(() => {
+                    if (handled) return;
+                    if (started && !window.speechSynthesis.speaking) {
+                        advanceOnce();
+                    }
+                }, 400);
+
+                // 保底的最長等待時間：只有在瀏覽器語音引擎「仍然回報還在講話」
+                // 但實際上已經整個凍結、真的卡死很久的極端狀況才會用到，
+                // 所以刻意設得比較寬鬆，避免正常朗讀被誤判成卡住而提前跳過內容。
+                const estimatedMs = Math.max(8000, currentSentence.length * 260);
                 speechWatchdogTimer = setTimeout(() => {
                     if (handled) return;
                     window.speechSynthesis.cancel();
