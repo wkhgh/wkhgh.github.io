@@ -127,7 +127,7 @@
             <button onclick="changeFontSize(-0.1)" title="縮小字體">A-</button>
             <button onclick="changeFontSize(0.1)" title="放大字體">A+</button>
             <button onclick="speakCurrentPage()" title="朗讀">🔊<span class="btn-label"> 朗讀</span></button>
-            <button id="mp3Btn" onclick="toggleMp3Play()" title="全文">🎧<span class="btn-label" id="mp3BtnLabel"> 全文</span></button>
+            <button id="ytBtn" onclick="openYouTube()" title="前往 YouTube 播放影片">🎧<span class="btn-label"> YouTube</span></button>
             <button onclick="toggleDarkMode()" title="切換">🌙<span class="btn-label"> 切換</span></button>
             <button id="fullscreenBtn" onclick="toggleFullscreen()" title="全螢幕">⛶<span class="btn-label"> 全螢幕</span></button>
         </div>
@@ -348,13 +348,21 @@
         }
         function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
         function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
-        function toggleMp3Play() {
-            const label = document.getElementById('mp3BtnLabel');
-            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-            if (audioPlayer.paused) {
-                audioPlayer.play().then(() => label.textContent = " 暫停").catch(() => alert('未找到 MP3 檔案'));
-            } else { audioPlayer.pause(); label.textContent = " 全文"; }
-        }
+        
+	// 🎧 開啟新分頁播放  YouTube 影片  
+	function openYouTube() {
+	    // 如果有正在執行的語音朗讀，先停止
+	    if ('speechSynthesis' in window) {
+		window.speechSynthesis.cancel();
+	    }
+
+	    // 💡 請將下方網址替換為您對應的 YouTube 影片網址
+	    const youtubeUrl = "https://youtu.be/eLWSu7hFS_E";
+	    
+	    // 開啟新分頁
+	    window.open(youtubeUrl, '_blank');
+	}    
+        
         function speakCurrentPage() {
             if (audioPlayer && !audioPlayer.paused) { audioPlayer.pause(); document.getElementById('mp3BtnLabel').textContent = " 全文MP3"; }
             if (!('speechSynthesis' in window)) return;
