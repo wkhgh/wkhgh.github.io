@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魯肉飯食譜材料比例計算器</title>
+    <style>
+        :root {
+            --primary-color: #8B4513;
+            --bg-color: #FDFBF7;
+            --card-bg: #FFFFFF;
+            --accent-color: #D35400;
+            --light-bg: #FFF8E7;
+            --border-color: #E0E0E0;
+            --text-color: #2C3E50;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 主包裝容器：使用 CSS Grid 分為三欄 */
+        .wrapper {
+            width: 100%;
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: 240px 1fr 240px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* 左右側欄秘訣卡片 */
+        .side-card {
+            background: var(--card-bg);
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border-top: 4px solid var(--accent-color);
+        }
+
+        .side-card h2 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .side-card ul {
+            padding-left: 18px;
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .side-card li {
+            margin-bottom: 10px;
+        }
+
+        /* 中間核心計算器卡片 */
+        .main-container {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            background-color: var(--light-bg);
+            border: 2px solid var(--accent-color);
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.05rem;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #2C3E50;
+            border: 1px solid #CCC;
+            border-radius: 6px;
+            text-align: right;
+            box-sizing: border-box;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #F4ECE1;
+            color: var(--primary-color);
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .amount {
+            text-align: right;
+            font-weight: bold;
+            font-size: 1.1rem;
+            white-space: nowrap;
+        }
+
+        .heavy-flavor {
+            color: #C0392B;
+            background-color: #FDEDEC;
+        }
+
+        .light-flavor {
+            color: #27AE60;
+            background-color: #EAFAF1;
+        }
+
+        .unit {
+            color: #666;
+            font-size: 0.9rem;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .note {
+            color: #7F8C8D;
+            font-size: 0.85rem;
+        }
+
+        tr:hover {
+            background-color: #FAF8F5;
+        }
+
+        /* 響應式：手機與平板視窗寬度小於 900px 時自動轉為單欄 */
+        @media (max-width: 900px) {
+            .wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <!-- 左側秘訣區 -->
+    <div class="side-card">
+        <h2>💡 食材挑選秘訣</h2>
+        <ul>
+            <li><strong>豬肉挑選：</strong> 建議選用五花肉（三層肉）搭配少許豬皮，膠質更豐富。盡量少用瘦肉，若五花肉肥肉比例不夠，豬皮或背脂肉</li>
+            <li><strong>油蔥酥：</strong> 新鮮紅蔥頭比現成油蔥酥更香，但是生手買油蔥酥比較不會炒焦。</li>
+            <li><strong>醬油搭配：</strong> 建議以 2:1 搭配醬油與醬油膏，增加濃稠度與色澤，餐廳廚師最常用的是龜甲萬甘醇醬油 四季醬油 金味王醬油。</li>
+        </ul>
+    </div>
+
+    <!-- 中間主要計算器 -->
+    <div class="main-container">
+        <h1>懶人魯肉飯 材料比例計算器</h1>
+        
+        <div class="input-group">
+            <label for="porkWeight">請輸入豬肉重量：</label>
+            <div class="input-wrapper">
+                <input type="number" id="porkWeight" value="350" min="0" oninput="calculateRecipe()">
+                <span style="font-weight: bold; color: #555;">公克 (g)</span>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>材料名稱</th>
+                        <th style="text-align: right; background-color: #FADBD8;">重口味/濃郁</th>
+                        <th style="text-align: right; background-color: #D5F5E3;">標準/清淡</th>
+                        <th style="text-align: center;">單位</th>
+                        <th>備註/說明</th>
+                    </tr>
+                </thead>
+                <tbody id="recipeBody">
+                    <!-- 動態生成內容 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 右側秘訣區 -->
+    <div class="side-card">
+        <h2>🔥 燉煮步驟訣竅</h2>
+        <ul>
+            <li><strong>煸炒豬肉：</strong> 豬肉切丁後不放油下鍋煸炒，逼出部分豬油口感更好，炒至肉丁邊緣金黃色。</li>
+            <li><strong>炒糖色：</strong> 冰糖先入鍋小火炒至焦香褐色，能為魯肉塗上亮麗色澤。</li>
+            <li><strong>醬香味：</strong> 在高溫的鍋緣，繞圈圈淋下醬油。</li>
+            <li><strong>移到電鍋：</strong> 大火煮開後轉小火微沸慢燉 10分鐘，熄火後倒入厚陶瓷鍋裡面，上面用耐高溫保鮮膜。</li>
+            <li><strong>慢火悶燉：</strong> 再放上陶瓷鍋蓋，然後整個放入電鍋裡面燉兩小時，如果電鍋底部溫度太高，必須用其他簡易器材墊高。</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    const BASE_PORK = 350;
+
+    const ingredients = [
+        { name: "冰糖", heavy: 23, light: 20, unit: "g", note: "" },
+        { name: "醬油", heavy: 47, light: 41, unit: "g", note: "" },
+        { name: "米酒 / 酒", heavy: 60, light: 52, unit: "g", note: "" },
+        { name: "清水", heavy: 280, light: 250, unit: "g", note: "" },
+        { name: "油蔥酥", heavy: 30, light: 30, unit: "g", note: "約等於 紅蔥頭 x 0.3" },
+        { name: "五香粉", heavy: 1.2, light: 1.2, unit: "g", note: "約 1 小匙" }
+    ];
+
+    function calculateRecipe() {
+        const porkWeight = parseFloat(document.getElementById('porkWeight').value) || 0;
+        const tbody = document.getElementById('recipeBody');
+        tbody.innerHTML = '';
+
+        ingredients.forEach(item => {
+            const heavyAmount = ((porkWeight / BASE_PORK) * item.heavy).toFixed(1);
+            const lightAmount = ((porkWeight / BASE_PORK) * item.light).toFixed(1);
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${item.name}</strong></td>
+                <td class="amount heavy-flavor">${heavyAmount}</td>
+                <td class="amount light-flavor">${lightAmount}</td>
+                <td class="unit">${item.unit}</td>
+                <td class="note">${item.note}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    calculateRecipe();
+</script>
+
+</body>
+</html>
