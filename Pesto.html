@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>義大利麵青醬 材料比例計算器</title>
+    <style>
+        :root {
+            --primary-color: #2E5A27;    /* 深橄欖綠 */
+            --bg-color: #F5F7F2;         /* 淡清香綠背景 */
+            --card-bg: #FFFFFF;
+            --accent-color: #556B2F;      /* 綠色強調邊框 */
+            --light-bg: #F0F4EC;       /* 輸入區淺綠背景 */
+            --border-color: #E2E8DC;
+            --text-color: #2C3E50;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 三欄式網格排版 */
+        .wrapper {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 290px 1fr 290px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* 左右兩側祕訣卡片 */
+        .side-card {
+            background: var(--card-bg);
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border-top: 4px solid var(--accent-color);
+        }
+
+        .side-card h2 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .side-card ul {
+            padding-left: 18px;
+            margin: 0;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #444;
+        }
+
+        .side-card li {
+            margin-bottom: 10px;
+        }
+
+        /* 中間主計算器卡片 */
+        .main-container {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            background-color: var(--light-bg);
+            border: 2px solid var(--accent-color);
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.05rem;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #2C3E50;
+            border: 1px solid #CCC;
+            border-radius: 6px;
+            text-align: right;
+            box-sizing: border-box;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #E8EFE6;
+            color: var(--primary-color);
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .amount {
+            text-align: right;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #2E5A27;
+            background-color: #F4F8F3;
+            white-space: nowrap;
+        }
+
+        .unit {
+            color: #666;
+            font-size: 0.9rem;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .note {
+            color: #7F8C8D;
+            font-size: 0.85rem;
+        }
+
+        tr:hover {
+            background-color: #F9FBF8;
+        }
+
+        /* 響應式：螢幕小於 900px 時轉換為單欄 */
+        @media (max-width: 900px) {
+            .wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <!-- 左側：食材與防氧化祕訣 -->
+    <div class="side-card">
+        <h2>🌿 青醬製作祕訣</h2>
+        <ul>
+            <li><strong>葉片徹底乾燥：</strong> 九層塔/羅勒洗淨後，務必使用蔬菜轉乾水份或徹底晾乾，水份過多會導致青醬油水分離且容易變質。</li>
+            <li><strong>堅果預先烘烤：</strong> 松子、核桃或腰果低溫烘烤過並放涼後再打，香氣會顯著提升。</li>
+            <li><strong>油封防氧化變黑：</strong> 青醬做完裝瓶後，表面務必淋上一層橄欖油「完全覆蓋」，阻絕空氣防止氧化變黑。</li>
+            <li><strong>冷凍保存更久：</strong> 可以放在冰箱冷凍保存更久，製冰盒 或者 4號拉鍊袋，每一小袋一餐份。</li>            
+        </ul>
+    </div>
+
+    <!-- 中間：核心計算器 -->
+    <div class="main-container">
+        <h1>義大利麵青醬 材料比例計算器</h1>
+        
+        <div class="input-group">
+            <label for="basilWeight">請輸入九層塔/羅勒重量：</label>
+            <div class="input-wrapper">
+                <input type="number" id="basilWeight" value="60" min="0" oninput="calculateRecipe()">
+                <span style="font-weight: bold; color: #555;">公克 (g)</span>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>材料名稱</th>
+                        <th style="text-align: right; width: 120px;">計算份量</th>
+                        <th style="text-align: center;">單位</th>
+                        <th>備註/說明</th>
+                    </tr>
+                </thead>
+                <tbody id="recipeBody">
+                    <!-- 動態生成計算結果 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 右側：食物處理機攪打順序 -->
+    <div class="side-card">
+        <h2>🥣 攪打順序（精密版）</h2>
+        <ul>
+            <li><strong>1. 乾料粗碎：</strong> 先把放涼的堅果 30g、蒜頭 12g、鹽 2g 放入處理機，點動（Pulse）攪打 3–5 下成粗砂狀。</li>
+            <li><strong>2. 香草融合：</strong> 加入徹底乾燥的葉子 60g 與起司粉 30g，點動攪打約 5–8 下，讓葉片切碎並與堅果碎均勻混合。</li>
+            <li><strong>3. 慢速乳化：</strong> 開啟處理機低速運轉，將 110ml 橄欖油以細線狀緩慢倒入。看到質地變濃稠、油水完好乳化（約 10–15 秒）就立刻關機，避免機器發熱。</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // 基準葉子重量 (g)
+    const BASE_BASIL = 60;
+
+    // 青醬材料配置表（以 60g 葉子為基準比例）
+    const ingredients = [
+        { name: "初榨橄欖油", ratio: 110 / BASE_BASIL, unit: "ml", note: "慢速乳化緩慢倒入" },
+        { name: "松子 / 核桃 / 腰果", ratio: 30 / BASE_BASIL, unit: "g", note: "放涼後先點動打碎" },
+        { name: "帕馬森起司粉", ratio: 30 / BASE_BASIL, unit: "g", note: "與葉片同步加入" },
+        { name: "蒜頭", ratio: 12 / BASE_BASIL, unit: "g", note: "與堅果一同先打碎" },
+        { name: "鹽", ratio: 2 / BASE_BASIL, unit: "g", note: "與堅果一同先打碎" },
+        { name: "黑胡椒粒", ratio: 0, unit: "適量", note: "少許，依個人口味添加", isStatic: true }
+    ];
+
+    function calculateRecipe() {
+        const basilWeight = parseFloat(document.getElementById('basilWeight').value) || 0;
+        const tbody = document.getElementById('recipeBody');
+        tbody.innerHTML = '';
+
+        ingredients.forEach(item => {
+            let amountStr = "";
+            if (item.isStatic) {
+                amountStr = "少許";
+            } else {
+                amountStr = (basilWeight * item.ratio).toFixed(1);
+            }
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${item.name}</strong></td>
+                <td class="amount">${amountStr}</td>
+                <td class="unit">${item.unit}</td>
+                <td class="note">${item.note}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // 初始化計算
+    calculateRecipe();
+</script>
+
+</body>
+</html>
