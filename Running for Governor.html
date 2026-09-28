@@ -252,17 +252,22 @@
 </head>
 <body>
 
-    <!-- MP3 聲音播放元件（預設完全不自動播放） -->
+    <!-- MP3 聲音播放元件（預設完全不自動播放）/ <button id="ytBtn" edit step 1 -->
     <!--<audio id="audioPlayer" src="Running for Governor.mp3" preload="none"></audio> -->
 
     <header>
-        <div class="title">📖 馬克．吐溫《競選州長》</div>
+
+	<div class="title">
+        <!-- 帶有外框與圓角的外框按鈕 -->
+        	<button onclick="location.href='https://wkhgh.github.io/'" title="回首頁" class="icon-btn">📖</button>
+        		馬克．吐溫《競選州長》
+    	</div>                
+                
         <div class="controls">
             <button onclick="changeFontSize(-0.1)" title="縮小字體">A-</button>
             <button onclick="changeFontSize(0.1)" title="放大字體">A+</button>
             <button onclick="speakCurrentPage()" title="朗讀">🔊<span class="btn-label"> 朗讀</span></button>
             <button id="ytBtn" onclick="openYouTube()" title="前往 YouTube 播放影片">🎧<span class="btn-label"> YouTube</span></button>
-   </button>
             <button onclick="toggleDarkMode()" title="切換">🌙<span class="btn-label"> 切換</span></button>
             <button id="fullscreenBtn" onclick="toggleFullscreen()" title="全螢幕">⛶<span class="btn-label"> 全螢幕</span></button>
         </div>
@@ -389,7 +394,7 @@
         });
 
    
-	// 🎧 開啟新分頁播放 YouTube 影片
+	// 🎧 開啟新分頁播放  YouTube 影片  
 	function openYouTube() {
 	    // 如果有正在執行的語音朗讀，先停止
 	    if ('speechSynthesis' in window) {
@@ -404,7 +409,7 @@
 	}        
             
 
-        // 🔊 朗讀目前這一頁（會把頁面內所有偵測到的英文段落依序唸出）
+        // 🔊 朗讀目前這一頁（會把頁面內所有偵測到的英文段落依序唸出） edit above step 2
         function speakCurrentPage() {
             if (audioPlayer && !audioPlayer.paused) {
                 audioPlayer.pause();
