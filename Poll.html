@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>民調準確度分析</title>
+<style>
+  body { font-family: "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+         max-width: 960px; margin: 2em auto; padding: 0 1em; line-height: 1.8; color: #222; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  th, td { border: 1px solid #ccc; padding: 8px 10px; vertical-align: top; }
+  th { background: #f2f2f2; }
+  tr:nth-child(even) td { background: #fafafa; }
+  hr { border: 0; border-top: 1px solid #ddd; margin: 2em 0; }
+</style>
+</head>
+<body>
+<p>我要求Google NotebookLM從我提供的網頁民調記錄去計算各家民調機構接近投票日最後一個民調的準確度</p>
+<p>通用的 NotebookLM 計算指令<br />
+「請根據我提供的該縣市選舉民調與結果資料，找出各家民調機構在封關前（最接近投票日）的最後一次民調數據，以及最終實際選舉得票率結果。<br />
+請針對該場選舉中的主要候選人，依據以下邏輯重新計算『推估得票率』並評估準確度：<br />
+1. 找出最終結果基準： 請先找出主要候選人的實際得票率，並將這些人的得票率加總作為『真實分母』。<br />
+　　接著計算這些人各自的（實際得票率 / 真實分母），作為重新歸一化後的『真實基準比率』。<br />
+2. 只計算投票日前40天以內的資料。只計算全國性的民調,地方性的民調不計算.<br />
+3. 排除民調未表態率： 在計算各家民調時，請不要計算『未表態/不知道/不投票/拒答』等數據。<br />
+4. 計算民調分母 B： 將該筆民調中，上述前三名候選人的支持率直接加總（分母 B = 候選人1支持率 + 候選人2支持率 + 候選人3支持率）。<br />
+5. 計算民調分子 A： 各別候選人在該民調中的支持率為分子 A。<br />
+6. 求出民調推估比率： 計算前三名候選人各自的（A / B），這代表各機構排除未表態後、重新歸一化的推估得票率。<br />
+7. 評估準確度： 計算各家機構的三人『民調推估比率』與步驟 1 的『真實基準比率』之間的絕對誤差值總和（即各自的誤差絕對值相加）。<br />
+最後，請幫我產出一個表格，列出各家民調機構名稱、最後民調日期、候選人的推估比率、絕對誤差值總和，<br />
+並依據誤差總和由低到高（越低越準）列出準確度排行。</p>
+<p>—————————————————————————————以下是NotebookLM 給我的回報<br />
+－－－－－－－－－－2018 年縣市長選舉<br />
+根據 2018 年中華民國直轄市長選舉資料，針對臺北市、新北市、桃園市、臺中市、臺南市、高雄市（六都）在投票日前 40 天內（2018 年 10 月 15 日至 11 月 24 日）各機構發布的最後一次民調數據，依據指定邏輯進行重新歸一化（排除未表態率）並計算與實際結果「真實基準比率」之絕對誤差值總和。</p>
+<hr />
+<p>一、 臺北市市長選舉</p>
+<p>真實選舉結果（前三名得票率）：<br />
+- 柯文哲：41.06% → 真實基準比率 41.41%<br />
+- 丁守中：40.81% → 真實基準比率 41.16%<br />
+- 姚文智：17.28% → 真實基準比率 17.43%<br />
+真實分母加總 B = 99.15%</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: left;">前三名推估得票率 (重新歸一化)</th>
+<th style="text-align: center;">✅絕對誤差值總和</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">大社會</td>
+<td style="text-align: center;">2018-10-29</td>
+<td style="text-align: left;">柯文哲: 43.78%<br>丁守中: 41.03%<br>姚文智: 15.19%</td>
+<td style="text-align: center;">4.74%</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">TVBS</td>
+<td style="text-align: center;">2018-10-25</td>
+<td style="text-align: left;">柯文哲: 47.06%<br>丁守中: 38.82%<br>姚文智: 14.12%</td>
+<td style="text-align: center;">11.29%</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">聯合報</td>
+<td style="text-align: center;">2018-10-30</td>
+<td style="text-align: left;">柯文哲: 46.91%<br>丁守中: 43.21%<br>姚文智: 9.88%</td>
+<td style="text-align: center;">15.10%</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">世新大學</td>
+<td style="text-align: center;">2018-11-07</td>
+<td style="text-align: left;">柯文哲: 46.97%<br>丁守中: 43.25%<br>姚文智: 9.78%</td>
+<td style="text-align: center;">15.30%</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: left;">臺灣民意基金會</td>
+<td style="text-align: center;">2018-10-16</td>
+<td style="text-align: left;">柯文哲: 51.22%<br>丁守中: 34.67%<br>姚文智: 14.11%</td>
+<td style="text-align: center;">19.61%</td>
+</tr>
+</tbody>
+</table></div>
+<h2>✅貼文者穿牆貓眉批：大社會是什麼碗糕，名不見經傳　✅絕對誤差值總和只有 4.74%</h2>
+<p>二、 新北市市長選舉</p>
+<p>真實選舉結果（主要候選人得票率）：<br />
+- 侯友宜：57.14% → 真實基準比率 57.15%<br />
+- 蘇貞昌：42.85% → 真實基準比率 42.85%<br />
+真實分母加總 B = 99.99%</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: left;">推估得票率 (重新歸一化)</th>
+<th style="text-align: center;">✅絕對誤差值總和</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">世新大學</td>
+<td style="text-align: center;">2018-11-08</td>
+<td style="text-align: left;">侯友宜: 54.25%<br>蘇貞昌: 45.75%</td>
+<td style="text-align: center;">5.80%</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">艾普羅</td>
+<td style="text-align: center;">2018-10-16</td>
+<td style="text-align: left;">侯友宜: 61.30%<br>蘇貞昌: 38.70%</td>
+<td style="text-align: center;">8.31%</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">TVBS</td>
+<td style="text-align: center;">2018-10-18</td>
+<td style="text-align: left;">侯友宜: 62.50%<br>蘇貞昌: 37.50%</td>
+<td style="text-align: center;">10.71%</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">三立</td>
+<td style="text-align: center;">2018-11-03</td>
+<td style="text-align: left;">侯友宜: 50.63%<br>蘇貞昌: 49.37%</td>
+<td style="text-align: center;">13.03%</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: left;">美麗島</td>
+<td style="text-align: center;">2018-10-26</td>
+<td style="text-align: left;">侯友宜: 66.37%<br>蘇貞昌: 33.63%</td>
+<td style="text-align: center;">18.44%</td>
+</tr>
+<tr>
+<td style="text-align: center;">6</td>
+<td style="text-align: left;">聯合報</td>
+<td style="text-align: center;">2018-11-02</td>
+<td style="text-align: left;">侯友宜: 67.50%<br>蘇貞昌: 32.50%</td>
+<td style="text-align: center;">20.71%</td>
+</tr>
+</tbody>
+</table></div>
+<h2>✅貼文者穿牆貓眉批：戴立安的美麗島倒數第二，誤差值總和18.44%</h2>
+<p>三、 桃園市市長選舉</p>
+<p>真實選舉結果（前三名得票率）：<br />
+- 鄭文燦：53.46% → 真實基準比率 54.63%<br />
+- 陳學聖：39.41% → 真實基準比率 40.28%<br />
+- 楊麗環：4.98% → 真實基準比率 5.09%<br />
+真實分母加總 B = 97.85%</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: left;">前三名推估得票率 (重新歸一化)</th>
+<th style="text-align: center;">✅絕對誤差值總和</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">世新大學</td>
+<td style="text-align: center;">2018-11-04</td>
+<td style="text-align: left;">鄭文燦: 55.82%<br>陳學聖: 40.54%<br>楊麗環: 3.63%</td>
+<td style="text-align: center;">2.92%</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">三立</td>
+<td style="text-align: center;">2018-11-07</td>
+<td style="text-align: left;">鄭文燦: 73.08%<br>陳學聖: 21.26%<br>楊麗環: 5.66%</td>
+<td style="text-align: center;">38.04%</td>
+</tr>
+</tbody>
+</table></div>
+<h2>✅貼文者穿牆貓眉批：wiki記錄最後40天只有兩家公佈民調，很奇怪。三立誤差值總和38.04%！！！</h2>
+<p>四、 臺中市市長選舉</p>
+<p>真實選舉結果（前三名得票率）：<br />
+- 盧秀燕：56.56% → 真實基準比率 56.57%<br />
+- 林佳龍：42.34% → 真實基準比率 42.35%<br />
+- 宋原通：1.08% → 真實基準比率 1.08%<br />
+真實分母加總 B = 99.98%</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: left;">前三名推估得票率 (重新歸一化)</th>
+<th style="text-align: center;">✅絕對誤差值總和</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">東森新聞</td>
+<td style="text-align: center;">2018-11-04</td>
+<td style="text-align: left;">盧秀燕: 56.20%<br>林佳龍: 41.95%<br>宋原通: 1.85%</td>
+<td style="text-align: center;">1.53%</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">TVBS</td>
+<td style="text-align: center;">2018-10-22</td>
+<td style="text-align: left;">盧秀燕: 54.32%<br>林佳龍: 44.44%<br>宋原通: 1.23%</td>
+<td style="text-align: center;">4.50%</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">聯合報系</td>
+<td style="text-align: center;">2018-11-05</td>
+<td style="text-align: left;">盧秀燕: 57.33%<br>林佳龍: 40.00%<br>宋原通: 2.67%</td>
+<td style="text-align: center;">4.70%</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">全國公信力</td>
+<td style="text-align: center;">2018-10-27</td>
+<td style="text-align: left;">盧秀燕: 53.83%<br>林佳龍: 42.41%<br>宋原通: 3.76%</td>
+<td style="text-align: center;">5.47%</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: left;">美麗島</td>
+<td style="text-align: center;">2018-11-01</td>
+<td style="text-align: left;">盧秀燕: 53.44%<br>林佳龍: 42.96%<br>宋原通: 3.59%</td>
+<td style="text-align: center;">6.26%</td>
+</tr>
+<tr>
+<td style="text-align: center;">6</td>
+<td style="text-align: left;">世新大學</td>
+<td style="text-align: center;">2018-11-10</td>
+<td style="text-align: left;">盧秀燕: 51.19%<br>林佳龍: 47.62%<br>宋原通: 1.19%</td>
+<td style="text-align: center;">10.76%</td>
+</tr>
+<tr>
+<td style="text-align: center;">7</td>
+<td style="text-align: left;">信傳媒</td>
+<td style="text-align: center;">2018-11-03</td>
+<td style="text-align: left;">盧秀燕: 44.36%<br>林佳龍: 52.06%<br>宋原通: 3.59%</td>
+<td style="text-align: center;">24.43%</td>
+</tr>
+<tr>
+<td style="text-align: center;">8</td>
+<td style="text-align: left;">三立</td>
+<td style="text-align: center;">2018-11-06</td>
+<td style="text-align: left;">盧秀燕: 41.67%<br>林佳龍: 55.27%<br>宋原通: 3.06%</td>
+<td style="text-align: center;">29.81%</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<p>五、 臺南市市長選舉</p>
+<p>真實選舉結果（前三名得票率）：<br />
+- 黃偉哲：38.01% → 真實基準比率 46.08%<br />
+- 高思博：32.36% → 真實基準比率 39.23%<br />
+- 陳永和：12.12% → 真實基準比率 14.69%<br />
+真實分母加總 B = 82.49%</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: left;">前三名推估得票率 (重新歸一化)</th>
+<th style="text-align: center;">✅絕對誤差值總和</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">蘋果民調</td>
+<td style="text-align: center;">2018-11-05</td>
+<td style="text-align: left;">黃偉哲: 82.22%<br>高思博: 17.78%<br>陳永和: 0.00%</td>
+<td style="text-align: center;">72.28%</td>
+</tr>
+</tbody>
+</table></div>
+<p>✅貼文者穿牆貓眉批：wiki記錄最後40天只有蘋果民調公佈民調，絕對誤差值總和72.28%！！！</p>
+<hr />
+<p>六、 高雄市市長選舉</p>
+<p>真實選舉結果（前三名得票率）：<br />
+- 韓國瑜：53.86% → 真實基準比率 54.13%<br />
+- 陳其邁：44.79% → 真實基準比率 45.02%<br />
+- 蘇盈貴：0.85% → 真實基準比率 0.85%<br />
+真實分母加總 B = 99.50%</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: left;">前三名推估得票率 (重新歸一化)</th>
+<th style="text-align: center;">✅絕對誤差值總和</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">東森新聞</td>
+<td style="text-align: center;">2018-11-08</td>
+<td style="text-align: left;">韓國瑜: 53.79%<br>陳其邁: 46.21%<br>蘇盈貴: 0.00%</td>
+<td style="text-align: center;">2.39%</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">TVBS</td>
+<td style="text-align: center;">2018-11-06</td>
+<td style="text-align: left;">韓國瑜: 55.81%<br>陳其邁: 44.19%<br>蘇盈貴: 0.00%</td>
+<td style="text-align: center;">3.37%</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">艾普羅</td>
+<td style="text-align: center;">2018-11-12</td>
+<td style="text-align: left;">韓國瑜: 52.21%<br>陳其邁: 47.79%<br>蘇盈貴: 0.00%</td>
+<td style="text-align: center;">5.55%</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">世新大學</td>
+<td style="text-align: center;">2018-11-11</td>
+<td style="text-align: left;">韓國瑜: 52.06%<br>陳其邁: 47.94%<br>蘇盈貴: 0.00%</td>
+<td style="text-align: center;">5.85%</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: left;">信傳媒</td>
+<td style="text-align: center;">2018-11-08</td>
+<td style="text-align: left;">韓國瑜: 50.13%<br>陳其邁: 49.87%<br>蘇盈貴: 0.00%</td>
+<td style="text-align: center;">9.71%</td>
+</tr>
+<tr>
+<td style="text-align: center;">6</td>
+<td style="text-align: left;">聯合報系</td>
+<td style="text-align: center;">2018-11-10</td>
+<td style="text-align: left;">韓國瑜: 60.49%<br>陳其邁: 39.51%<br>蘇盈貴: 0.00%</td>
+<td style="text-align: center;">12.73%</td>
+</tr>
+<tr>
+<td style="text-align: center;">7</td>
+<td style="text-align: left;">三立</td>
+<td style="text-align: center;">2018-11-12</td>
+<td style="text-align: left;">韓國瑜: 48.16%<br>陳其邁: 51.84%<br>蘇盈貴: 0.00%</td>
+<td style="text-align: center;">13.66%</td>
+</tr>
+<tr>
+<td style="text-align: center;">8</td>
+<td style="text-align: left;">全國公信力</td>
+<td style="text-align: center;">2018-11-09</td>
+<td style="text-align: left;">韓國瑜: 61.94%<br>陳其邁: 38.06%<br>蘇盈貴: 0.00%</td>
+<td style="text-align: center;">15.62%</td>
+</tr>
+<tr>
+<td style="text-align: center;">9</td>
+<td style="text-align: left;">台灣世代智庫</td>
+<td style="text-align: center;">2018-10-19</td>
+<td style="text-align: left;">韓國瑜: 44.95%<br>陳其邁: 55.05%<br>蘇盈貴: 0.00%</td>
+<td style="text-align: center;">20.07%</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<p>📊 總結觀察：<br />
+在六都個別封關民調中，<br />
+✅東森新聞（臺中市誤差 1.53%、高雄市誤差 2.39%）、世新大學（桃園市誤差 2.92%）與大社會（臺北市誤差 4.74%）在封關前的歸一化推估結果最接近最終開票結果。</p>
+<p>－－－－－－－－－－2020 年中華民國總統選舉<br />
+根據 2020 年中華民國總統選舉 的實際得票結果與選前民調資料，針對得票前三名候選人（蔡英文、韓國瑜、宋楚瑜）依照您指定之計算邏輯進行重新歸一化推估與準確度評估：</p>
+<hr />
+<p>一、 最終實際選舉結果基準</p>
+<p>蔡英文 / 賴清德（民進黨）：實際得票率 57.13%<br />
+韓國瑜 / 張善政（國民黨）：實際得票率 38.61%<br />
+宋楚瑜 / 余 湘（親民黨）：實際得票率 4.26%<br />
+真實分母：\(57.13\% + 38.61\% + 4.26\% = \mathbf{100.00\%}\)<br />
+真實基準比率：蔡英文 57.13%、韓國瑜 38.61%、宋楚瑜 4.26%</p>
+<hr />
+<p>二、 篩選與計算原則</p>
+<ol>
+<li>時間範圍：僅採計投票日前 40 天內（2019年12月2日至2020年1月1日封關前）所進行/發布之民調。</li>
+<li>範圍篩選：僅採計全國性民調，排除地方性民調（例如：寶島通訊 12-11～12-13 高雄市民調予以排除）。</li>
+<li>機構代表值：若同一機構在該區間內發布多次民調，僅採計其封關前最後一次（最接近投票日）之民調數據。</li>
+<li>排除未表態與重新歸一化：<br />
+民調分母 B = 該筆民調中（蔡英文支持率 + 韓國瑜支持率 + 宋楚瑜支持率）<br />
+推估得票率 =（候選人支持率 / B）<br />
+✅絕對誤差值總和 (%p) = \(|蔡英文推估比率 - 57.13\%| + |韓國瑜推估比率 - 38.61\%| + |宋楚瑜推估比率 - 4.26\%|\)</li>
+</ol>
+<hr />
+<p>三、 各民調機構封關前最後民調準確度排行表</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: center;">民調分母 B (%)</th>
+<th style="text-align: center;">蔡英文推估比率 (%)</th>
+<th style="text-align: center;">韓國瑜推估比率 (%)</th>
+<th style="text-align: center;">宋楚瑜推估比率 (%)</th>
+<th style="text-align: center;">✅絕對誤差值總和 (%p)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">TVBS</td>
+<td style="text-align: center;">12-29</td>
+<td style="text-align: center;">81.00%</td>
+<td style="text-align: center;">55.56%</td>
+<td style="text-align: center;">35.80%</td>
+<td style="text-align: center;">8.64%</td>
+<td style="text-align: center;">8.76</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">ETtoday新聞雲</td>
+<td style="text-align: center;">12-24－12-27</td>
+<td style="text-align: center;">82.70%</td>
+<td style="text-align: center;">58.28%</td>
+<td style="text-align: center;">33.74%</td>
+<td style="text-align: center;">7.98%</td>
+<td style="text-align: center;">9.75</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">寶島通訊</td>
+<td style="text-align: center;">12-02－12-04</td>
+<td style="text-align: center;">96.43%</td>
+<td style="text-align: center;">60.72%</td>
+<td style="text-align: center;">31.01%</td>
+<td style="text-align: center;">8.28%</td>
+<td style="text-align: center;">15.21</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">放言</td>
+<td style="text-align: center;">12-24－12-26</td>
+<td style="text-align: center;">80.50%</td>
+<td style="text-align: center;">59.75%</td>
+<td style="text-align: center;">29.07%</td>
+<td style="text-align: center;">11.18%</td>
+<td style="text-align: center;">19.08</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: left;">聯合報系</td>
+<td style="text-align: center;">12-12－12-14</td>
+<td style="text-align: center;">79.00%</td>
+<td style="text-align: center;">60.76%</td>
+<td style="text-align: center;">27.85%</td>
+<td style="text-align: center;">11.39%</td>
+<td style="text-align: center;">21.52</td>
+</tr>
+<tr>
+<td style="text-align: center;">6</td>
+<td style="text-align: left;">台灣民意基金會</td>
+<td style="text-align: center;">12-23－12-24</td>
+<td style="text-align: center;">83.90%</td>
+<td style="text-align: center;">62.57%</td>
+<td style="text-align: center;">26.10%</td>
+<td style="text-align: center;">11.32%</td>
+<td style="text-align: center;">25.01</td>
+</tr>
+<tr>
+<td style="text-align: center;">7</td>
+<td style="text-align: left;">兩岸政策協會</td>
+<td style="text-align: center;">12-27－12-28</td>
+<td style="text-align: center;">85.50%</td>
+<td style="text-align: center;">64.21%</td>
+<td style="text-align: center;">25.85%</td>
+<td style="text-align: center;">9.94%</td>
+<td style="text-align: center;">25.52</td>
+</tr>
+<tr>
+<td style="text-align: center;">8</td>
+<td style="text-align: left;">美麗島電子報</td>
+<td style="text-align: center;">12-25－12-26</td>
+<td style="text-align: center;">78.80%</td>
+<td style="text-align: center;">61.17%</td>
+<td style="text-align: center;">25.76%</td>
+<td style="text-align: center;">13.07%</td>
+<td style="text-align: center;">25.70</td>
+</tr>
+<tr>
+<td style="text-align: center;">9</td>
+<td style="text-align: left;">綠黨</td>
+<td style="text-align: center;">12-29－12-30</td>
+<td style="text-align: center;">81.00%</td>
+<td style="text-align: center;">66.91%</td>
+<td style="text-align: center;">25.68%</td>
+<td style="text-align: center;">7.41%</td>
+<td style="text-align: center;">25.86</td>
+</tr>
+<tr>
+<td style="text-align: center;">10</td>
+<td style="text-align: left;">震撼世代傳媒</td>
+<td style="text-align: center;">12-26－12-27</td>
+<td style="text-align: center;">75.30%</td>
+<td style="text-align: center;">65.47%</td>
+<td style="text-align: center;">24.44%</td>
+<td style="text-align: center;">10.09%</td>
+<td style="text-align: center;">28.35</td>
+</tr>
+<tr>
+<td style="text-align: center;">11</td>
+<td style="text-align: left;">台灣基進</td>
+<td style="text-align: center;">12-25－12-28</td>
+<td style="text-align: center;">67.10%</td>
+<td style="text-align: center;">64.23%</td>
+<td style="text-align: center;">23.55%</td>
+<td style="text-align: center;">12.22%</td>
+<td style="text-align: center;">30.13</td>
+</tr>
+<tr>
+<td style="text-align: center;">12</td>
+<td style="text-align: left;">新台灣國策智庫</td>
+<td style="text-align: center;">12-05－12-07</td>
+<td style="text-align: center;">77.50%</td>
+<td style="text-align: center;">64.90%</td>
+<td style="text-align: center;">22.71%</td>
+<td style="text-align: center;">12.39%</td>
+<td style="text-align: center;">31.80</td>
+</tr>
+<tr>
+<td style="text-align: center;">13</td>
+<td style="text-align: left;">蘋果新聞網</td>
+<td style="text-align: center;">12-27－12-29</td>
+<td style="text-align: center;">70.30%</td>
+<td style="text-align: center;">69.13%</td>
+<td style="text-align: center;">21.91%</td>
+<td style="text-align: center;">8.96%</td>
+<td style="text-align: center;">33.41</td>
+</tr>
+<tr>
+<td style="text-align: center;">14</td>
+<td style="text-align: left;">自由時報</td>
+<td style="text-align: center;">12-23－12-25</td>
+<td style="text-align: center;">74.60%</td>
+<td style="text-align: center;">72.72%</td>
+<td style="text-align: center;">20.90%</td>
+<td style="text-align: center;">6.38%</td>
+<td style="text-align: center;">35.42</td>
+</tr>
+</tbody>
+</table></div>
+<h2>✅貼文者穿牆貓眉批：戴立安美麗島表現不佳</h2>
+<p>四、 主要發現與觀察</p>
+<ol>
+<li>榜首準確度高：在排除未表態率後，TVBS（誤差總和 8.76%p）與 ETtoday新聞雲（誤差總和 9.75%p）的絕對誤差總和均小於 10 個百分點。其中 TVBS 的推估得票率（蔡 55.56% vs 韓 35.80%）最接近實際開票結果（蔡 57.13% vs 韓 38.61%）。</li>
+<li>韓國瑜支持度普遍被低估：大部分機構在封關前的韓國瑜推估得票率大多介於 20%~27% 之間，顯著低於實際得票率（38.61%）。這與選前候選人韓國瑜呼籲支持者「拒絕回答民調」或回答「唯一支持蔡英文」的效應有直接關係。</li>
+</ol>
+<p>－－－－－－－－－－2022 年縣市長選舉<br />
+加入「只計算投票日前 40 天以內（即 2022 年 10 月 17 日至 11 月 15 日）的資料」條件後，已排除早於 2022 年 10 月 17 日發布的舊民調，並針對各民調機構在此期間內最接近投票日（封關前）的最後一次民調數據重新進行歸一化推估與準確度評估。</p>
+<p>以下為六直轄市依據指定 7 步驟邏輯計算後的準確度排行表格（✅絕對誤差值總和越低代表越準確）：</p>
+<hr />
+<p>一、 臺北市市長選舉（投票日前 40 天內民調排行）</p>
+<p>前三名真實基準比率：<br />
+蔣萬安：42.56% | 陳時中：32.14% | 黃珊珊：25.30% （真實分母 = 99.36%）</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: center;">蔣萬安推估比率</th>
+<th style="text-align: center;">陳時中推估比率</th>
+<th style="text-align: center;">黃珊珊推估比率</th>
+<th style="text-align: center;">✅絕對誤差值總和</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">ETtoday</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">42.20%</td>
+<td style="text-align: center;">32.74%</td>
+<td style="text-align: center;">25.06%</td>
+<td style="text-align: center;">1.21%</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">震傳媒</td>
+<td style="text-align: center;">2022-11-10</td>
+<td style="text-align: center;">42.01%</td>
+<td style="text-align: center;">31.72%</td>
+<td style="text-align: center;">26.27%</td>
+<td style="text-align: center;">1.94%</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">中國國民黨</td>
+<td style="text-align: center;">2022-10-30</td>
+<td style="text-align: center;">44.72%</td>
+<td style="text-align: center;">32.04%</td>
+<td style="text-align: center;">23.25%</td>
+<td style="text-align: center;">4.31%</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">TVBS</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">42.35%</td>
+<td style="text-align: center;">29.41%</td>
+<td style="text-align: center;">28.24%</td>
+<td style="text-align: center;">5.87%</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: left;">匯流（CNEWS）</td>
+<td style="text-align: center;">2022-11-13</td>
+<td style="text-align: center;">47.15%</td>
+<td style="text-align: center;">31.37%</td>
+<td style="text-align: center;">21.48%</td>
+<td style="text-align: center;">9.18%</td>
+</tr>
+<tr>
+<td style="text-align: center;">6</td>
+<td style="text-align: left;">美麗島</td>
+<td style="text-align: center;">2022-11-02</td>
+<td style="text-align: center;">37.71%</td>
+<td style="text-align: center;">35.75%</td>
+<td style="text-align: center;">26.54%</td>
+<td style="text-align: center;">9.69%</td>
+</tr>
+<tr>
+<td style="text-align: center;">7</td>
+<td style="text-align: left;">菱傳媒（選舉預估）</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">37.61%</td>
+<td style="text-align: center;">35.03%</td>
+<td style="text-align: center;">27.36%</td>
+<td style="text-align: center;">9.90%</td>
+</tr>
+<tr>
+<td style="text-align: center;">8</td>
+<td style="text-align: left;">台灣民意基金會</td>
+<td style="text-align: center;">2022-11-07</td>
+<td style="text-align: center;">37.25%</td>
+<td style="text-align: center;">34.18%</td>
+<td style="text-align: center;">28.56%</td>
+<td style="text-align: center;">10.61%</td>
+</tr>
+<tr>
+<td style="text-align: center;">8 (並列)</td>
+<td style="text-align: left;">菱傳媒（封關民調）</td>
+<td style="text-align: center;">2022-11-09</td>
+<td style="text-align: center;">37.25%</td>
+<td style="text-align: center;">34.18%</td>
+<td style="text-align: center;">28.56%</td>
+<td style="text-align: center;">10.61%</td>
+</tr>
+<tr>
+<td style="text-align: center;">10</td>
+<td style="text-align: left;">QuickseeK</td>
+<td style="text-align: center;">2022-10-22</td>
+<td style="text-align: center;">36.67%</td>
+<td style="text-align: center;">33.62%</td>
+<td style="text-align: center;">29.71%</td>
+<td style="text-align: center;">11.78%</td>
+</tr>
+<tr>
+<td style="text-align: center;">11</td>
+<td style="text-align: left;">民主進步黨</td>
+<td style="text-align: center;">2022-11-01</td>
+<td style="text-align: center;">39.61%</td>
+<td style="text-align: center;">28.36%</td>
+<td style="text-align: center;">32.03%</td>
+<td style="text-align: center;">13.45%</td>
+</tr>
+<tr>
+<td style="text-align: center;">12</td>
+<td style="text-align: left;">聯合報</td>
+<td style="text-align: center;">2022-11-13</td>
+<td style="text-align: center;">43.37%</td>
+<td style="text-align: center;">24.10%</td>
+<td style="text-align: center;">32.53%</td>
+<td style="text-align: center;">16.08%</td>
+</tr>
+<tr>
+<td style="text-align: center;">13</td>
+<td style="text-align: left;">蓋洛普</td>
+<td style="text-align: center;">2022-11-13</td>
+<td style="text-align: center;">37.29%</td>
+<td style="text-align: center;">40.46%</td>
+<td style="text-align: center;">22.25%</td>
+<td style="text-align: center;">16.64%</td>
+</tr>
+<tr>
+<td style="text-align: center;">14</td>
+<td style="text-align: left;">中華亞太菁英交流協會</td>
+<td style="text-align: center;">2022-11-08</td>
+<td style="text-align: center;">38.11%</td>
+<td style="text-align: center;">27.88%</td>
+<td style="text-align: center;">34.02%</td>
+<td style="text-align: center;">17.43%</td>
+</tr>
+<tr>
+<td style="text-align: center;">15</td>
+<td style="text-align: left;">三立</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">38.28%</td>
+<td style="text-align: center;">41.51%</td>
+<td style="text-align: center;">20.22%</td>
+<td style="text-align: center;">18.74%</td>
+</tr>
+<tr>
+<td style="text-align: center;">16</td>
+<td style="text-align: left;">自由時報</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">33.02%</td>
+<td style="text-align: center;">40.02%</td>
+<td style="text-align: center;">26.97%</td>
+<td style="text-align: center;">19.09%</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<p>二、 新北市市長選舉（投票日前 40 天內民調排行）</p>
+<p>主要候選人真實基準比率：<br />
+侯友宜：62.42% | 林佳龍：37.58% （真實分母 = 100.00%）<br />
+(註：自由時報 9/23、蓋洛普 9/21、聯合報 7/22、菱傳媒 9/17 民調均超過 40 天已剔除)</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: center;">侯友宜推估比率</th>
+<th style="text-align: center;">林佳龍推估比率</th>
+<th style="text-align: center;">✅絕對誤差值總和</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">ETtoday</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">61.76%</td>
+<td style="text-align: center;">38.24%</td>
+<td style="text-align: center;">1.32%</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">菱傳媒（選舉預估）</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">57.49%</td>
+<td style="text-align: center;">42.51%</td>
+<td style="text-align: center;">9.86%</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<p>三、 桃園市市長選舉（投票日前 40 天內民調排行）</p>
+<p>前三名真實基準比率：<br />
+張善政：53.54% | 鄭運鵬：41.20% | 賴香伶：5.27% （真實分母 = 97.17%）</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: center;">張善政推估比率</th>
+<th style="text-align: center;">鄭運鵬推估比率</th>
+<th style="text-align: center;">賴香伶推估比率</th>
+<th style="text-align: center;">✅絕對誤差值總和</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">蓋洛普</td>
+<td style="text-align: center;">2022-11-10</td>
+<td style="text-align: center;">51.97%</td>
+<td style="text-align: center;">42.87%</td>
+<td style="text-align: center;">5.16%</td>
+<td style="text-align: center;">3.35%</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">聯合報</td>
+<td style="text-align: center;">2022-11-04</td>
+<td style="text-align: center;">51.43%</td>
+<td style="text-align: center;">42.86%</td>
+<td style="text-align: center;">5.71%</td>
+<td style="text-align: center;">4.21%</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">TVBS</td>
+<td style="text-align: center;">2022-10-20</td>
+<td style="text-align: center;">54.29%</td>
+<td style="text-align: center;">38.57%</td>
+<td style="text-align: center;">7.14%</td>
+<td style="text-align: center;">5.25%</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">匯流（CNEWS）</td>
+<td style="text-align: center;">2022-11-07</td>
+<td style="text-align: center;">50.63%</td>
+<td style="text-align: center;">42.10%</td>
+<td style="text-align: center;">7.27%</td>
+<td style="text-align: center;">5.81%</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: left;">中國國民黨</td>
+<td style="text-align: center;">2022-11-13</td>
+<td style="text-align: center;">53.38%</td>
+<td style="text-align: center;">44.49%</td>
+<td style="text-align: center;">2.13%</td>
+<td style="text-align: center;">6.58%</td>
+</tr>
+<tr>
+<td style="text-align: center;">6</td>
+<td style="text-align: left;">負數票協會</td>
+<td style="text-align: center;">2022-10-28</td>
+<td style="text-align: center;">50.00%</td>
+<td style="text-align: center;">41.25%</td>
+<td style="text-align: center;">8.75%</td>
+<td style="text-align: center;">7.07%</td>
+</tr>
+<tr>
+<td style="text-align: center;">7</td>
+<td style="text-align: left;">台灣民意基金會</td>
+<td style="text-align: center;">2022-10-30</td>
+<td style="text-align: center;">49.92%</td>
+<td style="text-align: center;">43.39%</td>
+<td style="text-align: center;">6.69%</td>
+<td style="text-align: center;">7.23%</td>
+</tr>
+<tr>
+<td style="text-align: center;">8</td>
+<td style="text-align: left;">菱傳媒（封關民調）</td>
+<td style="text-align: center;">2022-10-29</td>
+<td style="text-align: center;">50.58%</td>
+<td style="text-align: center;">45.07%</td>
+<td style="text-align: center;">4.35%</td>
+<td style="text-align: center;">7.74%</td>
+</tr>
+<tr>
+<td style="text-align: center;">9</td>
+<td style="text-align: left;">菱傳媒（選舉預估）</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">50.76%</td>
+<td style="text-align: center;">45.25%</td>
+<td style="text-align: center;">3.99%</td>
+<td style="text-align: center;">8.10%</td>
+</tr>
+<tr>
+<td style="text-align: center;">10</td>
+<td style="text-align: left;">民主進步黨</td>
+<td style="text-align: center;">2022-11-06</td>
+<td style="text-align: center;">47.37%</td>
+<td style="text-align: center;">46.06%</td>
+<td style="text-align: center;">6.56%</td>
+<td style="text-align: center;">12.32%</td>
+</tr>
+<tr>
+<td style="text-align: center;">11</td>
+<td style="text-align: left;">ETtoday</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">51.97%</td>
+<td style="text-align: center;">48.03%</td>
+<td style="text-align: center;">0.00%</td>
+<td style="text-align: center;">13.66%</td>
+</tr>
+<tr>
+<td style="text-align: center;">12</td>
+<td style="text-align: left;">QuickseeK</td>
+<td style="text-align: center;">2022-11-12</td>
+<td style="text-align: center;">45.35%</td>
+<td style="text-align: center;">46.17%</td>
+<td style="text-align: center;">8.48%</td>
+<td style="text-align: center;">16.38%</td>
+</tr>
+<tr>
+<td style="text-align: center;">13</td>
+<td style="text-align: left;">中華亞太菁英交流協會</td>
+<td style="text-align: center;">2022-11-12</td>
+<td style="text-align: center;">43.63%</td>
+<td style="text-align: center;">50.71%</td>
+<td style="text-align: center;">5.66%</td>
+<td style="text-align: center;">19.81%</td>
+</tr>
+<tr>
+<td style="text-align: center;">14</td>
+<td style="text-align: left;">自由時報</td>
+<td style="text-align: center;">2022-11-04</td>
+<td style="text-align: center;">43.62%</td>
+<td style="text-align: center;">47.65%</td>
+<td style="text-align: center;">8.73%</td>
+<td style="text-align: center;">19.83%</td>
+</tr>
+<tr>
+<td style="text-align: center;">15</td>
+<td style="text-align: left;">展欣科技</td>
+<td style="text-align: center;">2022-11-10</td>
+<td style="text-align: center;">53.49%</td>
+<td style="text-align: center;">27.91%</td>
+<td style="text-align: center;">18.60%</td>
+<td style="text-align: center;">26.67%</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<p>四、 臺中市市長選舉（投票日前 40 天內民調排行）</p>
+<p>前三名真實基準比率：<br />
+盧秀燕：59.35% | 蔡其昌：38.93% | 陳美妃：1.72% （真實分母 = 100.00%）<br />
+(註：民進黨 10/15、台灣指標 9/26、菱傳媒 8/27、聯合報 7/9、TVBS 7/4、匯流 5/6 已超過 40 天排除)</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: center;">盧秀燕推估比率</th>
+<th style="text-align: center;">蔡其昌推估比率</th>
+<th style="text-align: center;">陳美妃推估比率</th>
+<th style="text-align: center;">✅絕對誤差值總和</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">菱傳媒（選舉預估）</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">59.59%</td>
+<td style="text-align: center;">40.41%</td>
+<td style="text-align: center;">0.00%</td>
+<td style="text-align: center;">3.44%</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">周刊王</td>
+<td style="text-align: center;">2022-11-13</td>
+<td style="text-align: center;">55.74%</td>
+<td style="text-align: center;">44.26%</td>
+<td style="text-align: center;">0.00%</td>
+<td style="text-align: center;">10.66%</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">ETtoday</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">64.69%</td>
+<td style="text-align: center;">35.31%</td>
+<td style="text-align: center;">0.00%</td>
+<td style="text-align: center;">10.68%</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">大台中市政發展協會</td>
+<td style="text-align: center;">2022-10-30</td>
+<td style="text-align: center;">70.65%</td>
+<td style="text-align: center;">29.35%</td>
+<td style="text-align: center;">0.00%</td>
+<td style="text-align: center;">22.60%</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: left;">美麗島</td>
+<td style="text-align: center;">2022-11-13</td>
+<td style="text-align: center;">76.19%</td>
+<td style="text-align: center;">22.81%</td>
+<td style="text-align: center;">1.00%</td>
+<td style="text-align: center;">33.68%</td>
+</tr>
+</tbody>
+</table></div>
+<h2>✅貼文者穿牆貓眉批：美麗島最後一名，絕對誤差值總和33.68%</h2>
+<p>五、 臺南市市長選舉（投票日前 40 天內民調排行）</p>
+<p>前三名真實基準比率：<br />
+黃偉哲：50.42% | 謝龍介：45.08% | 許忠信：4.49% （真實分母 = 96.78%）<br />
+(註：民進黨 10/15、崑山科大 10/2、聯合報 7/18、TVBS 7/11 已超過 40 天排除)</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: center;">黃偉哲推估比率</th>
+<th style="text-align: center;">謝龍介推估比率</th>
+<th style="text-align: center;">許忠信推估比率</th>
+<th style="text-align: center;">✅絕對誤差值總和</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">菱傳媒（封關民調）</td>
+<td style="text-align: center;">2022-10-22</td>
+<td style="text-align: center;">53.22%</td>
+<td style="text-align: center;">44.00%</td>
+<td style="text-align: center;">2.78%</td>
+<td style="text-align: center;">5.59%</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">菱傳媒（選舉預估）</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">55.29%</td>
+<td style="text-align: center;">44.71%</td>
+<td style="text-align: center;">0.00%</td>
+<td style="text-align: center;">9.74%</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">ETtoday</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">60.84%</td>
+<td style="text-align: center;">39.16%</td>
+<td style="text-align: center;">0.00%</td>
+<td style="text-align: center;">20.83%</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">匯流（CNEWS）</td>
+<td style="text-align: center;">2022-11-13</td>
+<td style="text-align: center;">71.61%</td>
+<td style="text-align: center;">25.26%</td>
+<td style="text-align: center;">3.12%</td>
+<td style="text-align: center;">42.38%</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: left;">美麗島</td>
+<td style="text-align: center;">2022-11-05</td>
+<td style="text-align: center;">76.74%</td>
+<td style="text-align: center;">19.72%</td>
+<td style="text-align: center;">3.54%</td>
+<td style="text-align: center;">52.63%</td>
+</tr>
+</tbody>
+</table></div>
+<h2>✅貼文者穿牆貓眉批：美麗島最後一名，絕對誤差值總和52.63%</h2>
+<p>六、 高雄市市長選舉（投票日前 40 天內民調排行）</p>
+<p>前三名真實基準比率：<br />
+陳其邁：58.47% | 柯志恩：40.41% | 曾尹儷：1.12% （真實分母 = 99.37%）<br />
+(註：三立 10/16、菱傳媒民調 10/1、自由時報 9/30、匯流 9/14、美麗島 8/2 等已超過 40 天排除)</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排行</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: center;">陳其邁推估比率</th>
+<th style="text-align: center;">柯志恩推估比率</th>
+<th style="text-align: center;">曾尹儷推估比率</th>
+<th style="text-align: center;">✅絕對誤差值總和</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">菱傳媒（選舉預估）</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">58.27%</td>
+<td style="text-align: center;">41.73%</td>
+<td style="text-align: center;">0.00%</td>
+<td style="text-align: center;">2.63%</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">ETtoday</td>
+<td style="text-align: center;">2022-11-14</td>
+<td style="text-align: center;">62.97%</td>
+<td style="text-align: center;">37.03%</td>
+<td style="text-align: center;">0.00%</td>
+<td style="text-align: center;">9.00%</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">中華亞太菁英交流協會</td>
+<td style="text-align: center;">2022-11-06</td>
+<td style="text-align: center;">72.71%</td>
+<td style="text-align: center;">27.29%</td>
+<td style="text-align: center;">0.00%</td>
+<td style="text-align: center;">28.49%</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<p>－－－－－－－－－－2024年中華民國總統選舉<br />
+根據您提供的計算邏輯與網頁民調紀錄，針對 2024年中華民國總統選舉 封關前（投票日前40天內）的全國性民調數據，詳細計算與準確度評估結果如下：</p>
+<hr />
+<p>一、 最終實際結果與真實基準比率</p>
+<p>依據中選會公佈之最終實際開票結果：<br />
+賴清德／蕭美琴：40.05%<br />
+侯友宜／趙少康：33.49%<br />
+柯文哲／吳欣盈：26.46%<br />
+真實分母：\(40.05\% + 33.49\% + 26.46\% = 100.00\%\)<br />
+真實基準比率：賴蕭配 40.05% | 侯趙配 33.49% | 柯吳配 26.46%</p>
+<hr />
+<p>二、 計算邏輯說明</p>
+<ol>
+<li>篩選條件：僅採納投票日（2024/01/13）前 40 天內（2023/12/04 – 2024/01/02 封關前）發布的全國性民調。</li>
+<li>排除未表態：分母 \(B = \text{賴支持率} + \text{侯支持率} + \text{柯支持率}\)。</li>
+<li>推估得票率：各候選人推估比率 \(= \frac{\text{原始支持率 } A}{\text{分母 } B} \times 100\%\)。</li>
+<li>絕對誤差總和：\(|\text{賴推估} - 40.05\%| + |\text{侯推估} - 33.49\%| + |\text{柯推估} - 26.46\%|\)。</li>
+</ol>
+<hr />
+<p>三、 各家民調機構最後民調準確度排行表</p>
+<p>以下依據絕對誤差總和由低到高（越低越準）排列：</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">準確度排名</th>
+<th style="text-align: left;">民調機構名稱</th>
+<th style="text-align: center;">最後民調日期</th>
+<th style="text-align: center;">調查方法</th>
+<th style="text-align: center;">分母 B (%)</th>
+<th style="text-align: center;">賴蕭配 推估比率</th>
+<th style="text-align: center;">侯趙配 推估比率</th>
+<th style="text-align: center;">柯吳配 推估比率</th>
+<th style="text-align: center;">絕對誤差總和 (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">聯合報</td>
+<td style="text-align: center;">2023/12/26 – 12/30</td>
+<td style="text-align: center;">市話+手機</td>
+<td style="text-align: center;">80.00</td>
+<td style="text-align: center;">40.00%</td>
+<td style="text-align: center;">33.75%</td>
+<td style="text-align: center;">26.25%</td>
+<td style="text-align: center;">0.52%</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">TVBS</td>
+<td style="text-align: center;">2024/01/01</td>
+<td style="text-align: center;">市話+手機</td>
+<td style="text-align: center;">85.00</td>
+<td style="text-align: center;">38.82%</td>
+<td style="text-align: center;">35.29%</td>
+<td style="text-align: center;">25.88%</td>
+<td style="text-align: center;">3.61%</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">鋒燦傳媒</td>
+<td style="text-align: center;">2023/12/26 – 12/29</td>
+<td style="text-align: center;">市話+網路</td>
+<td style="text-align: center;">85.20</td>
+<td style="text-align: center;">42.02%</td>
+<td style="text-align: center;">32.04%</td>
+<td style="text-align: center;">25.94%</td>
+<td style="text-align: center;">3.94%</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">台灣民意基金會</td>
+<td style="text-align: center;">2023/12/22 – 12/24</td>
+<td style="text-align: center;">市話+手機</td>
+<td style="text-align: center;">85.20</td>
+<td style="text-align: center;">38.03%</td>
+<td style="text-align: center;">33.10%</td>
+<td style="text-align: center;">28.87%</td>
+<td style="text-align: center;">4.83%</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: left;">匯流新聞網（精確）</td>
+<td style="text-align: center;">2023/12/21 – 12/22</td>
+<td style="text-align: center;">市話+手機</td>
+<td style="text-align: center;">89.00</td>
+<td style="text-align: center;">40.34%</td>
+<td style="text-align: center;">31.01%</td>
+<td style="text-align: center;">28.65%</td>
+<td style="text-align: center;">4.96%</td>
+</tr>
+<tr>
+<td style="text-align: center;">6</td>
+<td style="text-align: left;">三立電視（山水）</td>
+<td style="text-align: center;">2023/12/26 – 12/27</td>
+<td style="text-align: center;">市話+手機</td>
+<td style="text-align: center;">82.60</td>
+<td style="text-align: center;">37.41%</td>
+<td style="text-align: center;">33.78%</td>
+<td style="text-align: center;">28.81%</td>
+<td style="text-align: center;">5.28%</td>
+</tr>
+<tr>
+<td style="text-align: center;">7</td>
+<td style="text-align: left;">菱傳媒（皮爾森）</td>
+<td style="text-align: center;">2023/12/25 – 12/29</td>
+<td style="text-align: center;">網路問卷</td>
+<td style="text-align: center;">98.36</td>
+<td style="text-align: center;">37.51%</td>
+<td style="text-align: center;">33.38%</td>
+<td style="text-align: center;">29.12%</td>
+<td style="text-align: center;">5.32%</td>
+</tr>
+<tr>
+<td style="text-align: center;">8</td>
+<td style="text-align: left;">中華亞太菁英交流協會</td>
+<td style="text-align: center;">2023/12/25 – 12/27</td>
+<td style="text-align: center;">市話+手機</td>
+<td style="text-align: center;">88.20</td>
+<td style="text-align: center;">37.87%</td>
+<td style="text-align: center;">32.88%</td>
+<td style="text-align: center;">29.25%</td>
+<td style="text-align: center;">5.58%</td>
+</tr>
+<tr>
+<td style="text-align: center;">9</td>
+<td style="text-align: left;">震傳媒（山水）</td>
+<td style="text-align: center;">2023/12/28 – 12/29</td>
+<td style="text-align: center;">市話+手機</td>
+<td style="text-align: center;">85.10</td>
+<td style="text-align: center;">37.02%</td>
+<td style="text-align: center;">33.37%</td>
+<td style="text-align: center;">29.61%</td>
+<td style="text-align: center;">6.30%</td>
+</tr>
+<tr>
+<td style="text-align: center;">10</td>
+<td style="text-align: left;">ETtoday</td>
+<td style="text-align: center;">2023/12/31 – 2024/01/01</td>
+<td style="text-align: center;">手機簡訊</td>
+<td style="text-align: center;">97.10</td>
+<td style="text-align: center;">40.06%</td>
+<td style="text-align: center;">36.87%</td>
+<td style="text-align: center;">23.07%</td>
+<td style="text-align: center;">6.78%</td>
+</tr>
+<tr>
+<td style="text-align: center;">11</td>
+<td style="text-align: left;">國民黨（十方/內參）</td>
+<td style="text-align: center;">2023/12/15 – 12/28</td>
+<td style="text-align: center;">市話+手機</td>
+<td style="text-align: center;">75.20</td>
+<td style="text-align: center;">36.17%</td>
+<td style="text-align: center;">34.04%</td>
+<td style="text-align: center;">29.79%</td>
+<td style="text-align: center;">7.76%</td>
+</tr>
+<tr>
+<td style="text-align: center;">12</td>
+<td style="text-align: left;">鏡新聞（大地）</td>
+<td style="text-align: center;">2023/12/30 – 12/31</td>
+<td style="text-align: center;">市話+手機</td>
+<td style="text-align: center;">83.90</td>
+<td style="text-align: center;">42.43%</td>
+<td style="text-align: center;">28.72%</td>
+<td style="text-align: center;">28.84%</td>
+<td style="text-align: center;">9.53%</td>
+</tr>
+<tr>
+<td style="text-align: center;">13</td>
+<td style="text-align: left;">榮泰創數據</td>
+<td style="text-align: center;">2023/12/26 – 12/29</td>
+<td style="text-align: center;">手機簡訊</td>
+<td style="text-align: center;">96.80</td>
+<td style="text-align: center;">35.85%</td>
+<td style="text-align: center;">32.44%</td>
+<td style="text-align: center;">31.71%</td>
+<td style="text-align: center;">10.51%</td>
+</tr>
+<tr>
+<td style="text-align: center;">14</td>
+<td style="text-align: left;">美麗島電子報（第101波）</td>
+<td style="text-align: center;">2023/12/27 – 12/29</td>
+<td style="text-align: center;">純市話</td>
+<td style="text-align: center;">87.00</td>
+<td style="text-align: center;">45.52%</td>
+<td style="text-align: center;">32.76%</td>
+<td style="text-align: center;">21.72%</td>
+<td style="text-align: center;">10.93%</td>
+</tr>
+<tr>
+<td style="text-align: center;">15</td>
+<td style="text-align: left;">QuickseeK（影響力）</td>
+<td style="text-align: center;">2023/12/26 – 12/29</td>
+<td style="text-align: center;">市話+手機</td>
+<td style="text-align: center;">85.10</td>
+<td style="text-align: center;">39.60%</td>
+<td style="text-align: center;">27.85%</td>
+<td style="text-align: center;">32.55%</td>
+<td style="text-align: center;">12.18%</td>
+</tr>
+<tr>
+<td style="text-align: center;">16</td>
+<td style="text-align: left;">民眾黨（求真/內參）</td>
+<td style="text-align: center;">2023/12/30 – 2024/01/01</td>
+<td style="text-align: center;">市話+手機</td>
+<td style="text-align: center;">80.50</td>
+<td style="text-align: center;">33.79%</td>
+<td style="text-align: center;">32.80%</td>
+<td style="text-align: center;">33.42%</td>
+<td style="text-align: center;">13.91%</td>
+</tr>
+<tr>
+<td style="text-align: center;">17</td>
+<td style="text-align: left;">信傳媒（佳興）</td>
+<td style="text-align: center;">2023/12/23 – 12/25</td>
+<td style="text-align: center;">純手機</td>
+<td style="text-align: center;">80.00</td>
+<td style="text-align: center;">36.88%</td>
+<td style="text-align: center;">28.38%</td>
+<td style="text-align: center;">34.75%</td>
+<td style="text-align: center;">16.58%</td>
+</tr>
+<tr>
+<td style="text-align: center;">18</td>
+<td style="text-align: left;">街頭有派對（木炭民調）</td>
+<td style="text-align: center;">2023/12/09 – 12/26</td>
+<td style="text-align: center;">街訪</td>
+<td style="text-align: center;">100.00</td>
+<td style="text-align: center;">37.49%</td>
+<td style="text-align: center;">26.58%</td>
+<td style="text-align: center;">35.93%</td>
+<td style="text-align: center;">18.94%</td>
+</tr>
+</tbody>
+</table></div>
+<p>(註：以上計算皆精確至小數點後第 2 位，因四捨五入可能有些微微幅差異；美麗島若採封關後區間中值模型推估，誤差約為 1.78%)。</p>
+<hr />
+<p>🔍 重點發現與分析：<br />
+1. 最高準確度：聯合報封關民調推估比率與開票結果極度接近（誤差總和僅 0.52%），三人推估與真實得票比率幾乎重合。<br />
+2. 調查方法影響：採用傳統「市話+手機」混合抽樣的傳統媒體民調，整體誤差值相對較低；而純手機、簡訊或非科學性的「街訪民調」相對呈現較高誤差偏差。</p>
+</body>
+</html>
